@@ -1,0 +1,110 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:Asakumo.Avalonia.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="700"
+             x:Class="Asakumo.Avalonia.Views.ApiKeyConfigView"
+             x:DataType="vm:ApiKeyConfigViewModel">
+
+  <Grid RowDefinitions="Auto, *">
+    <!-- Header -->
+    <Border Grid.Row="0" Background="{DynamicResource SystemChromeLowColor}"
+            Padding="16,12">
+      <Grid ColumnDefinitions="Auto, *">
+        <Button Grid.Column="0" Command="{Binding GoBackCommand}"
+                Background="Transparent" BorderThickness="0" Padding="8">
+          <TextBlock Text="←" FontSize="18"/>
+        </Button>
+        <TextBlock Grid.Column="1" FontSize="18" FontWeight="SemiBold"
+                   HorizontalAlignment="Center">
+          <Run Text="配置 "/>
+          <Run Text="{Binding ProviderName}"/>
+        </TextBlock>
+      </Grid>
+    </Border>
+
+    <!-- Content -->
+    <ScrollViewer Grid.Row="1" Background="{DynamicResource SystemChromeLowColor}">
+      <StackPanel Spacing="20" Margin="16">
+
+        <!-- Provider Logo -->
+        <Border Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}"
+                CornerRadius="16" Padding="24,20" HorizontalAlignment="Center">
+          <StackPanel Spacing="8">
+            <TextBlock Text="{Binding ProviderIcon}" FontSize="48" HorizontalAlignment="Center"/>
+            <TextBlock Text="{Binding ProviderName}" FontSize="18" FontWeight="SemiBold"
+                       HorizontalAlignment="Center"/>
+          </StackPanel>
+        </Border>
+
+        <!-- API Key -->
+        <StackPanel Spacing="8">
+          <TextBlock Text="API Key *" FontWeight="Medium"/>
+          <Grid ColumnDefinitions="*, Auto">
+            <TextBox Grid.Column="0"
+                     Text="{Binding ApiKey}"
+                     PasswordChar="•"
+                     IsVisible="{Binding !IsApiKeyVisible}"
+                     Watermark="sk-..."/>
+            <TextBox Grid.Column="0"
+                     Text="{Binding ApiKey}"
+                     IsVisible="{Binding IsApiKeyVisible}"
+                     Watermark="sk-..."/>
+            <Button Grid.Column="1" Command="{Binding ToggleApiKeyVisibilityCommand}"
+                    Background="Transparent" BorderThickness="0" Padding="8">
+              <TextBlock Text="👁" FontSize="16"/>
+            </Button>
+          </Grid>
+          <Button Background="Transparent" BorderThickness="0" HorizontalAlignment="Left">
+            <TextBlock Text="在官网获取 API Key" FontSize="12"
+                       Foreground="{DynamicResource SystemAccentColor}"
+                       TextDecorations="Underline"/>
+          </Button>
+        </StackPanel>
+
+        <!-- Base URL -->
+        <StackPanel Spacing="8">
+          <TextBlock Text="Base URL (可选)" FontWeight="Medium"/>
+          <TextBox Text="{Binding BaseUrl}"
+                   Watermark="https://api.openai.com/v1"/>
+        </StackPanel>
+
+        <!-- Advanced Settings -->
+        <Button Command="{Binding ToggleAdvancedSettingsCommand}"
+                Background="Transparent" BorderThickness="0" HorizontalAlignment="Left">
+          <StackPanel Orientation="Horizontal" Spacing="4">
+            <TextBlock Text="高级设置" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+            <TextBlock Text="▼" FontSize="10"
+                       Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                       IsVisible="{Binding !ShowAdvancedSettings}"/>
+            <TextBlock Text="▲" FontSize="10"
+                       Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                       IsVisible="{Binding ShowAdvancedSettings}"/>
+          </StackPanel>
+        </Button>
+
+        <StackPanel IsVisible="{Binding ShowAdvancedSettings}" Spacing="12" Margin="0,8,0,0">
+          <TextBlock Text="代理设置" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+          <TextBox Watermark="http://localhost:7890"/>
+          <TextBlock Text="请求超时（秒）" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+          <NumericUpDown Value="60" Minimum="10" Maximum="300"/>
+        </StackPanel>
+
+        <!-- Validate Button -->
+        <Button Command="{Binding ValidateAndSaveCommand}"
+                HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                Padding="20,15" CornerRadius="25" Margin="0,20,0,0"
+                Background="{DynamicResource SystemAccentColor}"
+                IsEnabled="{Binding !IsValidating}">
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <TextBlock Text="验证并保存" Foreground="White" FontWeight="SemiBold"/>
+            <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsValidating}"
+                         Width="16" Height="16"/>
+          </StackPanel>
+        </Button>
+
+      </StackPanel>
+    </ScrollViewer>
+  </Grid>
+</UserControl>

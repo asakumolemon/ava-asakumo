@@ -1,0 +1,120 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:Asakumo.Avalonia.ViewModels"
+             xmlns:model="using:Asakumo.Avalonia.Models"
+             mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="700"
+             x:Class="Asakumo.Avalonia.Views.ProviderSelectionView"
+             x:DataType="vm:ProviderSelectionViewModel">
+
+  <Grid RowDefinitions="Auto, *">
+    <!-- Header -->
+    <Border Grid.Row="0" Background="{DynamicResource SystemChromeLowColor}"
+            Padding="16,12">
+      <Grid ColumnDefinitions="Auto, *">
+        <Button Grid.Column="0" Command="{Binding GoBackCommand}"
+                Background="Transparent" BorderThickness="0" Padding="8">
+          <TextBlock Text="←" FontSize="18"/>
+        </Button>
+        <TextBlock Grid.Column="1" Text="AI 服务设置" FontSize="18" FontWeight="SemiBold"
+                   HorizontalAlignment="Center"/>
+      </Grid>
+    </Border>
+
+    <!-- Content -->
+    <ScrollViewer Grid.Row="1" Background="{DynamicResource SystemChromeLowColor}">
+      <StackPanel Spacing="24" Margin="16">
+
+        <TextBlock Text="选择服务提供商" FontSize="16" FontWeight="SemiBold"/>
+
+        <!-- Quick Start -->
+        <StackPanel Spacing="8" IsVisible="{Binding QuickStartProviders.Count}">
+          <TextBlock Text="🌟 快速开始" FontWeight="SemiBold"
+                     Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+          <ItemsControl ItemsSource="{Binding QuickStartProviders}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="model:AIProvider">
+                <Border Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}"
+                        CornerRadius="12" Padding="12" Margin="0,0,0,4">
+                  <Button Command="{Binding $parent[ItemsControl].((vm:ProviderSelectionViewModel)DataContext).SelectProviderCommand}"
+                          CommandParameter="{Binding}"
+                          Background="Transparent" BorderThickness="0"
+                          HorizontalAlignment="Stretch" HorizontalContentAlignment="Left">
+                    <Grid ColumnDefinitions="Auto, *, Auto">
+                      <TextBlock Grid.Column="0" Text="{Binding Icon}" Margin="0,0,12,0"/>
+                      <StackPanel Grid.Column="1">
+                        <TextBlock Text="{Binding Name}" FontWeight="Medium"/>
+                        <TextBlock Text="{Binding Description}" FontSize="12"
+                                   Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+                      </StackPanel>
+                      <TextBlock Grid.Column="2" Text=">" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+                    </Grid>
+                  </Button>
+                </Border>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </StackPanel>
+
+        <!-- Popular Services -->
+        <StackPanel Spacing="8" IsVisible="{Binding PopularProviders.Count}">
+          <TextBlock Text="📦 热门服务" FontWeight="SemiBold"
+                     Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+          <Border Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}"
+                  CornerRadius="12">
+            <ItemsControl ItemsSource="{Binding PopularProviders}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="model:AIProvider">
+                  <StackPanel>
+                    <Button Command="{Binding $parent[ItemsControl].((vm:ProviderSelectionViewModel)DataContext).SelectProviderCommand}"
+                            CommandParameter="{Binding}"
+                            Background="Transparent" BorderThickness="0"
+                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Left">
+                      <Border Padding="12">
+                        <Grid ColumnDefinitions="Auto, *, Auto">
+                          <TextBlock Grid.Column="0" Text="{Binding Icon}" Margin="0,0,12,0"/>
+                          <TextBlock Grid.Column="1" Text="{Binding Name}" FontWeight="Medium"/>
+                          <TextBlock Grid.Column="2" Text=">" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+                        </Grid>
+                      </Border>
+                    </Button>
+                    <Separator Margin="0"/>
+                  </StackPanel>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </Border>
+        </StackPanel>
+
+        <!-- Local Models -->
+        <StackPanel Spacing="8" IsVisible="{Binding LocalProviders.Count}">
+          <TextBlock Text="🖥️ 本地模型" FontWeight="SemiBold"
+                     Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+          <Border Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}"
+                  CornerRadius="12">
+            <ItemsControl ItemsSource="{Binding LocalProviders}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="model:AIProvider">
+                  <Button Command="{Binding $parent[ItemsControl].((vm:ProviderSelectionViewModel)DataContext).SelectProviderCommand}"
+                          CommandParameter="{Binding}"
+                          Background="Transparent" BorderThickness="0"
+                          HorizontalAlignment="Stretch" HorizontalContentAlignment="Left">
+                    <Border Padding="12">
+                      <Grid ColumnDefinitions="Auto, *, Auto">
+                        <TextBlock Grid.Column="0" Text="{Binding Icon}" Margin="0,0,12,0"/>
+                        <TextBlock Grid.Column="1" Text="{Binding Name}" FontWeight="Medium"/>
+                        <TextBlock Grid.Column="2" Text=">" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+                      </Grid>
+                    </Border>
+                  </Button>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </Border>
+        </StackPanel>
+
+      </StackPanel>
+    </ScrollViewer>
+  </Grid>
+</UserControl>

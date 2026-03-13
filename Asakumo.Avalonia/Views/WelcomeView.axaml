@@ -1,0 +1,71 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:Asakumo.Avalonia.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="700"
+             x:Class="Asakumo.Avalonia.Views.WelcomeView"
+             x:DataType="vm:WelcomeViewModel"
+             Background="{DynamicResource SystemChromeLowColor}">
+
+  <Grid RowDefinitions="*, Auto">
+    <!-- Main Content -->
+    <StackPanel VerticalAlignment="Center" Spacing="30" Margin="40">
+      <!-- Logo -->
+      <StackPanel HorizontalAlignment="Center" Spacing="10">
+        <TextBlock Text="🌙" FontSize="64" HorizontalAlignment="Center"/>
+        <TextBlock Text="Asakumo" FontSize="32" FontWeight="Bold"
+                   HorizontalAlignment="Center" Foreground="{DynamicResource SystemAccentColor}"/>
+        <TextBlock Text="您的 AI 聊天助手" FontSize="16"
+                   HorizontalAlignment="Center" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+      </StackPanel>
+
+      <!-- Illustration Area -->
+      <Border Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}"
+              CornerRadius="16" Height="180"
+              HorizontalAlignment="Center" Width="280">
+        <Viewbox>
+          <TextBlock Text="应用展示插图" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                     HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        </Viewbox>
+      </Border>
+
+      <!-- Language Selector -->
+      <Grid ColumnDefinitions="Auto, *" HorizontalAlignment="Center">
+        <TextBlock Grid.Column="0" Text="🌐 语言: " VerticalAlignment="Center"
+                   Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+        <ComboBox Grid.Column="1" ItemsSource="{Binding Languages}"
+                  SelectedItem="{Binding SelectedLanguage}"
+                  MinWidth="120"/>
+      </Grid>
+
+      <!-- Start Button -->
+      <Button Command="{Binding StartUsingCommand}"
+              HorizontalAlignment="Center" HorizontalContentAlignment="Center"
+              MinWidth="200" Padding="20,15"
+              CornerRadius="25"
+              Background="{DynamicResource SystemAccentColor}"
+              Foreground="White">
+        <TextBlock Text="开始使用" FontWeight="SemiBold"/>
+      </Button>
+
+      <!-- Skip Link -->
+      <Button Command="{Binding SkipCommand}"
+              HorizontalAlignment="Center"
+              Background="Transparent"
+              BorderThickness="0">
+        <TextBlock Text="跳过引导" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                   TextDecorations="Underline"/>
+      </Button>
+    </StackPanel>
+
+    <!-- Page Indicators -->
+    <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center"
+                Spacing="8" Margin="0,0,0,30">
+      <Ellipse Width="8" Height="8" Fill="{DynamicResource SystemAccentColor}"/>
+      <Ellipse Width="8" Height="8" Fill="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+      <Ellipse Width="8" Height="8" Fill="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+      <Ellipse Width="8" Height="8" Fill="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+    </StackPanel>
+  </Grid>
+</UserControl>

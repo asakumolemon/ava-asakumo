@@ -1,0 +1,17 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Asakumo.Avalonia.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:views="using:Asakumo.Avalonia.Views"
+        mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="700"
+        x:Class="Asakumo.Avalonia.Views.MainWindow"
+        Icon="/Assets/avalonia-logo.ico"
+        Title="Asakumo"
+        Width="450" Height="750"
+        MinWidth="350" MinHeight="500"
+        WindowStartupLocation="CenterScreen"
+        Background="{DynamicResource SystemChromeLowColor}">
+
+        <views:MainView />
+</Window>

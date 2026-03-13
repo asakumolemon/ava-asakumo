@@ -1,0 +1,167 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:Asakumo.Avalonia.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="700"
+             x:Class="Asakumo.Avalonia.Views.SettingsView"
+             x:DataType="vm:SettingsViewModel">
+
+  <Grid RowDefinitions="Auto, *">
+    <!-- Header -->
+    <Border Grid.Row="0" Background="{DynamicResource SystemChromeLowColor}"
+            Padding="16,12">
+      <Grid ColumnDefinitions="Auto, *">
+        <Button Grid.Column="0" Command="{Binding GoBackCommand}"
+                Background="Transparent" BorderThickness="0" Padding="8">
+          <TextBlock Text="←" FontSize="18"/>
+        </Button>
+        <TextBlock Grid.Column="1" Text="设置" FontSize="18" FontWeight="SemiBold"
+                   HorizontalAlignment="Center"/>
+      </Grid>
+    </Border>
+
+    <!-- Content -->
+    <ScrollViewer Grid.Row="1" Background="{DynamicResource SystemChromeLowColor}">
+      <StackPanel Spacing="24" Margin="16">
+
+        <!-- Current Service -->
+        <StackPanel Spacing="8">
+          <TextBlock Text="当前服务" FontWeight="SemiBold"
+                     Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+          <Border Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}"
+                  CornerRadius="12" Padding="12">
+            <Button Command="{Binding ConfigureProviderCommand}"
+                    Background="Transparent" BorderThickness="0"
+                    HorizontalAlignment="Stretch" HorizontalContentAlignment="Left">
+              <Grid ColumnDefinitions="Auto, *, Auto">
+                <TextBlock Grid.Column="0" Text="🟢" Margin="0,0,12,0"
+                           IsVisible="{Binding IsProviderConfigured}"/>
+                <TextBlock Grid.Column="0" Text="⚪" Margin="0,0,12,0"
+                           IsVisible="{Binding !IsProviderConfigured}"/>
+                <StackPanel Grid.Column="1">
+                  <TextBlock Text="{Binding CurrentProviderName}" FontWeight="Medium"/>
+                  <TextBlock Text="{Binding CurrentModelName}" FontSize="12"
+                             Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+                </StackPanel>
+                <TextBlock Grid.Column="2" Text=">" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+              </Grid>
+            </Button>
+          </Border>
+        </StackPanel>
+
+        <!-- Appearance -->
+        <StackPanel Spacing="8">
+          <TextBlock Text="外观" FontWeight="SemiBold"
+                     Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+          <Border Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}"
+                  CornerRadius="12">
+            <StackPanel>
+              <Border Padding="12">
+                <Grid ColumnDefinitions="Auto, *, Auto">
+                  <TextBlock Grid.Column="0" Text="🌙" Margin="0,0,12,0"/>
+                  <TextBlock Grid.Column="1" Text="深色模式"/>
+                  <ToggleSwitch Grid.Column="2" IsChecked="{Binding IsDarkMode}"/>
+                </Grid>
+              </Border>
+              <Separator Margin="40,0,0,0"/>
+              <Button Command="{Binding OpenLanguageSettingsCommand}"
+                      Background="Transparent" BorderThickness="0"
+                      HorizontalAlignment="Stretch" HorizontalContentAlignment="Left">
+                <Border Padding="12">
+                  <Grid ColumnDefinitions="Auto, *, Auto">
+                    <TextBlock Grid.Column="0" Text="🌐" Margin="0,0,12,0"/>
+                    <StackPanel Grid.Column="1">
+                      <TextBlock Text="语言"/>
+                      <TextBlock Text="{Binding SelectedLanguage}" FontSize="12"
+                                 Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+                    </StackPanel>
+                    <TextBlock Grid.Column="2" Text=">" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+                  </Grid>
+                </Border>
+              </Button>
+            </StackPanel>
+          </Border>
+        </StackPanel>
+
+        <!-- Data -->
+        <StackPanel Spacing="8">
+          <TextBlock Text="数据" FontWeight="SemiBold"
+                     Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+          <Border Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}"
+                  CornerRadius="12">
+            <StackPanel>
+              <Button Command="{Binding BackupCommand}"
+                      Background="Transparent" BorderThickness="0"
+                      HorizontalAlignment="Stretch" HorizontalContentAlignment="Left">
+                <Border Padding="12">
+                  <Grid ColumnDefinitions="Auto, *, Auto">
+                    <TextBlock Grid.Column="0" Text="💾" Margin="0,0,12,0"/>
+                    <TextBlock Grid.Column="1" Text="备份与恢复"/>
+                    <TextBlock Grid.Column="2" Text=">" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+                  </Grid>
+                </Border>
+              </Button>
+              <Separator Margin="40,0,0,0"/>
+              <Button Command="{Binding ClearConversationsCommand}"
+                      Background="Transparent" BorderThickness="0"
+                      HorizontalAlignment="Stretch" HorizontalContentAlignment="Left">
+                <Border Padding="12">
+                  <Grid ColumnDefinitions="Auto, *, Auto">
+                    <TextBlock Grid.Column="0" Text="🗑️" Margin="0,0,12,0"/>
+                    <TextBlock Grid.Column="1" Text="清除所有会话"/>
+                    <TextBlock Grid.Column="2" Text=">" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+                  </Grid>
+                </Border>
+              </Button>
+            </StackPanel>
+          </Border>
+        </StackPanel>
+
+        <!-- About -->
+        <StackPanel Spacing="8">
+          <TextBlock Text="关于" FontWeight="SemiBold"
+                     Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+          <Border Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}"
+                  CornerRadius="12">
+            <StackPanel>
+              <Button Background="Transparent" BorderThickness="0"
+                      HorizontalAlignment="Stretch" HorizontalContentAlignment="Left">
+                <Border Padding="12">
+                  <Grid ColumnDefinitions="Auto, *, Auto">
+                    <TextBlock Grid.Column="0" Text="ℹ️" Margin="0,0,12,0"/>
+                    <TextBlock Grid.Column="1" Text="版本 1.0.0"/>
+                    <TextBlock Grid.Column="2" Text=">" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+                  </Grid>
+                </Border>
+              </Button>
+              <Separator Margin="40,0,0,0"/>
+              <Button Background="Transparent" BorderThickness="0"
+                      HorizontalAlignment="Stretch" HorizontalContentAlignment="Left">
+                <Border Padding="12">
+                  <Grid ColumnDefinitions="Auto, *, Auto">
+                    <TextBlock Grid.Column="0" Text="📄" Margin="0,0,12,0"/>
+                    <TextBlock Grid.Column="1" Text="隐私政策"/>
+                    <TextBlock Grid.Column="2" Text=">" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+                  </Grid>
+                </Border>
+              </Button>
+              <Separator Margin="40,0,0,0"/>
+              <Button Background="Transparent" BorderThickness="0"
+                      HorizontalAlignment="Stretch" HorizontalContentAlignment="Left">
+                <Border Padding="12">
+                  <Grid ColumnDefinitions="Auto, *, Auto">
+                    <TextBlock Grid.Column="0" Text="⭐" Margin="0,0,12,0"/>
+                    <TextBlock Grid.Column="1" Text="给我们评分"/>
+                    <TextBlock Grid.Column="2" Text=">" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+                  </Grid>
+                </Border>
+              </Button>
+            </StackPanel>
+          </Border>
+        </StackPanel>
+
+      </StackPanel>
+    </ScrollViewer>
+  </Grid>
+</UserControl>
