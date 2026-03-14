@@ -5,48 +5,58 @@
              xmlns:vm="using:Asakumo.Avalonia.ViewModels"
              mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="700"
              x:Class="Asakumo.Avalonia.Views.WelcomeView"
-             x:DataType="vm:WelcomeViewModel"
-             Background="{DynamicResource SystemChromeLowColor}">
+             x:DataType="vm:WelcomeViewModel">
 
-  <Grid RowDefinitions="*, Auto">
+  <Grid RowDefinitions="*, Auto" Background="{DynamicResource AppBackgroundBrush}">
     <!-- Main Content -->
-    <StackPanel VerticalAlignment="Center" Spacing="30" Margin="40">
+    <StackPanel VerticalAlignment="Center" Spacing="32" Margin="40,20">
       <!-- Logo -->
-      <StackPanel HorizontalAlignment="Center" Spacing="10">
-        <TextBlock Text="🌙" FontSize="64" HorizontalAlignment="Center"/>
+      <StackPanel HorizontalAlignment="Center" Spacing="12">
+        <TextBlock Text="&#x1F319;" FontSize="64" HorizontalAlignment="Center"/>
         <TextBlock Text="Asakumo" FontSize="32" FontWeight="Bold"
-                   HorizontalAlignment="Center" Foreground="{DynamicResource SystemAccentColor}"/>
+                   HorizontalAlignment="Center"
+                   Foreground="{DynamicResource PrimaryBrush}"/>
         <TextBlock Text="您的 AI 聊天助手" FontSize="16"
-                   HorizontalAlignment="Center" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+                   HorizontalAlignment="Center"
+                   Foreground="{DynamicResource AppTextSecondaryBrush}"/>
       </StackPanel>
 
       <!-- Illustration Area -->
-      <Border Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}"
+      <Border Background="{DynamicResource AppSurfaceBrush}"
               CornerRadius="16" Height="180"
               HorizontalAlignment="Center" Width="280">
+        <!-- 品牌渐变背景 -->
+        <Border.Background>
+          <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
+            <GradientStop Color="#10A37F" Offset="0"/>
+            <GradientStop Color="#0D8A6A" Offset="1"/>
+          </LinearGradientBrush>
+        </Border.Background>
         <Viewbox>
-          <TextBlock Text="应用展示插图" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
-                     HorizontalAlignment="Center" VerticalAlignment="Center"/>
+          <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+            <TextBlock Text="&#x1F916;" FontSize="48" HorizontalAlignment="Center"/>
+            <TextBlock Text="智能对话" FontSize="18" Foreground="White"
+                       HorizontalAlignment="Center" FontWeight="Medium"/>
+          </StackPanel>
         </Viewbox>
       </Border>
 
       <!-- Language Selector -->
       <Grid ColumnDefinitions="Auto, *" HorizontalAlignment="Center">
-        <TextBlock Grid.Column="0" Text="🌐 语言: " VerticalAlignment="Center"
-                   Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+        <TextBlock Grid.Column="0" Text="&#x1F310; 语言: " VerticalAlignment="Center"
+                   Foreground="{DynamicResource AppTextSecondaryBrush}"/>
         <ComboBox Grid.Column="1" ItemsSource="{Binding Languages}"
                   SelectedItem="{Binding SelectedLanguage}"
-                  MinWidth="120"/>
+                  MinWidth="140"
+                  Background="{DynamicResource AppSurfaceBrush}"/>
       </Grid>
 
       <!-- Start Button -->
       <Button Command="{Binding StartUsingCommand}"
-              HorizontalAlignment="Center" HorizontalContentAlignment="Center"
-              MinWidth="200" Padding="20,15"
-              CornerRadius="25"
-              Background="{DynamicResource SystemAccentColor}"
-              Foreground="White">
-        <TextBlock Text="开始使用" FontWeight="SemiBold"/>
+              Classes="primary"
+              HorizontalAlignment="Center"
+              HorizontalContentAlignment="Center">
+        <TextBlock Text="开始使用" FontWeight="SemiBold" FontSize="16"/>
       </Button>
 
       <!-- Skip Link -->
@@ -54,18 +64,19 @@
               HorizontalAlignment="Center"
               Background="Transparent"
               BorderThickness="0">
-        <TextBlock Text="跳过引导" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+        <TextBlock Text="跳过引导" 
+                   Foreground="{DynamicResource AppTextSecondaryBrush}"
                    TextDecorations="Underline"/>
       </Button>
     </StackPanel>
 
     <!-- Page Indicators -->
     <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center"
-                Spacing="8" Margin="0,0,0,30">
-      <Ellipse Width="8" Height="8" Fill="{DynamicResource SystemAccentColor}"/>
-      <Ellipse Width="8" Height="8" Fill="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
-      <Ellipse Width="8" Height="8" Fill="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
-      <Ellipse Width="8" Height="8" Fill="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+                Spacing="10" Margin="0,0,0,32">
+      <Ellipse Width="8" Height="8" Fill="{DynamicResource PrimaryBrush}"/>
+      <Ellipse Width="8" Height="8" Fill="{DynamicResource AppTextSecondaryBrush}"/>
+      <Ellipse Width="8" Height="8" Fill="{DynamicResource AppTextSecondaryBrush}"/>
+      <Ellipse Width="8" Height="8" Fill="{DynamicResource AppTextSecondaryBrush}"/>
     </StackPanel>
   </Grid>
 </UserControl>

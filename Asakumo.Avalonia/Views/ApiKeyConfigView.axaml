@@ -5,102 +5,180 @@
              xmlns:vm="using:Asakumo.Avalonia.ViewModels"
              mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="700"
              x:Class="Asakumo.Avalonia.Views.ApiKeyConfigView"
-             x:DataType="vm:ApiKeyConfigViewModel">
+             x:DataType="vm:ApiKeyConfigViewModel"
+             Background="{DynamicResource AppBackgroundBrush}">
 
   <Grid RowDefinitions="Auto, *">
     <!-- Header -->
-    <Border Grid.Row="0" Background="{DynamicResource SystemChromeLowColor}"
-            Padding="16,12">
-      <Grid ColumnDefinitions="Auto, *">
-        <Button Grid.Column="0" Command="{Binding GoBackCommand}"
-                Background="Transparent" BorderThickness="0" Padding="8">
-          <TextBlock Text="←" FontSize="18"/>
+    <Border Grid.Row="0" 
+            Background="{DynamicResource AppBackgroundBrush}"
+            Padding="8,8" Height="56">
+      <Grid ColumnDefinitions="Auto, *, Auto">
+        <Button Grid.Column="0" 
+                Command="{Binding GoBackCommand}"
+                Classes="icon">
+          <TextBlock Text="&#x2190;" FontSize="20"/>
         </Button>
-        <TextBlock Grid.Column="1" FontSize="18" FontWeight="SemiBold"
-                   HorizontalAlignment="Center">
-          <Run Text="配置 "/>
-          <Run Text="{Binding ProviderName}"/>
-        </TextBlock>
+        <StackPanel Grid.Column="1" 
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center">
+          <TextBlock FontSize="18" FontWeight="SemiBold"
+                     HorizontalAlignment="Center"
+                     Foreground="{DynamicResource AppTextPrimaryBrush}">
+            <Run Text="配置 "/>
+            <Run Text="{Binding ProviderName}"/>
+          </TextBlock>
+        </StackPanel>
       </Grid>
     </Border>
 
     <!-- Content -->
-    <ScrollViewer Grid.Row="1" Background="{DynamicResource SystemChromeLowColor}">
+    <ScrollViewer Grid.Row="1" 
+                  Background="{DynamicResource AppBackgroundBrush}">
       <StackPanel Spacing="20" Margin="16">
 
-        <!-- Provider Logo -->
-        <Border Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}"
-                CornerRadius="16" Padding="24,20" HorizontalAlignment="Center">
-          <StackPanel Spacing="8">
-            <TextBlock Text="{Binding ProviderIcon}" FontSize="48" HorizontalAlignment="Center"/>
-            <TextBlock Text="{Binding ProviderName}" FontSize="18" FontWeight="SemiBold"
-                       HorizontalAlignment="Center"/>
+        <!-- Provider Header Card -->
+        <Border Background="{DynamicResource AppCardBrush}"
+                CornerRadius="16" 
+                Padding="24,20" 
+                HorizontalAlignment="Center">
+          <StackPanel Spacing="12">
+            <Border Width="64" Height="64" 
+                    CornerRadius="32"
+                    Background="{DynamicResource PrimaryBrush}"
+                    HorizontalAlignment="Center">
+              <TextBlock Text="{Binding ProviderIcon}" 
+                         FontSize="32" 
+                         HorizontalAlignment="Center" 
+                         VerticalAlignment="Center"/>
+            </Border>
+            <TextBlock Text="{Binding ProviderName}" 
+                       FontSize="18" 
+                       FontWeight="SemiBold"
+                       HorizontalAlignment="Center"
+                       Foreground="{DynamicResource AppTextPrimaryBrush}"/>
           </StackPanel>
         </Border>
 
-        <!-- API Key -->
+        <!-- API Key Input -->
         <StackPanel Spacing="8">
-          <TextBlock Text="API Key *" FontWeight="Medium"/>
-          <Grid ColumnDefinitions="*, Auto">
-            <TextBox Grid.Column="0"
-                     Text="{Binding ApiKey}"
-                     PasswordChar="•"
-                     IsVisible="{Binding !IsApiKeyVisible}"
-                     Watermark="sk-..."/>
-            <TextBox Grid.Column="0"
-                     Text="{Binding ApiKey}"
-                     IsVisible="{Binding IsApiKeyVisible}"
-                     Watermark="sk-..."/>
-            <Button Grid.Column="1" Command="{Binding ToggleApiKeyVisibilityCommand}"
-                    Background="Transparent" BorderThickness="0" Padding="8">
-              <TextBlock Text="👁" FontSize="16"/>
-            </Button>
-          </Grid>
-          <Button Background="Transparent" BorderThickness="0" HorizontalAlignment="Left">
-            <TextBlock Text="在官网获取 API Key" FontSize="12"
-                       Foreground="{DynamicResource SystemAccentColor}"
+          <TextBlock Text="API Key *" 
+                     FontWeight="Medium"
+                     Foreground="{DynamicResource AppTextPrimaryBrush}"/>
+          <Border Background="{DynamicResource AppSurfaceBrush}"
+                  CornerRadius="8"
+                  BorderBrush="{DynamicResource AppBorderBrush}"
+                  BorderThickness="1">
+            <Grid ColumnDefinitions="*, Auto">
+              <TextBox Grid.Column="0"
+                       Text="{Binding ApiKey}"
+                       PasswordChar="&#x2022;"
+                       IsVisible="{Binding !IsApiKeyVisible}"
+                       Watermark="sk-..."
+                       BorderThickness="0"
+                       Background="Transparent"
+                       Padding="12,10"/>
+              <TextBox Grid.Column="0"
+                       Text="{Binding ApiKey}"
+                       IsVisible="{Binding IsApiKeyVisible}"
+                       Watermark="sk-..."
+                       BorderThickness="0"
+                       Background="Transparent"
+                       Padding="12,10"/>
+              <Button Grid.Column="1" 
+                      Command="{Binding ToggleApiKeyVisibilityCommand}"
+                      Classes="icon">
+                <TextBlock Text="&#x1F441;" FontSize="16"/>
+              </Button>
+            </Grid>
+          </Border>
+          <Button Background="Transparent" 
+                  BorderThickness="0" 
+                  HorizontalAlignment="Left"
+                  Padding="0">
+            <TextBlock Text="在官网获取 API Key" 
+                       FontSize="12"
+                       Foreground="{DynamicResource PrimaryBrush}"
                        TextDecorations="Underline"/>
           </Button>
         </StackPanel>
 
-        <!-- Base URL -->
+        <!-- Base URL Input -->
         <StackPanel Spacing="8">
-          <TextBlock Text="Base URL (可选)" FontWeight="Medium"/>
-          <TextBox Text="{Binding BaseUrl}"
-                   Watermark="https://api.openai.com/v1"/>
+          <TextBlock Text="Base URL (可选)" 
+                     FontWeight="Medium"
+                     Foreground="{DynamicResource AppTextPrimaryBrush}"/>
+          <Border Background="{DynamicResource AppSurfaceBrush}"
+                  CornerRadius="8"
+                  BorderBrush="{DynamicResource AppBorderBrush}"
+                  BorderThickness="1">
+            <TextBox Text="{Binding BaseUrl}"
+                     Watermark="https://api.openai.com/v1"
+                     BorderThickness="0"
+                     Background="Transparent"
+                     Padding="12,10"/>
+          </Border>
         </StackPanel>
 
-        <!-- Advanced Settings -->
+        <!-- Advanced Settings Toggle -->
         <Button Command="{Binding ToggleAdvancedSettingsCommand}"
-                Background="Transparent" BorderThickness="0" HorizontalAlignment="Left">
-          <StackPanel Orientation="Horizontal" Spacing="4">
-            <TextBlock Text="高级设置" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
-            <TextBlock Text="▼" FontSize="10"
-                       Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                Background="Transparent" 
+                BorderThickness="0" 
+                HorizontalAlignment="Left"
+                Padding="0">
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <TextBlock Text="&#x25B6;" FontSize="10"
+                       Foreground="{DynamicResource AppTextSecondaryBrush}"
                        IsVisible="{Binding !ShowAdvancedSettings}"/>
-            <TextBlock Text="▲" FontSize="10"
-                       Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+            <TextBlock Text="&#x25BC;" FontSize="10"
+                       Foreground="{DynamicResource AppTextSecondaryBrush}"
                        IsVisible="{Binding ShowAdvancedSettings}"/>
+            <TextBlock Text="高级设置" 
+                       Foreground="{DynamicResource AppTextSecondaryBrush}"/>
           </StackPanel>
         </Button>
 
-        <StackPanel IsVisible="{Binding ShowAdvancedSettings}" Spacing="12" Margin="0,8,0,0">
-          <TextBlock Text="代理设置" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
-          <TextBox Watermark="http://localhost:7890"/>
-          <TextBlock Text="请求超时（秒）" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
-          <NumericUpDown Value="60" Minimum="10" Maximum="300"/>
-        </StackPanel>
+        <!-- Advanced Settings Panel -->
+        <Border IsVisible="{Binding ShowAdvancedSettings}" 
+                Margin="0,8,0,0"
+                Background="{DynamicResource AppSurfaceBrush}"
+                Padding="12"
+                CornerRadius="8">
+          <StackPanel Spacing="12">
+            <TextBlock Text="代理设置" 
+                       Classes="caption"/>
+            <Border Background="{DynamicResource AppBackgroundBrush}"
+                    CornerRadius="6"
+                    BorderBrush="{DynamicResource AppBorderBrush}"
+                    BorderThickness="1">
+              <TextBox Watermark="http://localhost:7890"
+                       BorderThickness="0"
+                       Background="Transparent"
+                       Padding="10,8"/>
+            </Border>
+            <TextBlock Text="请求超时（秒）" 
+                       Classes="caption"
+                       Margin="0,8,0,0"/>
+            <NumericUpDown Value="60" 
+                           Minimum="10" 
+                           Maximum="300"
+                           Background="{DynamicResource AppBackgroundBrush}"/>
+          </StackPanel>
+        </Border>
 
         <!-- Validate Button -->
         <Button Command="{Binding ValidateAndSaveCommand}"
-                HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
-                Padding="20,15" CornerRadius="25" Margin="0,20,0,0"
-                Background="{DynamicResource SystemAccentColor}"
+                Classes="primary"
+                HorizontalAlignment="Stretch" 
+                HorizontalContentAlignment="Center"
+                Margin="0,20,0,0"
                 IsEnabled="{Binding !IsValidating}">
           <StackPanel Orientation="Horizontal" Spacing="8">
             <TextBlock Text="验证并保存" Foreground="White" FontWeight="SemiBold"/>
-            <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsValidating}"
-                         Width="16" Height="16"/>
+            <ProgressBar IsIndeterminate="True" 
+                         IsVisible="{Binding IsValidating}"
+                         Width="16" Height="16"
+                         Foreground="White"/>
           </StackPanel>
         </Button>
 

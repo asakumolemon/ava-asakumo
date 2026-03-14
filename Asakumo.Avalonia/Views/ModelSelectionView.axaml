@@ -6,65 +6,97 @@
              xmlns:model="using:Asakumo.Avalonia.Models"
              mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="700"
              x:Class="Asakumo.Avalonia.Views.ModelSelectionView"
-             x:DataType="vm:ModelSelectionViewModel">
+             x:DataType="vm:ModelSelectionViewModel"
+             Background="{DynamicResource AppBackgroundBrush}">
 
   <Grid RowDefinitions="Auto, *, Auto">
     <!-- Header -->
-    <Border Grid.Row="0" Background="{DynamicResource SystemChromeLowColor}"
-            Padding="16,12">
-      <Grid ColumnDefinitions="Auto, *">
-        <Button Grid.Column="0" Command="{Binding GoBackCommand}"
-                Background="Transparent" BorderThickness="0" Padding="8">
-          <TextBlock Text="←" FontSize="18"/>
+    <Border Grid.Row="0" 
+            Background="{DynamicResource AppBackgroundBrush}"
+            Padding="8,8" Height="56">
+      <Grid ColumnDefinitions="Auto, *, Auto">
+        <Button Grid.Column="0" 
+                Command="{Binding GoBackCommand}"
+                Classes="icon">
+          <TextBlock Text="&#x2190;" FontSize="20"/>
         </Button>
-        <TextBlock Grid.Column="1" Text="选择模型" FontSize="18" FontWeight="SemiBold"
-                   HorizontalAlignment="Center"/>
+        <TextBlock Grid.Column="1" 
+                   Text="选择模型" 
+                   FontSize="18" 
+                   FontWeight="SemiBold"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   Foreground="{DynamicResource AppTextPrimaryBrush}"/>
       </Grid>
     </Border>
 
     <!-- Content -->
-    <ScrollViewer Grid.Row="1" Background="{DynamicResource SystemChromeLowColor}">
+    <ScrollViewer Grid.Row="1" 
+                  Background="{DynamicResource AppBackgroundBrush}">
       <StackPanel Spacing="20" Margin="16">
 
-        <!-- Connection Status -->
-        <StackPanel Orientation="Horizontal" Spacing="8" IsVisible="{Binding IsConnected}">
-          <TextBlock Text="✅" FontSize="16"/>
-          <TextBlock Foreground="#10B981">
-            <Run Text="已连接到 "/>
-            <Run Text="{Binding ProviderName}" FontWeight="SemiBold"/>
-          </TextBlock>
-        </StackPanel>
+        <!-- Connection Status Banner -->
+        <Border Background="{DynamicResource AppSurfaceBrush}"
+                CornerRadius="8"
+                Padding="12"
+                IsVisible="{Binding IsConnected}">
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <TextBlock Text="&#x2705;" FontSize="16"/>
+            <TextBlock Foreground="{DynamicResource SuccessBrush}">
+              <Run Text="已连接到 "/>
+              <Run Text="{Binding ProviderName}" FontWeight="SemiBold"/>
+            </TextBlock>
+          </StackPanel>
+        </Border>
+        
         <TextBlock Text="请选择要使用的模型"
-                   Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                   Classes="caption"
                    IsVisible="{Binding IsConnected}"/>
 
-        <!-- Recommended Models -->
-        <StackPanel Spacing="8" IsVisible="{Binding RecommendedModels.Count}">
-          <TextBlock Text="⭐ 推荐" FontWeight="SemiBold"
-                     Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+        <!-- Recommended Models Section -->
+        <StackPanel Spacing="8" 
+                    IsVisible="{Binding RecommendedModels.Count, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+          <TextBlock Text="&#x2B50; 推荐" 
+                     Classes="section-title"/>
           <ItemsControl ItemsSource="{Binding RecommendedModels}">
             <ItemsControl.ItemTemplate>
               <DataTemplate x:DataType="model:AIModel">
-                <Border Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}"
-                        CornerRadius="12" Padding="12" Margin="0,0,0,8">
+                <Border Background="{DynamicResource AppCardBrush}"
+                        CornerRadius="12" 
+                        Padding="12" 
+                        Margin="0,0,0,8">
                   <Button Command="{Binding $parent[ItemsControl].((vm:ModelSelectionViewModel)DataContext).SelectModelCommand}"
                           CommandParameter="{Binding}"
-                          Background="Transparent" BorderThickness="0"
-                          HorizontalAlignment="Stretch" HorizontalContentAlignment="Left">
-                    <Grid ColumnDefinitions="Auto, *, Auto" RowDefinitions="Auto, Auto">
-                      <TextBlock Grid.Row="0" Grid.Column="0" Text="●"
-                                 Foreground="{DynamicResource SystemAccentColor}"
+                          Background="Transparent" 
+                          BorderThickness="0"
+                          HorizontalAlignment="Stretch" 
+                          HorizontalContentAlignment="Left"
+                          Padding="0">
+                    <Grid ColumnDefinitions="Auto, *, Auto" 
+                          RowDefinitions="Auto, Auto">
+                      <!-- Selection Indicator -->
+                      <TextBlock Grid.Row="0" Grid.Column="0" 
+                                 Text="&#x25CF;"
+                                 Foreground="{DynamicResource PrimaryBrush}"
+                                 FontSize="14"
                                  Margin="0,0,12,0"
-                                 IsVisible="{Binding $parent[ItemsControl].((vm:ModelSelectionViewModel)DataContext).SelectedModel, Converter={x:Static ObjectConverters.Equal}, ConverterParameter={Binding}}"/>
-                      <TextBlock Grid.Row="0" Grid.Column="0" Text="○"
-                                 Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
-                                 Margin="0,0,12,0"
-                                 IsVisible="{Binding $parent[ItemsControl].((vm:ModelSelectionViewModel)DataContext).SelectedModel, Converter={x:Static ObjectConverters.NotEqual}, ConverterParameter={Binding}}"/>
-                      <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Name}" FontWeight="Medium"/>
-                      <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Description}"
-                                 FontSize="12" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+                                 VerticalAlignment="Center"/>
+                      
+                      <!-- Model Name -->
+                      <TextBlock Grid.Row="0" Grid.Column="1" 
+                                 Text="{Binding Name}" 
+                                 FontWeight="Medium"
+                                 Foreground="{DynamicResource AppTextPrimaryBrush}"/>
+                      
+                      <!-- Model Description -->
+                      <TextBlock Grid.Row="1" Grid.Column="1" 
+                                 Text="{Binding Description}"
+                                 Classes="caption"/>
+                      
+                      <!-- Model Tags -->
                       <ItemsControl Grid.Row="0" Grid.RowSpan="2" Grid.Column="2"
-                                    ItemsSource="{Binding Tags}" VerticalAlignment="Center">
+                                    ItemsSource="{Binding Tags}" 
+                                    VerticalAlignment="Center">
                         <ItemsControl.ItemsPanel>
                           <ItemsPanelTemplate>
                             <WrapPanel Orientation="Horizontal"/>
@@ -72,8 +104,7 @@
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
                           <DataTemplate>
-                            <Border Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
-                                    CornerRadius="8" Padding="6,2" Margin="2,0">
+                            <Border Classes="tag" Margin="2,0">
                               <TextBlock Text="{Binding}" FontSize="10"/>
                             </Border>
                           </DataTemplate>
@@ -87,31 +118,39 @@
           </ItemsControl>
         </StackPanel>
 
-        <!-- Reasoning Models -->
-        <StackPanel Spacing="8" IsVisible="{Binding ReasoningModels.Count}">
-          <TextBlock Text="🧠 推理模型" FontWeight="SemiBold"
-                     Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+        <!-- Reasoning Models Section -->
+        <StackPanel Spacing="8" 
+                    IsVisible="{Binding ReasoningModels.Count, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+          <TextBlock Text="&#x1F9E0; 推理模型" 
+                     Classes="section-title"/>
           <ItemsControl ItemsSource="{Binding ReasoningModels}">
             <ItemsControl.ItemTemplate>
               <DataTemplate x:DataType="model:AIModel">
-                <Border Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}"
-                        CornerRadius="12" Padding="12" Margin="0,0,0,8">
+                <Border Background="{DynamicResource AppCardBrush}"
+                        CornerRadius="12" 
+                        Padding="12" 
+                        Margin="0,0,0,8">
                   <Button Command="{Binding $parent[ItemsControl].((vm:ModelSelectionViewModel)DataContext).SelectModelCommand}"
                           CommandParameter="{Binding}"
-                          Background="Transparent" BorderThickness="0"
-                          HorizontalAlignment="Stretch" HorizontalContentAlignment="Left">
-                    <Grid ColumnDefinitions="Auto, *, Auto" RowDefinitions="Auto, Auto">
-                      <TextBlock Grid.Row="0" Grid.Column="0" Text="●"
-                                 Foreground="{DynamicResource SystemAccentColor}"
-                                 Margin="0,0,12,0"
-                                 IsVisible="{Binding $parent[ItemsControl].((vm:ModelSelectionViewModel)DataContext).SelectedModel, Converter={x:Static ObjectConverters.Equal}, ConverterParameter={Binding}}"/>
-                      <TextBlock Grid.Row="0" Grid.Column="0" Text="○"
-                                 Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
-                                 Margin="0,0,12,0"
-                                 IsVisible="{Binding $parent[ItemsControl].((vm:ModelSelectionViewModel)DataContext).SelectedModel, Converter={x:Static ObjectConverters.NotEqual}, ConverterParameter={Binding}}"/>
-                      <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Name}" FontWeight="Medium"/>
-                      <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Description}"
-                                 FontSize="12" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+                          Background="Transparent" 
+                          BorderThickness="0"
+                          HorizontalAlignment="Stretch" 
+                          HorizontalContentAlignment="Left"
+                          Padding="0">
+                    <Grid ColumnDefinitions="Auto, *, Auto" 
+                          RowDefinitions="Auto, Auto">
+                      <TextBlock Grid.Row="0" Grid.Column="0" 
+                                 Text="&#x25CB;"
+                                 Foreground="{DynamicResource AppTextSecondaryBrush}"
+                                 FontSize="14"
+                                 Margin="0,0,12,0"/>
+                      <TextBlock Grid.Row="0" Grid.Column="1" 
+                                 Text="{Binding Name}" 
+                                 FontWeight="Medium"
+                                 Foreground="{DynamicResource AppTextPrimaryBrush}"/>
+                      <TextBlock Grid.Row="1" Grid.Column="1" 
+                                 Text="{Binding Description}"
+                                 Classes="caption"/>
                     </Grid>
                   </Button>
                 </Border>
@@ -120,31 +159,39 @@
           </ItemsControl>
         </StackPanel>
 
-        <!-- Chat Models -->
-        <StackPanel Spacing="8" IsVisible="{Binding ChatModels.Count}">
-          <TextBlock Text="💬 对话模型" FontWeight="SemiBold"
-                     Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+        <!-- Chat Models Section -->
+        <StackPanel Spacing="8" 
+                    IsVisible="{Binding ChatModels.Count, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+          <TextBlock Text="&#x1F4AC; 对话模型" 
+                     Classes="section-title"/>
           <ItemsControl ItemsSource="{Binding ChatModels}">
             <ItemsControl.ItemTemplate>
               <DataTemplate x:DataType="model:AIModel">
-                <Border Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}"
-                        CornerRadius="12" Padding="12" Margin="0,0,0,8">
+                <Border Background="{DynamicResource AppCardBrush}"
+                        CornerRadius="12" 
+                        Padding="12" 
+                        Margin="0,0,0,8">
                   <Button Command="{Binding $parent[ItemsControl].((vm:ModelSelectionViewModel)DataContext).SelectModelCommand}"
                           CommandParameter="{Binding}"
-                          Background="Transparent" BorderThickness="0"
-                          HorizontalAlignment="Stretch" HorizontalContentAlignment="Left">
-                    <Grid ColumnDefinitions="Auto, *, Auto" RowDefinitions="Auto, Auto">
-                      <TextBlock Grid.Row="0" Grid.Column="0" Text="●"
-                                 Foreground="{DynamicResource SystemAccentColor}"
-                                 Margin="0,0,12,0"
-                                 IsVisible="{Binding $parent[ItemsControl].((vm:ModelSelectionViewModel)DataContext).SelectedModel, Converter={x:Static ObjectConverters.Equal}, ConverterParameter={Binding}}"/>
-                      <TextBlock Grid.Row="0" Grid.Column="0" Text="○"
-                                 Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
-                                 Margin="0,0,12,0"
-                                 IsVisible="{Binding $parent[ItemsControl].((vm:ModelSelectionViewModel)DataContext).SelectedModel, Converter={x:Static ObjectConverters.NotEqual}, ConverterParameter={Binding}}"/>
-                      <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Name}" FontWeight="Medium"/>
-                      <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Description}"
-                                 FontSize="12" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+                          Background="Transparent" 
+                          BorderThickness="0"
+                          HorizontalAlignment="Stretch" 
+                          HorizontalContentAlignment="Left"
+                          Padding="0">
+                    <Grid ColumnDefinitions="Auto, *, Auto" 
+                          RowDefinitions="Auto, Auto">
+                      <TextBlock Grid.Row="0" Grid.Column="0" 
+                                 Text="&#x25CB;"
+                                 Foreground="{DynamicResource AppTextSecondaryBrush}"
+                                 FontSize="14"
+                                 Margin="0,0,12,0"/>
+                      <TextBlock Grid.Row="0" Grid.Column="1" 
+                                 Text="{Binding Name}" 
+                                 FontWeight="Medium"
+                                 Foreground="{DynamicResource AppTextPrimaryBrush}"/>
+                      <TextBlock Grid.Row="1" Grid.Column="1" 
+                                 Text="{Binding Description}"
+                                 Classes="caption"/>
                     </Grid>
                   </Button>
                 </Border>
@@ -157,12 +204,13 @@
     </ScrollViewer>
 
     <!-- Confirm Button -->
-    <Border Grid.Row="2" Background="{DynamicResource SystemChromeLowColor}"
+    <Border Grid.Row="2" 
+            Background="{DynamicResource AppBackgroundBrush}"
             Padding="16,12">
       <Button Command="{Binding ConfirmSelectionCommand}"
-              HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
-              Padding="20,15" CornerRadius="25"
-              Background="{DynamicResource SystemAccentColor}"
+              Classes="primary"
+              HorizontalAlignment="Stretch" 
+              HorizontalContentAlignment="Center"
               IsEnabled="{Binding SelectedModel, Converter={x:Static ObjectConverters.IsNotNull}}">
         <TextBlock Text="确认选择" Foreground="White" FontWeight="SemiBold"/>
       </Button>

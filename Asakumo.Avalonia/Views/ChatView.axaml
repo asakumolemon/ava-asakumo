@@ -6,131 +6,258 @@
              xmlns:model="using:Asakumo.Avalonia.Models"
              mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="700"
              x:Class="Asakumo.Avalonia.Views.ChatView"
-             x:DataType="vm:ChatViewModel">
+             x:DataType="vm:ChatViewModel"
+             Background="{DynamicResource AppBackgroundBrush}">
 
   <Grid RowDefinitions="Auto, Auto, *, Auto">
     <!-- Header -->
-    <Border Grid.Row="0" Background="{DynamicResource SystemChromeLowColor}"
-            Padding="16,12">
+    <Border Grid.Row="0" 
+            Background="{DynamicResource AppBackgroundBrush}"
+            Padding="8,8" Height="56">
       <Grid ColumnDefinitions="Auto, *, Auto">
-        <Button Grid.Column="0" Command="{Binding GoBackCommand}"
-                Background="Transparent" BorderThickness="0" Padding="8">
-          <TextBlock Text="←" FontSize="18"/>
+        <!-- 返回按钮 -->
+        <Button Grid.Column="0" 
+                Command="{Binding GoBackCommand}"
+                Classes="icon">
+          <TextBlock Text="&#x2190;" FontSize="20"/>
         </Button>
-        <StackPanel Grid.Column="1" HorizontalAlignment="Center">
-          <TextBlock Text="{Binding Title}" FontWeight="Medium"
-                     HorizontalAlignment="Center"/>
-          <TextBlock Text="{Binding CurrentModel}" FontSize="12"
+        
+        <!-- 标题和模型 -->
+        <StackPanel Grid.Column="1" 
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Spacing="2">
+          <TextBlock Text="{Binding Title}" 
+                     FontWeight="Medium"
+                     FontSize="16"
                      HorizontalAlignment="Center"
-                     Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                     Foreground="{DynamicResource AppTextPrimaryBrush}"/>
+          <TextBlock Text="{Binding CurrentModel}" 
+                     FontSize="12"
+                     HorizontalAlignment="Center"
+                     Foreground="{DynamicResource AppTextSecondaryBrush}"
                      IsVisible="{Binding CurrentModel, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"/>
         </StackPanel>
-        <Button Grid.Column="2" Background="Transparent" BorderThickness="0" Padding="8">
-          <TextBlock Text="⋮" FontSize="18"/>
+        
+        <!-- 更多菜单 -->
+        <Button Grid.Column="2" Classes="icon">
+          <TextBlock Text="&#x22EE;" FontSize="20"/>
         </Button>
       </Grid>
     </Border>
 
-    <!-- Success Message -->
-    <Border Grid.Row="1" Background="#10B981" Padding="16,12"
-            IsVisible="{Binding ShowSuccessMessage}">
-      <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="8">
-        <TextBlock Text="✅" Foreground="White"/>
-        <TextBlock Text="配置成功！现在可以开始聊天了" Foreground="White" FontWeight="Medium"/>
+    <!-- Model Tag Bar -->
+    <Border Grid.Row="1" 
+            Background="{DynamicResource AppSurfaceBrush}"
+            Padding="12,8"
+            IsVisible="{Binding CurrentModel, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+      <StackPanel Orientation="Horizontal" 
+                  HorizontalAlignment="Center" 
+                  Spacing="8">
+        <TextBlock Text="&#x1F916;" FontSize="14"/>
+        <TextBlock Text="{Binding CurrentModel}" 
+                   FontSize="13"
+                   FontWeight="Medium"
+                   Foreground="{DynamicResource AppTextPrimaryBrush}"/>
       </StackPanel>
     </Border>
 
-    <!-- Chat Messages -->
-    <ScrollViewer Grid.Row="2" Background="{DynamicResource SystemChromeLowColor}">
-      <ItemsControl ItemsSource="{Binding Messages}" Margin="16">
-        <ItemsControl.ItemTemplate>
-          <DataTemplate x:DataType="model:ChatMessage">
-            <Grid>
-              <!-- User Message (Right aligned) -->
-              <Border IsVisible="{Binding IsUser}"
-                      Background="#10A37F" CornerRadius="16,4,16,16"
-                      Padding="12,8" Margin="0,4,0,4"
-                      HorizontalAlignment="Right" MaxWidth="280">
-                <StackPanel Spacing="4">
-                  <TextBlock Text="{Binding Content}" TextWrapping="Wrap" Foreground="White"/>
-                  <TextBlock Text="{Binding Timestamp, StringFormat='{}{0:HH:mm}'}"
-                             FontSize="10" Foreground="#FFFFFF99" HorizontalAlignment="Right"/>
-                </StackPanel>
-              </Border>
+    <!-- Success Message Banner -->
+    <Border Grid.Row="1" 
+            Background="{DynamicResource SuccessBrush}" 
+            Padding="16,12"
+            IsVisible="{Binding ShowSuccessMessage}"
+            CornerRadius="0">
+      <StackPanel Orientation="Horizontal" 
+                  HorizontalAlignment="Center" 
+                  Spacing="8">
+        <TextBlock Text="&#x2705;" FontSize="16"/>
+        <TextBlock Text="配置成功！现在可以开始聊天了" 
+                   Foreground="White" 
+                   FontWeight="Medium"/>
+      </StackPanel>
+    </Border>
 
-              <!-- AI Message (Left aligned) -->
-              <Grid IsVisible="{Binding !IsUser}" Margin="0,4,0,4" ColumnDefinitions="Auto, *">
-                <Border Grid.Column="0" Background="{DynamicResource SystemAccentColor}"
-                        Width="32" Height="32" CornerRadius="16" Margin="0,0,8,0"
-                        VerticalAlignment="Top">
-                  <TextBlock Text="🤖" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                </Border>
-                <Border Grid.Column="1" Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}"
-                        CornerRadius="4,16,16,16" Padding="12,8" MaxWidth="280"
-                        HorizontalAlignment="Left">
+    <!-- Chat Messages Area -->
+    <ScrollViewer Grid.Row="2" 
+                  Background="{DynamicResource AppBackgroundBrush}"
+                  Padding="16,16"
+                  Name="MessagesScrollViewer">
+      <Grid>
+        <!-- Empty State -->
+        <StackPanel IsVisible="{Binding Messages.Count, Converter={x:Static StringConverters.IsNullOrEmpty}}"
+                    VerticalAlignment="Center"
+                    HorizontalAlignment="Center"
+                    Spacing="20">
+          <TextBlock Text="&#x1F319;" FontSize="48" 
+                     HorizontalAlignment="Center"
+                     Foreground="{DynamicResource AppTextSecondaryBrush}"/>
+          <TextBlock Text="发送消息开始对话" 
+                     FontSize="16" 
+                     FontWeight="Medium"
+                     HorizontalAlignment="Center"
+                     Foreground="{DynamicResource AppTextPrimaryBrush}"/>
+          <TextBlock Text="试试问我一些问题..." 
+                     HorizontalAlignment="Center"
+                     Foreground="{DynamicResource AppTextSecondaryBrush}"/>
+        </StackPanel>
+
+        <!-- Messages List -->
+        <ItemsControl ItemsSource="{Binding Messages}">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="model:ChatMessage">
+              <!-- Message Container -->
+              <Grid Margin="0,4">
+                
+                <!-- User Message (Right aligned, Green background) -->
+                <Border IsVisible="{Binding IsUser}"
+                        Background="{DynamicResource UserMessageBrush}" 
+                        CornerRadius="16,4,16,16"
+                        Padding="12,8" 
+                        HorizontalAlignment="Right" 
+                        MaxWidth="280">
                   <StackPanel Spacing="4">
-                    <TextBlock Text="{Binding Content}" TextWrapping="Wrap"/>
+                    <TextBlock Text="{Binding Content}" 
+                               TextWrapping="Wrap" 
+                               Foreground="White"
+                               FontSize="14"/>
                     <TextBlock Text="{Binding Timestamp, StringFormat='{}{0:HH:mm}'}"
-                               FontSize="10" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                               FontSize="10" 
+                               Foreground="#FFFFFF99" 
                                HorizontalAlignment="Right"/>
                   </StackPanel>
                 </Border>
+
+                <!-- AI Message (Left aligned, with avatar) -->
+                <Grid IsVisible="{Binding !IsUser}" 
+                      ColumnDefinitions="Auto, *"
+                      MaxWidth="320"
+                      HorizontalAlignment="Left">
+                  <!-- AI Avatar (32x32, Round) -->
+                  <Border Grid.Column="0" 
+                          Background="{DynamicResource PrimaryBrush}"
+                          Width="32" Height="32" 
+                          CornerRadius="16" 
+                          Margin="0,0,8,0"
+                          VerticalAlignment="Top">
+                    <TextBlock Text="&#x1F916;" 
+                               HorizontalAlignment="Center" 
+                               VerticalAlignment="Center"
+                               FontSize="14"/>
+                  </Border>
+                  
+                  <!-- AI Message Bubble -->
+                  <Border Grid.Column="1" 
+                          Background="{DynamicResource AppAiMessageBrush}"
+                          CornerRadius="4,16,16,16" 
+                          Padding="12,8" 
+                          MaxWidth="280"
+                          HorizontalAlignment="Left">
+                    <StackPanel Spacing="4">
+                      <TextBlock Text="{Binding Content}" 
+                                 TextWrapping="Wrap"
+                                 FontSize="14"
+                                 Foreground="{DynamicResource AppTextPrimaryBrush}"/>
+                      <TextBlock Text="{Binding Timestamp, StringFormat='{}{0:HH:mm}'}"
+                                 FontSize="10" 
+                                 Foreground="{DynamicResource AppTextSecondaryBrush}"
+                                 HorizontalAlignment="Right"/>
+                    </StackPanel>
+                  </Border>
+                </Grid>
+
               </Grid>
-            </Grid>
-          </DataTemplate>
-        </ItemsControl.ItemTemplate>
-      </ItemsControl>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </Grid>
     </ScrollViewer>
 
-    <!-- Empty State / Input Area -->
-    <Border Grid.Row="3" Background="{DynamicResource SystemChromeMediumColor}"
-            Padding="16,12">
+    <!-- Bottom Area: Error Dialog + Input -->
+    <Border Grid.Row="3" 
+            Background="{DynamicResource AppBackgroundBrush}"
+            Padding="12,12">
       <Grid RowDefinitions="*, Auto">
-        <!-- Error Dialog -->
-        <Border Grid.Row="0" Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}"
-                CornerRadius="12" Padding="16" Margin="0,0,0,12"
+        
+        <!-- Error Dialog (Modal Card) -->
+        <Border Grid.Row="0" 
+                Background="{DynamicResource AppCardBrush}"
+                CornerRadius="16" 
+                Padding="16" 
+                Margin="0,0,0,12"
                 IsVisible="{Binding ShowErrorDialog}">
           <StackPanel Spacing="12">
             <StackPanel Orientation="Horizontal" Spacing="8">
-              <TextBlock Text="⚠️" FontSize="20"/>
-              <TextBlock Text="无法发送消息" FontWeight="SemiBold" FontSize="16"/>
+              <TextBlock Text="&#x26A0;" FontSize="20"/>
+              <TextBlock Text="无法发送消息" 
+                         FontWeight="SemiBold" 
+                         FontSize="16"
+                         Foreground="{DynamicResource AppTextPrimaryBrush}"/>
             </StackPanel>
             <TextBlock Text="您还没有配置 AI 服务提供商。请先配置 API 设置。"
-                       TextWrapping="Wrap"/>
-            <Grid ColumnDefinitions="*, *" Margin="0,8,0,0">
-              <Button Grid.Column="0" Command="{Binding CloseErrorDialogCommand}"
-                      HorizontalAlignment="Center" CornerRadius="8"
-                      Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}">
+                       TextWrapping="Wrap"
+                       Classes="body"/>
+            <Grid ColumnDefinitions="*, *" Margin="0,8,0,0" ColumnSpacing="12">
+              <Button Grid.Column="0" 
+                      Command="{Binding CloseErrorDialogCommand}"
+                      Classes="secondary"
+                      HorizontalAlignment="Stretch"
+                      HorizontalContentAlignment="Center">
                 <TextBlock Text="稍后"/>
               </Button>
-              <Button Grid.Column="1" Command="{Binding ConfigureProviderCommand}"
-                      HorizontalAlignment="Center" CornerRadius="8"
-                      Background="{DynamicResource SystemAccentColor}">
-                <TextBlock Text="立即配置" Foreground="White"/>
+              <Button Grid.Column="1" 
+                      Command="{Binding ConfigureProviderCommand}"
+                      Classes="primary"
+                      HorizontalAlignment="Stretch"
+                      HorizontalContentAlignment="Center"
+                      MinWidth="0">
+                <TextBlock Text="立即配置"/>
               </Button>
             </Grid>
           </StackPanel>
         </Border>
 
-        <!-- Input Area -->
-        <Grid Grid.Row="1" ColumnDefinitions="Auto, *, Auto">
-          <Button Grid.Column="0" Background="Transparent" BorderThickness="0" Padding="8">
-            <TextBlock Text="📎" FontSize="18"/>
-          </Button>
-          <TextBox Grid.Column="1" Text="{Binding InputMessage}"
-                   Watermark="输入消息..."
-                   AcceptsReturn="True" TextWrapping="Wrap"
-                   MaxHeight="100"
-                   BorderThickness="0"
-                   Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}"
-                   CornerRadius="20" Padding="12,8"/>
-          <Button Grid.Column="2" Command="{Binding SendMessageCommand}"
-                  Background="{DynamicResource SystemAccentColor}"
-                  CornerRadius="20" Padding="12,8" Margin="8,0,0,0"
-                  IsEnabled="{Binding !IsAiResponding}">
-            <TextBlock Text="发送" Foreground="White"/>
-          </Button>
-        </Grid>
+        <!-- Input Area Container -->
+        <Border Grid.Row="1"
+                Background="{DynamicResource AppSurfaceBrush}"
+                CornerRadius="24" 
+                Padding="8">
+          <Grid ColumnDefinitions="Auto, *, Auto" 
+                VerticalAlignment="Center">
+            
+            <!-- Attachment Button -->
+            <Button Grid.Column="0" 
+                    Classes="icon"
+                    IsVisible="{Binding !IsAiResponding}">
+              <TextBlock Text="&#x1F4CE;" FontSize="18"/>
+            </Button>
+            
+            <!-- Input TextBox -->
+            <TextBox Grid.Column="1" 
+                     Text="{Binding InputMessage}"
+                     Watermark="输入消息..."
+                     Classes="chat-input"
+                     IsEnabled="{Binding !IsAiResponding}"/>
+            
+            <!-- Stop Button (when AI is responding) -->
+            <Button Grid.Column="2"
+                    Classes="icon"
+                    IsVisible="{Binding IsAiResponding}">
+              <TextBlock Text="&#x2016;" FontSize="18" Foreground="{DynamicResource ErrorBrush}"/>
+            </Button>
+            
+            <!-- Send Button -->
+            <Button Grid.Column="2" 
+                    Classes="send"
+                    Command="{Binding SendMessageCommand}"
+                    IsEnabled="{Binding !IsAiResponding}"
+                    IsVisible="{Binding !IsAiResponding}">
+              <TextBlock Text="发送"/>
+            </Button>
+            
+          </Grid>
+        </Border>
+        
       </Grid>
     </Border>
   </Grid>

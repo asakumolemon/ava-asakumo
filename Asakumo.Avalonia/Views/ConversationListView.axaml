@@ -6,19 +6,20 @@
              xmlns:model="using:Asakumo.Avalonia.Models"
              mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="700"
              x:Class="Asakumo.Avalonia.Views.ConversationListView"
-             x:DataType="vm:ConversationListViewModel">
+             x:DataType="vm:ConversationListViewModel"
+             Background="{DynamicResource AppBackgroundBrush}">
 
-  <Grid RowDefinitions="Auto, *, Auto, Auto">
+  <Grid RowDefinitions="Auto, *, Auto">
     <!-- Header -->
-    <Border Grid.Row="0" Background="{DynamicResource SystemChromeLowColor}"
-            Padding="16,12">
+    <Border Grid.Row="0" Background="{DynamicResource AppBackgroundBrush}"
+            Padding="16,16" Height="60">
       <Grid ColumnDefinitions="*, Auto">
-        <TextBlock Grid.Column="0" Text="Asakumo" FontSize="20" FontWeight="Bold"
+        <TextBlock Grid.Column="0" Text="Asakumo" 
+                   Classes="page-title"
                    VerticalAlignment="Center"/>
         <Button Grid.Column="1" Command="{Binding OpenSettingsCommand}"
-                Background="Transparent" BorderThickness="0"
-                Padding="8">
-          <TextBlock Text="⚙️" FontSize="18"/>
+                Classes="icon">
+          <TextBlock Text="&#x2699;" FontSize="20"/>
         </Button>
       </Grid>
     </Border>
@@ -27,42 +28,53 @@
     <ScrollViewer Grid.Row="1">
       <StackPanel Spacing="16" Margin="16">
         <!-- Empty State -->
-        <StackPanel IsVisible="{Binding IsEmpty}" VerticalAlignment="Center"
-                    HorizontalAlignment="Center" Spacing="20" Margin="0,80,0,0">
-          <TextBlock Text="📝" FontSize="48" HorizontalAlignment="Center"/>
-          <TextBlock Text="还没有会话" FontSize="18" FontWeight="Medium"
-                     HorizontalAlignment="Center"/>
-          <TextBlock Text="点击下方按钮开始新的对话"
-                     HorizontalAlignment="Center"
-                     Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+        <StackPanel IsVisible="{Binding IsEmpty}" 
+                    VerticalAlignment="Center"
+                    HorizontalAlignment="Center" 
+                    Spacing="24" 
+                    Margin="0,60,0,0">
+          <!-- 空状态插图 -->
+          <StackPanel HorizontalAlignment="Center" Spacing="16">
+            <TextBlock Text="&#x1F4DD;" FontSize="64" HorizontalAlignment="Center"
+                       Foreground="{DynamicResource AppTextSecondaryBrush}"/>
+            <TextBlock Text="还没有会话" FontSize="18" FontWeight="Medium"
+                       HorizontalAlignment="Center"
+                       Foreground="{DynamicResource AppTextPrimaryBrush}"/>
+            <TextBlock Text="点击下方按钮开始新的对话"
+                       HorizontalAlignment="Center"
+                       Classes="caption"/>
+          </StackPanel>
 
+          <!-- 主按钮 -->
           <Button Command="{Binding NewConversationCommand}"
-                  HorizontalAlignment="Center" HorizontalContentAlignment="Center"
-                  MinWidth="180" Padding="20,12"
-                  CornerRadius="20"
-                  Background="{DynamicResource SystemAccentColor}"
-                  Foreground="White">
+                  Classes="primary"
+                  HorizontalAlignment="Center">
             <TextBlock Text="开始新对话" FontWeight="SemiBold"/>
           </Button>
 
           <!-- Quick Prompts -->
-          <StackPanel Spacing="8" Margin="0,20,0,0">
-            <TextBlock Text="热门提示词:" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+          <StackPanel Spacing="12" Margin="0,16,0,0" HorizontalAlignment="Center">
+            <TextBlock Text="热门提示词:" 
+                       Classes="caption"
+                       HorizontalAlignment="Center"
                        Margin="0,0,0,8"/>
             <ItemsControl ItemsSource="{Binding QuickPrompts}">
               <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
-                  <WrapPanel Orientation="Horizontal"/>
+                  <WrapPanel Orientation="Horizontal" HorizontalAlignment="Center"/>
                 </ItemsPanelTemplate>
               </ItemsControl.ItemsPanel>
               <ItemsControl.ItemTemplate>
                 <DataTemplate>
-                  <Button Command="{Binding $parent[ItemsControl].((vm:ConversationListViewModel)DataContext).UseQuickPromptCommand}"
-                          CommandParameter="{Binding}"
-                          Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}"
-                          CornerRadius="15" Padding="12,6" Margin="4">
-                    <TextBlock Text="{Binding}" FontSize="12"/>
-                  </Button>
+                  <Border Classes="chip" Margin="4">
+                    <Button Command="{Binding $parent[ItemsControl].((vm:ConversationListViewModel)DataContext).UseQuickPromptCommand}"
+                            CommandParameter="{Binding}"
+                            Background="Transparent" 
+                            BorderThickness="0"
+                            Padding="0">
+                      <TextBlock Text="{Binding}" FontSize="13"/>
+                    </Button>
+                  </Border>
                 </DataTemplate>
               </ItemsControl.ItemTemplate>
             </ItemsControl>
@@ -70,34 +82,74 @@
         </StackPanel>
 
         <!-- Conversation List -->
-        <ItemsControl IsVisible="{Binding !IsEmpty}" ItemsSource="{Binding GroupedConversations}">
+        <ItemsControl IsVisible="{Binding !IsEmpty}" 
+                      ItemsSource="{Binding GroupedConversations}">
           <ItemsControl.ItemTemplate>
             <DataTemplate x:DataType="vm:ConversationGroup">
               <StackPanel Spacing="8">
-                <TextBlock Text="{Binding DateLabel}" FontSize="14" FontWeight="SemiBold"
-                           Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
-                           Margin="0,16,0,4"/>
+                <!-- 时间分组标题 -->
+                <TextBlock Text="{Binding DateLabel}" 
+                           Classes="section-title"
+                           Margin="0,16,0,8"/>
+                
+                <!-- 会话列表 -->
                 <ItemsControl ItemsSource="{Binding Conversations}">
                   <ItemsControl.ItemTemplate>
                     <DataTemplate x:DataType="model:Conversation">
-                      <Border Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}"
-                              CornerRadius="12" Padding="12" Margin="0,4,0,4">
+                      <Border Classes="card" Margin="0,0,0,8">
                         <Button Command="{Binding $parent[ItemsControl].((vm:ConversationListViewModel)DataContext).SelectConversationCommand}"
                                 CommandParameter="{Binding}"
-                                Background="Transparent" BorderThickness="0"
+                                Background="Transparent" 
+                                BorderThickness="0"
                                 HorizontalAlignment="Stretch"
-                                HorizontalContentAlignment="Left">
-                          <Grid ColumnDefinitions="Auto, *, Auto" RowDefinitions="Auto, Auto, Auto">
-                            <TextBlock Grid.Row="0" Grid.Column="0" Text="[🤖]" Margin="0,0,8,0"/>
-                            <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding Title}"
-                                       FontWeight="Medium" TextTrimming="CharacterEllipsis"
+                                HorizontalContentAlignment="Left"
+                                Padding="0">
+                          <Grid ColumnDefinitions="Auto, *, Auto" 
+                                RowDefinitions="Auto, Auto, Auto">
+                            <!-- 头像 (圆形 48x48) -->
+                            <Border Grid.Row="0" Grid.RowSpan="2" Grid.Column="0"
+                                    Width="48" Height="48" 
+                                    CornerRadius="24"
+                                    Background="{DynamicResource PrimaryBrush}"
+                                    Margin="0,0,12,0"
+                                    VerticalAlignment="Top">
+                              <TextBlock Text="&#x1F916;" 
+                                         HorizontalAlignment="Center" 
+                                         VerticalAlignment="Center"
+                                         FontSize="20"/>
+                            </Border>
+                            
+                            <!-- 标题 -->
+                            <TextBlock Grid.Row="0" Grid.Column="1" 
+                                       Text="{Binding Title}"
+                                       FontWeight="Medium" 
+                                       TextTrimming="CharacterEllipsis"
+                                       MaxLines="1"
+                                       Foreground="{DynamicResource AppTextPrimaryBrush}"/>
+                            
+                            <!-- 预览 -->
+                            <TextBlock Grid.Row="1" Grid.Column="1" 
+                                       Text="{Binding Preview}"
+                                       Classes="caption"
+                                       TextTrimming="CharacterEllipsis" 
                                        MaxLines="1"/>
-                            <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Preview}"
-                                       FontSize="12" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
-                                       TextTrimming="CharacterEllipsis" MaxLines="1"/>
-                            <TextBlock Grid.Row="0" Grid.Column="2" Text="{Binding ModelName}"
-                                       FontSize="10" Margin="8,0,0,0"
-                                       Foreground="{DynamicResource SystemAccentColor}"/>
+                            
+                            <!-- 模型标签 -->
+                            <Border Grid.Row="2" Grid.Column="1"
+                                    Classes="tag"
+                                    HorizontalAlignment="Left"
+                                    Margin="0,4,0,0">
+                              <TextBlock Text="{Binding ModelName}"
+                                         FontSize="10"
+                                         Foreground="{DynamicResource PrimaryBrush}"/>
+                            </Border>
+                            
+                            <!-- 时间 -->
+                            <TextBlock Grid.Row="0" Grid.Column="2" 
+                                       Text="{Binding UpdatedAt, StringFormat='{}{0:HH:mm}'}"
+                                       Classes="timestamp"
+                                       VerticalAlignment="Top"
+                                       Margin="8,0,0,0"/>
                           </Grid>
                         </Button>
                       </Border>
@@ -111,35 +163,50 @@
       </StackPanel>
     </ScrollViewer>
 
-    <!-- FAB -->
-    <Button Grid.Row="2" Command="{Binding NewConversationCommand}"
-            HorizontalAlignment="Right" VerticalAlignment="Bottom"
-            Margin="0,0,16,16"
-            Width="56" Height="56" CornerRadius="28"
-            Background="{DynamicResource SystemAccentColor}"
-            Foreground="White"
+    <!-- FAB 悬浮按钮 -->
+    <Button Grid.Row="1" 
+            Command="{Binding NewConversationCommand}"
+            Classes="fab"
+            HorizontalAlignment="Right" 
+            VerticalAlignment="Bottom"
+            Margin="0,0,20,20"
             IsVisible="{Binding !IsEmpty}">
-      <TextBlock Text="+" FontSize="24" FontWeight="Bold"/>
+      <TextBlock Text="+" FontSize="28" FontWeight="Bold" 
+                 Margin="0,-4,0,0"/>
     </Button>
 
     <!-- Bottom Navigation -->
-    <Border Grid.Row="3" Background="{DynamicResource SystemChromeLowColor}"
-            BorderBrush="{DynamicResource SystemControlForegroundBaseMediumLowBrush}"
-            BorderThickness="0,1,0,0" Padding="16,8">
+    <Border Grid.Row="2" 
+            Background="{DynamicResource AppSurfaceBrush}"
+            BorderBrush="{DynamicResource AppBorderBrush}"
+            BorderThickness="0,1,0,0" 
+            Padding="16,12" Height="60">
       <Grid ColumnDefinitions="*, *">
-        <Button Grid.Column="0" HorizontalAlignment="Center" Background="Transparent"
-                BorderThickness="0">
+        <!-- 会话 Tab (选中) -->
+        <Button Grid.Column="0" 
+                HorizontalAlignment="Center" 
+                Background="Transparent"
+                BorderThickness="0"
+                Padding="16,8">
           <StackPanel Orientation="Horizontal" Spacing="8">
-            <TextBlock Text="💬"/>
-            <TextBlock Text="会话" FontWeight="Medium"/>
+            <TextBlock Text="&#x1F4AC;" FontSize="18"/>
+            <TextBlock Text="会话" FontWeight="Medium"
+                       Foreground="{DynamicResource PrimaryBrush}"/>
           </StackPanel>
         </Button>
-        <Button Grid.Column="1" Command="{Binding OpenSettingsCommand}"
-                HorizontalAlignment="Center" Background="Transparent"
-                BorderThickness="0">
+        
+        <!-- 设置 Tab -->
+        <Button Grid.Column="1" 
+                Command="{Binding OpenSettingsCommand}"
+                HorizontalAlignment="Center" 
+                Background="Transparent"
+                BorderThickness="0"
+                Padding="16,8">
           <StackPanel Orientation="Horizontal" Spacing="8">
-            <TextBlock Text="⚙️"/>
-            <TextBlock Text="设置"/>
+            <TextBlock Text="&#x2699;" FontSize="18"
+                       Foreground="{DynamicResource AppTextSecondaryBrush}"/>
+            <TextBlock Text="设置"
+                       Foreground="{DynamicResource AppTextSecondaryBrush}"/>
           </StackPanel>
         </Button>
       </Grid>

@@ -5,78 +5,134 @@
              xmlns:vm="using:Asakumo.Avalonia.ViewModels"
              mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="700"
              x:Class="Asakumo.Avalonia.Views.SettingsView"
-             x:DataType="vm:SettingsViewModel">
+             x:DataType="vm:SettingsViewModel"
+             Background="{DynamicResource AppBackgroundBrush}">
 
   <Grid RowDefinitions="Auto, *">
     <!-- Header -->
-    <Border Grid.Row="0" Background="{DynamicResource SystemChromeLowColor}"
-            Padding="16,12">
-      <Grid ColumnDefinitions="Auto, *">
-        <Button Grid.Column="0" Command="{Binding GoBackCommand}"
-                Background="Transparent" BorderThickness="0" Padding="8">
-          <TextBlock Text="←" FontSize="18"/>
+    <Border Grid.Row="0" 
+            Background="{DynamicResource AppBackgroundBrush}"
+            Padding="8,8" Height="56">
+      <Grid ColumnDefinitions="Auto, *, Auto">
+        <Button Grid.Column="0" 
+                Command="{Binding GoBackCommand}"
+                Classes="icon">
+          <TextBlock Text="&#x2190;" FontSize="20"/>
         </Button>
-        <TextBlock Grid.Column="1" Text="设置" FontSize="18" FontWeight="SemiBold"
-                   HorizontalAlignment="Center"/>
+        <TextBlock Grid.Column="1" 
+                   Text="设置" 
+                   FontSize="18" 
+                   FontWeight="SemiBold"
+                   HorizontalAlignment="Center"
+                   VerticalAlignment="Center"
+                   Foreground="{DynamicResource AppTextPrimaryBrush}"/>
       </Grid>
     </Border>
 
     <!-- Content -->
-    <ScrollViewer Grid.Row="1" Background="{DynamicResource SystemChromeLowColor}">
+    <ScrollViewer Grid.Row="1" 
+                  Background="{DynamicResource AppBackgroundBrush}">
       <StackPanel Spacing="24" Margin="16">
 
-        <!-- Current Service -->
+        <!-- Current Service Section -->
         <StackPanel Spacing="8">
-          <TextBlock Text="当前服务" FontWeight="SemiBold"
-                     Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
-          <Border Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}"
-                  CornerRadius="12" Padding="12">
+          <TextBlock Text="当前服务" 
+                     Classes="section-title"/>
+          <Border Background="{DynamicResource AppCardBrush}"
+                  CornerRadius="12" 
+                  Padding="12">
             <Button Command="{Binding ConfigureProviderCommand}"
-                    Background="Transparent" BorderThickness="0"
-                    HorizontalAlignment="Stretch" HorizontalContentAlignment="Left">
+                    Background="Transparent" 
+                    BorderThickness="0"
+                    HorizontalAlignment="Stretch" 
+                    HorizontalContentAlignment="Left"
+                    Padding="0">
               <Grid ColumnDefinitions="Auto, *, Auto">
-                <TextBlock Grid.Column="0" Text="🟢" Margin="0,0,12,0"
-                           IsVisible="{Binding IsProviderConfigured}"/>
-                <TextBlock Grid.Column="0" Text="⚪" Margin="0,0,12,0"
-                           IsVisible="{Binding !IsProviderConfigured}"/>
-                <StackPanel Grid.Column="1">
-                  <TextBlock Text="{Binding CurrentProviderName}" FontWeight="Medium"/>
-                  <TextBlock Text="{Binding CurrentModelName}" FontSize="12"
-                             Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+                <!-- Status Indicator -->
+                <Border Grid.Column="0"
+                        Width="12" Height="12"
+                        CornerRadius="6"
+                        Background="{DynamicResource SuccessBrush}"
+                        Margin="0,0,12,0"
+                        VerticalAlignment="Center"
+                        IsVisible="{Binding IsProviderConfigured}"/>
+                <Border Grid.Column="0"
+                        Width="12" Height="12"
+                        CornerRadius="6"
+                        Background="{DynamicResource AppTextSecondaryBrush}"
+                        Margin="0,0,12,0"
+                        VerticalAlignment="Center"
+                        IsVisible="{Binding !IsProviderConfigured}"/>
+                
+                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                  <TextBlock Text="{Binding CurrentProviderName}" 
+                             FontWeight="Medium"
+                             Foreground="{DynamicResource AppTextPrimaryBrush}"/>
+                  <TextBlock Text="{Binding CurrentModelName}" 
+                             Classes="caption"/>
                 </StackPanel>
-                <TextBlock Grid.Column="2" Text=">" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+                
+                <TextBlock Grid.Column="2" 
+                           Text="&#x203A;" 
+                           FontSize="18"
+                           Foreground="{DynamicResource AppTextSecondaryBrush}"
+                           VerticalAlignment="Center"/>
               </Grid>
             </Button>
           </Border>
         </StackPanel>
 
-        <!-- Appearance -->
+        <!-- Appearance Section -->
         <StackPanel Spacing="8">
-          <TextBlock Text="外观" FontWeight="SemiBold"
-                     Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
-          <Border Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}"
+          <TextBlock Text="外观" 
+                     Classes="section-title"/>
+          <Border Background="{DynamicResource AppCardBrush}"
                   CornerRadius="12">
             <StackPanel>
+              <!-- Dark Mode -->
               <Border Padding="12">
                 <Grid ColumnDefinitions="Auto, *, Auto">
-                  <TextBlock Grid.Column="0" Text="🌙" Margin="0,0,12,0"/>
-                  <TextBlock Grid.Column="1" Text="深色模式"/>
-                  <ToggleSwitch Grid.Column="2" IsChecked="{Binding IsDarkMode}"/>
+                  <TextBlock Grid.Column="0" 
+                             Text="&#x1F319;" 
+                             FontSize="18"
+                             Margin="0,0,12,0"
+                             VerticalAlignment="Center"/>
+                  <TextBlock Grid.Column="1" 
+                             Text="深色模式"
+                             VerticalAlignment="Center"
+                             Foreground="{DynamicResource AppTextPrimaryBrush}"/>
+                  <ToggleSwitch Grid.Column="2" 
+                                IsChecked="{Binding IsDarkMode}"/>
                 </Grid>
               </Border>
-              <Separator Margin="40,0,0,0"/>
+              
+              <Separator Margin="40,0,0,0"
+                         Background="{DynamicResource AppDividerBrush}"/>
+              
+              <!-- Language -->
               <Button Command="{Binding OpenLanguageSettingsCommand}"
-                      Background="Transparent" BorderThickness="0"
-                      HorizontalAlignment="Stretch" HorizontalContentAlignment="Left">
+                      Background="Transparent" 
+                      BorderThickness="0"
+                      HorizontalAlignment="Stretch" 
+                      HorizontalContentAlignment="Left">
                 <Border Padding="12">
                   <Grid ColumnDefinitions="Auto, *, Auto">
-                    <TextBlock Grid.Column="0" Text="🌐" Margin="0,0,12,0"/>
-                    <StackPanel Grid.Column="1">
-                      <TextBlock Text="语言"/>
-                      <TextBlock Text="{Binding SelectedLanguage}" FontSize="12"
-                                 Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+                    <TextBlock Grid.Column="0" 
+                               Text="&#x1F310;" 
+                               FontSize="18"
+                               Margin="0,0,12,0"
+                               VerticalAlignment="Center"/>
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                      <TextBlock Text="语言"
+                                 Foreground="{DynamicResource AppTextPrimaryBrush}"/>
+                      <TextBlock Text="{Binding SelectedLanguage}" 
+                                 Classes="caption"/>
                     </StackPanel>
-                    <TextBlock Grid.Column="2" Text=">" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+                    <TextBlock Grid.Column="2" 
+                               Text="&#x203A;" 
+                               FontSize="18"
+                               Foreground="{DynamicResource AppTextSecondaryBrush}"
+                               VerticalAlignment="Center"/>
                   </Grid>
                 </Border>
               </Button>
@@ -84,33 +140,64 @@
           </Border>
         </StackPanel>
 
-        <!-- Data -->
+        <!-- Data Section -->
         <StackPanel Spacing="8">
-          <TextBlock Text="数据" FontWeight="SemiBold"
-                     Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
-          <Border Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}"
+          <TextBlock Text="数据" 
+                     Classes="section-title"/>
+          <Border Background="{DynamicResource AppCardBrush}"
                   CornerRadius="12">
             <StackPanel>
+              <!-- Backup -->
               <Button Command="{Binding BackupCommand}"
-                      Background="Transparent" BorderThickness="0"
-                      HorizontalAlignment="Stretch" HorizontalContentAlignment="Left">
+                      Background="Transparent" 
+                      BorderThickness="0"
+                      HorizontalAlignment="Stretch" 
+                      HorizontalContentAlignment="Left">
                 <Border Padding="12">
                   <Grid ColumnDefinitions="Auto, *, Auto">
-                    <TextBlock Grid.Column="0" Text="💾" Margin="0,0,12,0"/>
-                    <TextBlock Grid.Column="1" Text="备份与恢复"/>
-                    <TextBlock Grid.Column="2" Text=">" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+                    <TextBlock Grid.Column="0" 
+                               Text="&#x1F4BE;" 
+                               FontSize="18"
+                               Margin="0,0,12,0"
+                               VerticalAlignment="Center"/>
+                    <TextBlock Grid.Column="1" 
+                               Text="备份与恢复"
+                               VerticalAlignment="Center"
+                               Foreground="{DynamicResource AppTextPrimaryBrush}"/>
+                    <TextBlock Grid.Column="2" 
+                               Text="&#x203A;" 
+                               FontSize="18"
+                               Foreground="{DynamicResource AppTextSecondaryBrush}"
+                               VerticalAlignment="Center"/>
                   </Grid>
                 </Border>
               </Button>
-              <Separator Margin="40,0,0,0"/>
+              
+              <Separator Margin="40,0,0,0"
+                         Background="{DynamicResource AppDividerBrush}"/>
+              
+              <!-- Clear Data -->
               <Button Command="{Binding ClearConversationsCommand}"
-                      Background="Transparent" BorderThickness="0"
-                      HorizontalAlignment="Stretch" HorizontalContentAlignment="Left">
+                      Background="Transparent" 
+                      BorderThickness="0"
+                      HorizontalAlignment="Stretch" 
+                      HorizontalContentAlignment="Left">
                 <Border Padding="12">
                   <Grid ColumnDefinitions="Auto, *, Auto">
-                    <TextBlock Grid.Column="0" Text="🗑️" Margin="0,0,12,0"/>
-                    <TextBlock Grid.Column="1" Text="清除所有会话"/>
-                    <TextBlock Grid.Column="2" Text=">" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+                    <TextBlock Grid.Column="0" 
+                               Text="&#x1F5D1;" 
+                               FontSize="18"
+                               Margin="0,0,12,0"
+                               VerticalAlignment="Center"/>
+                    <TextBlock Grid.Column="1" 
+                               Text="清除所有会话"
+                               VerticalAlignment="Center"
+                               Foreground="{DynamicResource ErrorBrush}"/>
+                    <TextBlock Grid.Column="2" 
+                               Text="&#x203A;" 
+                               FontSize="18"
+                               Foreground="{DynamicResource AppTextSecondaryBrush}"
+                               VerticalAlignment="Center"/>
                   </Grid>
                 </Border>
               </Button>
@@ -118,42 +205,90 @@
           </Border>
         </StackPanel>
 
-        <!-- About -->
+        <!-- About Section -->
         <StackPanel Spacing="8">
-          <TextBlock Text="关于" FontWeight="SemiBold"
-                     Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
-          <Border Background="{DynamicResource SystemControlBackgroundChromeMediumBrush}"
+          <TextBlock Text="关于" 
+                     Classes="section-title"/>
+          <Border Background="{DynamicResource AppCardBrush}"
                   CornerRadius="12">
             <StackPanel>
-              <Button Background="Transparent" BorderThickness="0"
-                      HorizontalAlignment="Stretch" HorizontalContentAlignment="Left">
+              <!-- Version -->
+              <Button Background="Transparent" 
+                      BorderThickness="0"
+                      HorizontalAlignment="Stretch" 
+                      HorizontalContentAlignment="Left">
                 <Border Padding="12">
                   <Grid ColumnDefinitions="Auto, *, Auto">
-                    <TextBlock Grid.Column="0" Text="ℹ️" Margin="0,0,12,0"/>
-                    <TextBlock Grid.Column="1" Text="版本 1.0.0"/>
-                    <TextBlock Grid.Column="2" Text=">" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+                    <TextBlock Grid.Column="0" 
+                               Text="&#x2139;" 
+                               FontSize="18"
+                               Margin="0,0,12,0"
+                               VerticalAlignment="Center"/>
+                    <TextBlock Grid.Column="1" 
+                               Text="版本 1.0.0"
+                               VerticalAlignment="Center"
+                               Foreground="{DynamicResource AppTextPrimaryBrush}"/>
+                    <TextBlock Grid.Column="2" 
+                               Text="&#x203A;" 
+                               FontSize="18"
+                               Foreground="{DynamicResource AppTextSecondaryBrush}"
+                               VerticalAlignment="Center"/>
                   </Grid>
                 </Border>
               </Button>
-              <Separator Margin="40,0,0,0"/>
-              <Button Background="Transparent" BorderThickness="0"
-                      HorizontalAlignment="Stretch" HorizontalContentAlignment="Left">
+              
+              <Separator Margin="40,0,0,0"
+                         Background="{DynamicResource AppDividerBrush}"/>
+              
+              <!-- Privacy Policy -->
+              <Button Background="Transparent" 
+                      BorderThickness="0"
+                      HorizontalAlignment="Stretch" 
+                      HorizontalContentAlignment="Left">
                 <Border Padding="12">
                   <Grid ColumnDefinitions="Auto, *, Auto">
-                    <TextBlock Grid.Column="0" Text="📄" Margin="0,0,12,0"/>
-                    <TextBlock Grid.Column="1" Text="隐私政策"/>
-                    <TextBlock Grid.Column="2" Text=">" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+                    <TextBlock Grid.Column="0" 
+                               Text="&#x1F4C4;" 
+                               FontSize="18"
+                               Margin="0,0,12,0"
+                               VerticalAlignment="Center"/>
+                    <TextBlock Grid.Column="1" 
+                               Text="隐私政策"
+                               VerticalAlignment="Center"
+                               Foreground="{DynamicResource AppTextPrimaryBrush}"/>
+                    <TextBlock Grid.Column="2" 
+                               Text="&#x203A;" 
+                               FontSize="18"
+                               Foreground="{DynamicResource AppTextSecondaryBrush}"
+                               VerticalAlignment="Center"/>
                   </Grid>
                 </Border>
               </Button>
-              <Separator Margin="40,0,0,0"/>
-              <Button Background="Transparent" BorderThickness="0"
-                      HorizontalAlignment="Stretch" HorizontalContentAlignment="Left">
+              
+              <Separator Margin="40,0,0,0"
+                         Background="{DynamicResource AppDividerBrush}"/>
+              
+              <!-- Rate App -->
+              <Button Background="Transparent" 
+                      BorderThickness="0"
+                      HorizontalAlignment="Stretch" 
+                      HorizontalContentAlignment="Left">
                 <Border Padding="12">
                   <Grid ColumnDefinitions="Auto, *, Auto">
-                    <TextBlock Grid.Column="0" Text="⭐" Margin="0,0,12,0"/>
-                    <TextBlock Grid.Column="1" Text="给我们评分"/>
-                    <TextBlock Grid.Column="2" Text=">" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"/>
+                    <TextBlock Grid.Column="0" 
+                               Text="&#x2B50;" 
+                               FontSize="18"
+                               Margin="0,0,12,0"
+                               VerticalAlignment="Center"/>
+                    <TextBlock Grid.Column="1" 
+                               Text="给我们评分"
+                               VerticalAlignment="Center"
+                               Foreground="{DynamicResource AppTextPrimaryBrush}"/>
+                    <TextBlock Grid.Column="2" 
+                               Text="&#x203A;" 
+                               FontSize="18"
+                               Foreground="{DynamicResource AppTextSecondaryBrush}"
+                               VerticalAlignment="Center"/>
                   </Grid>
                 </Border>
               </Button>
