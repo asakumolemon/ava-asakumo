@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading.Tasks;
 using Asakumo.Avalonia.Models;
 using Asakumo.Avalonia.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -64,16 +65,16 @@ public partial class SettingsViewModel : ViewModelBase
     {
         _dataService = dataService;
         _navigationService = navigationService;
-        LoadSettings();
+        _ = LoadSettingsAsync();
     }
 
     /// <summary>
     /// Command to go back.
     /// </summary>
     [RelayCommand]
-    private void GoBack()
+    private async Task GoBackAsync()
     {
-        SaveSettings();
+        await SaveSettingsAsync();
         _navigationService.GoBack();
     }
 
@@ -113,9 +114,9 @@ public partial class SettingsViewModel : ViewModelBase
         // Implement clear conversations logic
     }
 
-    private void LoadSettings()
+    private async Task LoadSettingsAsync()
     {
-        var settings = _dataService.GetSettings();
+        var settings = await _dataService.GetSettingsAsync();
         IsDarkMode = settings.IsDarkMode;
         SelectedLanguage = settings.Language switch
         {
@@ -141,9 +142,9 @@ public partial class SettingsViewModel : ViewModelBase
         }
     }
 
-    private void SaveSettings()
+    private async Task SaveSettingsAsync()
     {
-        var settings = _dataService.GetSettings();
+        var settings = await _dataService.GetSettingsAsync();
         settings.IsDarkMode = IsDarkMode;
         settings.Language = SelectedLanguage switch
         {
@@ -152,6 +153,6 @@ public partial class SettingsViewModel : ViewModelBase
             "日本語" => "ja-JP",
             _ => "zh-CN"
         };
-        _dataService.SaveSettingsAsync(settings);
+        await _dataService.SaveSettingsAsync(settings);
     }
 }

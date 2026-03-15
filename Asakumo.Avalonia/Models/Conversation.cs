@@ -1,55 +1,53 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
+using SQLite;
 
 namespace Asakumo.Avalonia.Models;
 
 /// <summary>
 /// Represents a conversation session.
 /// </summary>
+[Table("conversations")]
 public class Conversation
 {
     /// <summary>
     /// Gets or sets the unique identifier for the conversation.
     /// </summary>
+    [PrimaryKey]
     public string Id { get; set; } = Guid.NewGuid().ToString();
 
     /// <summary>
     /// Gets or sets the title of the conversation.
     /// </summary>
+    [MaxLength(200)]
     public string Title { get; set; } = "新会话";
 
     /// <summary>
-    /// Gets or sets the list of messages in the conversation.
+    /// Gets or sets the preview text (last message or first message).
     /// </summary>
-    public List<ChatMessage> Messages { get; set; } = new();
+    [MaxLength(500)]
+    public string Preview { get; set; } = "空会话";
 
     /// <summary>
     /// Gets or sets the creation timestamp.
     /// </summary>
+    [Indexed]
     public DateTime CreatedAt { get; set; } = DateTime.Now;
 
     /// <summary>
     /// Gets or sets the last updated timestamp.
     /// </summary>
+    [Indexed]
     public DateTime UpdatedAt { get; set; } = DateTime.Now;
 
     /// <summary>
     /// Gets or sets the AI model used for this conversation.
     /// </summary>
+    [MaxLength(100)]
     public string? ModelName { get; set; }
 
     /// <summary>
     /// Gets or sets the AI provider ID.
     /// </summary>
+    [MaxLength(50)]
     public string? ProviderId { get; set; }
-
-    /// <summary>
-    /// Gets the preview text for the conversation (first message or last message preview).
-    /// </summary>
-    public string Preview => Messages.Count > 0
-        ? Messages[0].Content.Length > 50
-            ? Messages[0].Content[..50] + "..."
-            : Messages[0].Content
-        : "空会话";
 }

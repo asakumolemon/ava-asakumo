@@ -7,7 +7,9 @@ using Avalonia.Markup.Xaml;
 using Asakumo.Avalonia.ViewModels;
 using Asakumo.Avalonia.Views;
 using Asakumo.Avalonia.Services;
+using Asakumo.Avalonia.Services.Providers;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Asakumo.Avalonia;
 
@@ -21,9 +23,14 @@ public partial class App : Application
 
         var services = new ServiceCollection();
 
+        // Add logging
+        services.AddLogging(builder => builder.AddDebug());
+
         // Register services
         services.AddSingleton<IDataService, DataService>();
         services.AddSingleton<INavigationService, NavigationService>();
+        services.AddSingleton<AIProviderFactory>();
+        services.AddSingleton<IAIService, AIService>();
 
         // Register view models
         services.AddTransient<MainViewModel>();

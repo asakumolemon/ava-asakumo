@@ -40,7 +40,7 @@ public partial class MainViewModel : ViewModelBase
     {
         _dataService = dataService;
         _navigationService = navigationService;
-        Settings = _dataService.GetSettings();
+        Settings = _dataService.GetSettingsAsync().GetAwaiter().GetResult();
         _navigationService.NavigationChanged += OnNavigationChanged;
 
         // Initialize with welcome view if first time, otherwise conversation list

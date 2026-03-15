@@ -67,7 +67,7 @@ public partial class ApiKeyConfigViewModel : ViewModelBase
     {
         _dataService = dataService;
         _navigationService = navigationService;
-        LoadProviderInfo();
+        _ = LoadProviderInfoAsync();
     }
 
     /// <summary>
@@ -101,7 +101,7 @@ public partial class ApiKeyConfigViewModel : ViewModelBase
     /// Command to validate and save the API key.
     /// </summary>
     [RelayCommand]
-    private async Task ValidateAndSave()
+    private async Task ValidateAndSaveAsync()
     {
         if (string.IsNullOrWhiteSpace(ApiKey))
             return;
@@ -113,7 +113,7 @@ public partial class ApiKeyConfigViewModel : ViewModelBase
             // Simulate API validation
             await Task.Delay(1500);
 
-            var settings = _dataService.GetSettings();
+            var settings = await _dataService.GetSettingsAsync();
             var config = new ProviderConfig
             {
                 ApiKey = ApiKey,
@@ -135,9 +135,9 @@ public partial class ApiKeyConfigViewModel : ViewModelBase
         }
     }
 
-    private void LoadProviderInfo()
+    private async Task LoadProviderInfoAsync()
     {
-        var settings = _dataService.GetSettings();
+        var settings = await _dataService.GetSettingsAsync();
         if (string.IsNullOrEmpty(settings.CurrentProviderId))
             return;
 

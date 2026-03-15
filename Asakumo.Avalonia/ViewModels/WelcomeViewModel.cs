@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using Asakumo.Avalonia.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -55,11 +56,11 @@ public partial class WelcomeViewModel : ViewModelBase
     /// Command to start using the app.
     /// </summary>
     [RelayCommand]
-    private void StartUsing()
+    private async Task StartUsingAsync()
     {
-        var settings = _dataService.GetSettings();
+        var settings = await _dataService.GetSettingsAsync();
         settings.HasSeenWelcome = true;
-        _dataService.SaveSettingsAsync(settings);
+        await _dataService.SaveSettingsAsync(settings);
         _navigationService.NavigateTo<ConversationListViewModel>();
     }
 
@@ -67,16 +68,16 @@ public partial class WelcomeViewModel : ViewModelBase
     /// Command to skip onboarding.
     /// </summary>
     [RelayCommand]
-    private void Skip()
+    private async Task SkipAsync()
     {
-        StartUsing();
+        await StartUsingAsync();
     }
 
     /// <summary>
     /// Command to go to next page.
     /// </summary>
     [RelayCommand]
-    private void NextPage()
+    private async Task NextPageAsync()
     {
         if (CurrentPage < TotalPages - 1)
         {
@@ -84,7 +85,7 @@ public partial class WelcomeViewModel : ViewModelBase
         }
         else
         {
-            StartUsing();
+            await StartUsingAsync();
         }
     }
 }

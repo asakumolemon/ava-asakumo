@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading.Tasks;
 using Asakumo.Avalonia.Models;
 using Asakumo.Avalonia.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -60,7 +61,7 @@ public partial class ModelSelectionViewModel : ViewModelBase
     {
         _dataService = dataService;
         _navigationService = navigationService;
-        LoadModels();
+        _ = LoadModelsAsync();
     }
 
     /// <summary>
@@ -86,22 +87,22 @@ public partial class ModelSelectionViewModel : ViewModelBase
     /// Command to confirm the selection.
     /// </summary>
     [RelayCommand]
-    private void ConfirmSelection()
+    private async Task ConfirmSelectionAsync()
     {
         if (SelectedModel == null)
             return;
 
-        var settings = _dataService.GetSettings();
+        var settings = await _dataService.GetSettingsAsync();
         settings.CurrentModelId = SelectedModel.Id;
-        _dataService.SaveSettingsAsync(settings);
+        await _dataService.SaveSettingsAsync(settings);
 
         // Navigate back to chat
         _navigationService.NavigateTo<ChatViewModel>();
     }
 
-    private void LoadModels()
+    private async Task LoadModelsAsync()
     {
-        var settings = _dataService.GetSettings();
+        var settings = await _dataService.GetSettingsAsync();
         if (string.IsNullOrEmpty(settings.CurrentProviderId))
             return;
 

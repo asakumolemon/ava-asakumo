@@ -43,6 +43,23 @@ public class NavigationService : INavigationService
     }
 
     /// <inheritdoc/>
+    public void NavigateTo<T>(string parameter) where T : ViewModelBase
+    {
+        var viewModel = _serviceProvider.GetService(typeof(T)) as ViewModelBase;
+        if (viewModel != null)
+        {
+            // Handle parameter for ChatViewModel
+            if (viewModel is ChatViewModel chatViewModel)
+            {
+                chatViewModel.SetConversationAsync(parameter).ConfigureAwait(false);
+            }
+            
+            _navigationStack.Push(viewModel);
+            NavigationChanged?.Invoke(viewModel);
+        }
+    }
+
+    /// <inheritdoc/>
     public void GoBack()
     {
         if (CanGoBack)

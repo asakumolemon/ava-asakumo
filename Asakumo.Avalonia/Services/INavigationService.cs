@@ -20,6 +20,13 @@ public interface INavigationService
     void NavigateTo<T>() where T : ViewModelBase;
 
     /// <summary>
+    /// Navigates to the specified view model with a parameter.
+    /// </summary>
+    /// <typeparam name="T">The type of view model to navigate to.</typeparam>
+    /// <param name="parameter">The parameter to pass to the view model.</param>
+    void NavigateTo<T>(string parameter) where T : ViewModelBase;
+
+    /// <summary>
     /// Navigates back to the previous view.
     /// </summary>
     void GoBack();

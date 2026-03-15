@@ -1,61 +1,260 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Asakumo.Avalonia.Models;
+using Microsoft.Extensions.Logging;
+using SQLite;
 
 namespace Asakumo.Avalonia.Services;
 
 /// <summary>
-/// Implementation of the data service.
+/// Implementation of the data service with SQLite and JSON persistence.
 /// </summary>
 public class DataService : IDataService
 {
-    private List<Conversation> _conversations = new();
-    private AppSettings _settings = new();
+    private readonly ILogger<DataService> _logger;
+    private SQLiteAsyncConnection? _database;
+    private readonly string _dbPath;
+    private readonly string _settingsPath;
+    private readonly JsonSerializerOptions _jsonOptions;
+    private AppSettings? _cachedSettings;
+    private bool _isInitialized;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DataService"/> class.
     /// </summary>
-    public DataService()
+    /// <param name="logger">The logger instance.</param>
+    public DataService(ILogger<DataService> logger)
     {
-        InitializeSampleData();
-    }
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
-    /// <inheritdoc/>
-    public Task<List<Conversation>> GetConversationsAsync()
-    {
-        return Task.FromResult(_conversations.OrderByDescending(c => c.UpdatedAt).ToList());
-    }
+        // Determine platform-specific data directory
+        var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+        var appDir = Path.Combine(appDataPath, "Asakumo");
 
-    /// <inheritdoc/>
-    public Task<Conversation?> GetConversationAsync(string id)
-    {
-        return Task.FromResult(_conversations.FirstOrDefault(c => c.Id == id));
-    }
-
-    /// <inheritdoc/>
-    public Task SaveConversationAsync(Conversation conversation)
-    {
-        var existingIndex = _conversations.FindIndex(c => c.Id == conversation.Id);
-        if (existingIndex >= 0)
+        // Ensure directory exists
+        if (!Directory.Exists(appDir))
         {
-            _conversations[existingIndex] = conversation;
-        }
-        else
-        {
-            _conversations.Add(conversation);
+            Directory.CreateDirectory(appDir);
         }
 
-        return Task.CompletedTask;
+        _dbPath = Path.Combine(appDir, "asakumo.db");
+        _settingsPath = Path.Combine(appDir, "settings.json");
+
+        _jsonOptions = new JsonSerializerOptions
+        {
+            WriteIndented = true,
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            PropertyNameCaseInsensitive = true
+        };
+    }
+
+    #region Initialization
+
+    private async Task EnsureInitializedAsync()
+    {
+        if (_isInitialized) return;
+
+        try
+        {
+            _database = new SQLiteAsyncConnection(_dbPath);
+
+            // Create tables
+            await _database.CreateTableAsync<Conversation>();
+            await _database.CreateTableAsync<ChatMessage>();
+
+            _isInitialized = true;
+            _logger.LogInformation("Database initialized at {Path}", _dbPath);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to initialize database");
+            throw;
+        }
+    }
+
+    #endregion
+
+    #region Conversations
+
+    /// <inheritdoc/>
+    public async Task<List<Conversation>> GetConversationsAsync()
+    {
+        await EnsureInitializedAsync();
+
+        var conversations = await _database!.Table<Conversation>()
+            .OrderByDescending(c => c.UpdatedAt)
+            .ToListAsync();
+
+        return conversations;
     }
 
     /// <inheritdoc/>
-    public Task DeleteConversationAsync(string id)
+    public async Task<Conversation?> GetConversationAsync(string id)
     {
-        _conversations.RemoveAll(c => c.Id == id);
-        return Task.CompletedTask;
+        await EnsureInitializedAsync();
+
+        var conversation = await _database!.Table<Conversation>()
+            .Where(c => c.Id == id)
+            .FirstOrDefaultAsync();
+
+        return conversation;
     }
+
+    /// <inheritdoc/>
+    public async Task SaveConversationAsync(Conversation conversation)
+    {
+        await EnsureInitializedAsync();
+
+        conversation.UpdatedAt = DateTime.Now;
+        await _database!.InsertOrReplaceAsync(conversation);
+
+        _logger.LogDebug("Saved conversation {Id}", conversation.Id);
+    }
+
+    /// <inheritdoc/>
+    public async Task DeleteConversationAsync(string id)
+    {
+        await EnsureInitializedAsync();
+
+        // Delete messages first, then conversation
+        // Note: sqlite-net-pcl doesn't support async operations inside RunInTransactionAsync
+        await _database!.ExecuteAsync("DELETE FROM chat_messages WHERE ConversationId = ?", id);
+        await _database.ExecuteAsync("DELETE FROM conversations WHERE Id = ?", id);
+
+        _logger.LogDebug("Deleted conversation {Id} and its messages", id);
+    }
+
+    #endregion
+
+    #region Messages
+
+    /// <inheritdoc/>
+    public async Task<List<ChatMessage>> GetMessagesAsync(string conversationId)
+    {
+        await EnsureInitializedAsync();
+
+        var messages = await _database!.Table<ChatMessage>()
+            .Where(m => m.ConversationId == conversationId)
+            .OrderBy(m => m.Timestamp)
+            .ToListAsync();
+
+        return messages;
+    }
+
+    /// <inheritdoc/>
+    public async Task SaveMessageAsync(ChatMessage message)
+    {
+        await EnsureInitializedAsync();
+
+        await _database!.InsertOrReplaceAsync(message);
+
+        _logger.LogDebug("Saved message {Id} for conversation {ConversationId}",
+            message.Id, message.ConversationId);
+    }
+
+    /// <inheritdoc/>
+    public async Task DeleteMessagesAsync(string conversationId)
+    {
+        await EnsureInitializedAsync();
+
+        await _database!.ExecuteAsync(
+            "DELETE FROM chat_messages WHERE ConversationId = ?",
+            conversationId);
+
+        _logger.LogDebug("Deleted all messages for conversation {ConversationId}", conversationId);
+    }
+
+    #endregion
+
+    #region Settings
+
+    /// <inheritdoc/>
+    public async Task<AppSettings> GetSettingsAsync()
+    {
+        if (_cachedSettings != null)
+            return _cachedSettings;
+
+        try
+        {
+            if (File.Exists(_settingsPath))
+            {
+                var json = await File.ReadAllTextAsync(_settingsPath);
+                _cachedSettings = JsonSerializer.Deserialize<AppSettings>(json, _jsonOptions)
+                    ?? new AppSettings();
+            }
+            else
+            {
+                _cachedSettings = new AppSettings();
+            }
+
+            return _cachedSettings;
+        }
+        catch (JsonException ex)
+        {
+            _logger.LogWarning(ex, "Settings file corrupted, using defaults");
+            _cachedSettings = new AppSettings();
+            return _cachedSettings;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to load settings");
+            _cachedSettings = new AppSettings();
+            return _cachedSettings;
+        }
+    }
+
+    /// <inheritdoc/>
+    public async Task SaveSettingsAsync(AppSettings settings)
+    {
+        ArgumentNullException.ThrowIfNull(settings);
+
+        try
+        {
+            var json = JsonSerializer.Serialize(settings, _jsonOptions);
+            var tempPath = _settingsPath + ".tmp";
+
+            // Write to temp file first (atomic write pattern)
+            await File.WriteAllTextAsync(tempPath, json);
+
+            // Replace the original file
+            File.Move(tempPath, _settingsPath, overwrite: true);
+
+            _cachedSettings = settings;
+            _logger.LogDebug("Saved settings to {Path}", _settingsPath);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to save settings");
+            throw;
+        }
+    }
+
+    #endregion
+
+    #region Provider Config
+
+    /// <inheritdoc/>
+    public async Task<ProviderConfig?> GetProviderConfigAsync(string providerId)
+    {
+        var settings = await GetSettingsAsync();
+        return settings.ProviderConfigs.TryGetValue(providerId, out var config) ? config : null;
+    }
+
+    /// <inheritdoc/>
+    public async Task SaveProviderConfigAsync(string providerId, ProviderConfig config)
+    {
+        var settings = await GetSettingsAsync();
+        settings.ProviderConfigs[providerId] = config;
+        await SaveSettingsAsync(settings);
+    }
+
+    #endregion
+
+    #region Providers (Static Data)
 
     /// <inheritdoc/>
     public List<AIProvider> GetProviders()
@@ -162,7 +361,38 @@ public class DataService : IDataService
                 Description = "Gemini 系列模型",
                 DefaultBaseUrl = "https://generativelanguage.googleapis.com",
                 RequiresApiKey = true,
-                Icon = "○"
+                Icon = "○",
+                Models = new List<AIModel>
+                {
+                    new AIModel
+                    {
+                        Id = "gemini-2.0-flash",
+                        Name = "Gemini 2.0 Flash",
+                        Description = "最新一代，快速高效",
+                        Category = ModelCategory.Recommended,
+                        IsRecommended = true,
+                        Tags = new List<string> { "Chat", "Fast" },
+                        ProviderId = "google"
+                    },
+                    new AIModel
+                    {
+                        Id = "gemini-1.5-pro",
+                        Name = "Gemini 1.5 Pro",
+                        Description = "强大的推理能力",
+                        Category = ModelCategory.Reasoning,
+                        Tags = new List<string> { "Reasoning" },
+                        ProviderId = "google"
+                    },
+                    new AIModel
+                    {
+                        Id = "gemini-1.5-flash",
+                        Name = "Gemini 1.5 Flash",
+                        Description = "经济高效的选择",
+                        Category = ModelCategory.Chat,
+                        Tags = new List<string> { "Fast", "Economic" },
+                        ProviderId = "google"
+                    }
+                }
             },
             new AIProvider
             {
@@ -172,7 +402,29 @@ public class DataService : IDataService
                 Description = "国产大模型，性价比高",
                 DefaultBaseUrl = "https://api.deepseek.com",
                 RequiresApiKey = true,
-                Icon = "○"
+                Icon = "○",
+                Models = new List<AIModel>
+                {
+                    new AIModel
+                    {
+                        Id = "deepseek-chat",
+                        Name = "DeepSeek Chat",
+                        Description = "通用对话模型",
+                        Category = ModelCategory.Recommended,
+                        IsRecommended = true,
+                        Tags = new List<string> { "Chat", "Economic" },
+                        ProviderId = "deepseek"
+                    },
+                    new AIModel
+                    {
+                        Id = "deepseek-reasoner",
+                        Name = "DeepSeek Reasoner",
+                        Description = "深度推理模型",
+                        Category = ModelCategory.Reasoning,
+                        Tags = new List<string> { "Reasoning" },
+                        ProviderId = "deepseek"
+                    }
+                }
             },
             new AIProvider
             {
@@ -182,89 +434,50 @@ public class DataService : IDataService
                 Description = "本地运行开源模型",
                 DefaultBaseUrl = "http://localhost:11434",
                 RequiresApiKey = false,
-                Icon = "🖥️"
-            }
-        };
-    }
-
-    /// <inheritdoc/>
-    public AppSettings GetSettings()
-    {
-        return _settings;
-    }
-
-    /// <inheritdoc/>
-    public Task SaveSettingsAsync(AppSettings settings)
-    {
-        _settings = settings;
-        return Task.CompletedTask;
-    }
-
-    private void InitializeSampleData()
-    {
-        // Add sample conversations for testing
-        _conversations = new List<Conversation>
-        {
-            new Conversation
-            {
-                Id = "1",
-                Title = "你好，请介绍一下你自己",
-                ModelName = "GPT-4o-mini",
-                ProviderId = "openai",
-                CreatedAt = DateTime.Now.AddHours(-2),
-                UpdatedAt = DateTime.Now.AddHours(-2),
-                Messages = new List<ChatMessage>
+                Icon = "🖥️",
+                Models = new List<AIModel>
                 {
-                    new ChatMessage
+                    new AIModel
                     {
-                        Content = "你好，请介绍一下你自己",
-                        IsUser = true,
-                        Timestamp = DateTime.Now.AddHours(-2)
+                        Id = "llama3.2",
+                        Name = "Llama 3.2",
+                        Description = "Meta 最新开源模型",
+                        Category = ModelCategory.Recommended,
+                        IsRecommended = true,
+                        Tags = new List<string> { "Local", "Open Source" },
+                        ProviderId = "ollama"
                     },
-                    new ChatMessage
+                    new AIModel
                     {
-                        Content = "你好！我是一个AI助手，可以帮助你回答问题、写作、编程、翻译等各种任务。",
-                        IsUser = false,
-                        Timestamp = DateTime.Now.AddHours(-2).AddSeconds(5)
-                    }
-                }
-            },
-            new Conversation
-            {
-                Id = "2",
-                Title = "解释量子力学",
-                ModelName = "GPT-4o",
-                ProviderId = "openai",
-                CreatedAt = DateTime.Now.AddDays(-1),
-                UpdatedAt = DateTime.Now.AddDays(-1),
-                Messages = new List<ChatMessage>
-                {
-                    new ChatMessage
+                        Id = "qwen2.5",
+                        Name = "Qwen 2.5",
+                        Description = "阿里通义千问",
+                        Category = ModelCategory.Chat,
+                        Tags = new List<string> { "Local", "Chinese" },
+                        ProviderId = "ollama"
+                    },
+                    new AIModel
                     {
-                        Content = "解释量子力学",
-                        IsUser = true,
-                        Timestamp = DateTime.Now.AddDays(-1)
-                    }
-                }
-            },
-            new Conversation
-            {
-                Id = "3",
-                Title = "写一段Python代码",
-                ModelName = "Claude 3.5 Sonnet",
-                ProviderId = "anthropic",
-                CreatedAt = DateTime.Now.AddDays(-3),
-                UpdatedAt = DateTime.Now.AddDays(-3),
-                Messages = new List<ChatMessage>
-                {
-                    new ChatMessage
+                        Id = "deepseek-r1",
+                        Name = "DeepSeek R1",
+                        Description = "深度推理本地版",
+                        Category = ModelCategory.Reasoning,
+                        Tags = new List<string> { "Reasoning", "Local" },
+                        ProviderId = "ollama"
+                    },
+                    new AIModel
                     {
-                        Content = "写一段Python代码",
-                        IsUser = true,
-                        Timestamp = DateTime.Now.AddDays(-3)
+                        Id = "codellama",
+                        Name = "Code Llama",
+                        Description = "代码生成专用",
+                        Category = ModelCategory.Chat,
+                        Tags = new List<string> { "Code", "Local" },
+                        ProviderId = "ollama"
                     }
                 }
             }
         };
     }
+
+    #endregion
 }

@@ -10,6 +10,9 @@
 - **运行时**: .NET 9.0
 - **MVVM**: CommunityToolkit.Mvvm 8.4.0
 - **DI**: Microsoft.Extensions.DependencyInjection 9.0.0
+- **日志**: Microsoft.Extensions.Logging 9.0.0
+- **AI SDK**: OpenAI 2.2.0
+- **数据存储**: sqlite-net-pcl 1.9.172 + SQLitePCLRaw.bundle_green 2.1.10
 - **主题**: Fluent Theme + Inter 字体
 
 ### 架构模式
@@ -18,7 +21,8 @@
 - **Models**: 数据实体 (ChatMessage, Conversation, AIProvider, AIModel, AppSettings)
 - **ViewModels**: 业务逻辑和视图状态管理
 - **Views**: AXAML 视图定义
-- **Services**: 服务层 (INavigationService, IDataService)
+- **Services**: 服务层 (INavigationService, IDataService, IAIService)
+- **Providers**: AI 服务商适配器 (IAIProvider, OpenAICompatibleProvider)
 
 ---
 
@@ -28,11 +32,11 @@
 Asakumo.Avalonia/
 ├── Asakumo.Avalonia/              # 核心项目 (共享代码)
 │   ├── Models/                    # 数据模型
-│   │   ├── ChatMessage.cs         # 聊天消息
-│   │   ├── Conversation.cs        # 会话
-│   │   ├── AIProvider.cs          # AI 服务提供商
-│   │   ├── AIModel.cs             # AI 模型
-│   │   └── AppSettings.cs         # 应用设置
+│   │   ├── ChatMessage.cs         # 聊天消息 (SQLite 表)
+│   │   ├── Conversation.cs        # 会话 (SQLite 表)
+│   │   ├── AIProvider.cs          # AI 服务提供商 (静态数据)
+│   │   ├── AIModel.cs             # AI 模型 (静态数据)
+│   │   └── AppSettings.cs         # 应用设置 (JSON 存储)
 │   ├── ViewModels/                # 视图模型
 │   │   ├── ViewModelBase.cs       # 基类
 │   │   ├── MainViewModel.cs       # 主容器
@@ -45,6 +49,16 @@ Asakumo.Avalonia/
 │   │   └── ModelSelectionViewModel.cs    # 模型选择
 │   ├── Views/                     # 视图 (AXAML)
 │   ├── Services/                  # 服务层
+│   │   ├── IDataService.cs        # 数据服务接口
+│   │   ├── DataService.cs         # 数据服务实现 (SQLite + JSON)
+│   │   ├── INavigationService.cs  # 导航服务接口
+│   │   ├── NavigationService.cs   # 导航服务实现
+│   │   ├── IAIService.cs          # AI 服务接口
+│   │   ├── AIService.cs           # AI 服务实现
+│   │   └── Providers/             # AI 服务商适配器
+│   │       ├── IAIProvider.cs     # 适配器接口
+│   │       ├── AIProviderFactory.cs # 工厂类
+│   │       └── OpenAICompatibleProvider.cs # OpenAI 兼容实现
 │   ├── skills/                    # 项目专属 Skills
 │   ├── prototype/                 # UI 原型设计文档
 │   └── App.axaml.cs               # 应用入口 + DI 配置
@@ -87,6 +101,72 @@ dotnet build Asakumo.Avalonia.iOS/Asakumo.Avalonia.iOS.csproj
 
 ---
 
+## 数据持久化
+
+### 存储方案
+
+| 数据类型 | 存储方案 | 文件位置 |
+|----------|----------|----------|
+| 会话 (Conversation) | SQLite | `%AppData%/Asakumo/asakumo.db` |
+| 消息 (ChatMessage) | SQLite | 同上 |
+| 应用设置 (AppSettings) | JSON | `%AppData%/Asakumo/settings.json` |
+| Provider 配置 | JSON (嵌入设置) | 同上 |
+
+### 数据模型特性
+
+```csharp
+// Conversation - SQLite 表
+[Table("conversations")]
+public class Conversation
+{
+    [PrimaryKey]
+    public string Id { get; set; }
+    
+    [MaxLength(200)]
+    public string Title { get; set; }
+    
+    [MaxLength(500)]
+    public string Preview { get; set; }
+    
+    [Indexed]
+    public DateTime UpdatedAt { get; set; }
+}
+
+// ChatMessage - SQLite 表
+[Table("chat_messages")]
+public class ChatMessage
+{
+    [PrimaryKey]
+    public string Id { get; set; }
+    
+    [Indexed]  // 外键查询需要索引
+    public string ConversationId { get; set; }
+    
+    [Indexed]
+    public DateTime Timestamp { get; set; }
+}
+```
+
+### JSON 原子写入
+
+应用设置使用原子写入模式，避免写入中断导致文件损坏：
+
+```csharp
+public async Task SaveSettingsAsync(AppSettings settings)
+{
+    var json = JsonSerializer.Serialize(settings, _jsonOptions);
+    var tempPath = _settingsPath + ".tmp";
+    
+    // 先写临时文件
+    await File.WriteAllTextAsync(tempPath, json);
+    
+    // 原子替换
+    File.Move(tempPath, _settingsPath, overwrite: true);
+}
+```
+
+---
+
 ## 开发约定
 
 ### MVVM 规范
@@ -95,6 +175,7 @@ dotnet build Asakumo.Avalonia.iOS/Asakumo.Avalonia.iOS.csproj
 2. **使用 `[ObservableProperty]` 自动生成属性**
 3. **使用 `[RelayCommand]` 自动生成命令**
 4. **ViewModel 不得引用 UI 控件**
+5. **异步方法使用 `Async` 后缀**
 
 ```csharp
 // 标准 ViewModel 模式
@@ -104,9 +185,9 @@ public partial class ExampleViewModel : ViewModelBase
     private string _title = string.Empty;
 
     [RelayCommand]
-    private void DoSomething()
+    private async Task LoadDataAsync()
     {
-        // 业务逻辑
+        // 异步业务逻辑
     }
 }
 ```
@@ -134,8 +215,121 @@ public partial class ExampleViewModel : ViewModelBase
 | 私有字段 | _camelCase | `_userName` |
 | 属性 | PascalCase | `UserName` |
 | 方法 | PascalCase | `SendMessage()` |
+| 异步方法 | XxxAsync | `LoadDataAsync()` |
 | 命令 | XxxCommand | `SendCommand` |
 | 视图 | XxxView | `ChatView.axaml` |
+
+---
+
+## 服务层架构
+
+### 核心接口
+
+```csharp
+// 数据服务
+public interface IDataService
+{
+    // 会话管理
+    Task<List<Conversation>> GetConversationsAsync();
+    Task<Conversation?> GetConversationAsync(string id);
+    Task SaveConversationAsync(Conversation conversation);
+    Task DeleteConversationAsync(string id);
+
+    // 消息管理
+    Task<List<ChatMessage>> GetMessagesAsync(string conversationId);
+    Task SaveMessageAsync(ChatMessage message);
+    Task DeleteMessagesAsync(string conversationId);
+
+    // 设置管理
+    Task<AppSettings> GetSettingsAsync();
+    Task SaveSettingsAsync(AppSettings settings);
+
+    // Provider 配置
+    Task<ProviderConfig?> GetProviderConfigAsync(string providerId);
+    Task SaveProviderConfigAsync(string providerId, ProviderConfig config);
+
+    // 静态数据
+    List<AIProvider> GetProviders();
+}
+
+// 导航服务
+public interface INavigationService
+{
+    ViewModelBase? CurrentView { get; }
+    bool CanGoBack { get; }
+    void NavigateTo<T>() where T : ViewModelBase;
+    void NavigateTo<T>(string parameter) where T : ViewModelBase;
+    void GoBack();
+    event Action<ViewModelBase>? NavigationChanged;
+}
+
+// AI 服务
+public interface IAIService
+{
+    IAsyncEnumerable<string> StreamChatAsync(string conversationId, string message, CancellationToken ct = default);
+    Task<string> ChatAsync(string conversationId, string message, CancellationToken ct = default);
+    void ClearHistory(string conversationId);
+    Task<IEnumerable<AIModel>> GetAvailableModelsAsync();
+    Task<bool> ValidateConfigurationAsync();
+}
+```
+
+### AI 服务商适配器
+
+```csharp
+// 统一适配器接口
+public interface IAIProvider
+{
+    string ProviderId { get; }
+    IAsyncEnumerable<string> StreamChatAsync(IEnumerable<ProviderMessage> messages, string modelId, CancellationToken ct = default);
+    Task<IEnumerable<AIModel>> GetModelsAsync();
+    Task<bool> ValidateAsync();
+}
+
+// 消息记录
+public record ProviderMessage(string Role, string Content);
+```
+
+### 依赖注入配置
+
+在 `App.axaml.cs` 中配置：
+
+```csharp
+var services = new ServiceCollection();
+
+// 日志
+services.AddLogging(builder => builder.AddDebug());
+
+// 服务
+services.AddSingleton<IDataService, DataService>();
+services.AddSingleton<INavigationService, NavigationService>();
+services.AddSingleton<AIProviderFactory>();
+services.AddSingleton<IAIService, AIService>();
+
+// ViewModels
+services.AddTransient<MainViewModel>();
+services.AddTransient<WelcomeViewModel>();
+services.AddTransient<ConversationListViewModel>();
+services.AddTransient<ChatViewModel>();
+services.AddTransient<SettingsViewModel>();
+services.AddTransient<ProviderSelectionViewModel>();
+services.AddTransient<ApiKeyConfigViewModel>();
+services.AddTransient<ModelSelectionViewModel>();
+```
+
+---
+
+## 支持的 AI 服务商
+
+| Provider | 类型 | 说明 |
+|----------|------|------|
+| OpenAI | OpenAI 兼容 | GPT-4o, GPT-4o-mini, o3-mini, GPT-3.5-turbo |
+| Anthropic | 需适配 | Claude 3.5 Sonnet, Claude 3 Opus |
+| Google | 需适配 | Gemini 2.0 Flash, Gemini 1.5 Pro |
+| DeepSeek | OpenAI 兼容 | DeepSeek Chat, DeepSeek Reasoner |
+| Ollama | OpenAI 兼容 | Llama 3.2, Qwen 2.5, DeepSeek R1, Code Llama |
+
+**注意**: DeepSeek、Ollama 等使用 OpenAI 兼容 API，只需修改 BaseUrl 即可。
 
 ---
 
@@ -163,32 +357,16 @@ API 配置 (ApiKeyConfigView)
 
 ## 项目 Skills
 
-项目包含三个专属 Skill，位于 `Asakumo.Avalonia/skills/`:
+项目包含六个专属 Skill，位于 `Asakumo.Avalonia/skills/`:
 
 | Skill | 用途 |
 |-------|------|
 | `avalonia-chat-ui-design` | AI 聊天应用 UI 设计指南 |
 | `avalonia-ui-prototype` | ASCII 线框图原型生成 |
 | `dotnet-avalonia-quality` | 代码质量和 MVVM 规范 |
-
----
-
-## 依赖注入配置
-
-在 `App.axaml.cs` 中配置：
-
-```csharp
-var services = new ServiceCollection();
-
-// 服务
-services.AddSingleton<IDataService, DataService>();
-services.AddSingleton<INavigationService, NavigationService>();
-
-// ViewModels
-services.AddTransient<MainViewModel>();
-services.AddTransient<WelcomeViewModel>();
-// ... 其他 ViewModels
-```
+| `ai-api-service` | AI API 服务层实现模式 |
+| `data-persistence` | 本地数据持久化实现 |
+| `multi-provider-adapter` | 多 AI 服务商适配器实现 |
 
 ---
 
@@ -228,3 +406,46 @@ services.AddTransient<WelcomeViewModel>();
 - 使用 `DynamicResource` 引用系统资源
 - 定义 `ThemeDictionaries` 支持深浅主题切换
 - 确保文字对比度 >= 4.5:1
+
+### 流式响应异常处理
+
+使用 Channel 模式处理 `IAsyncEnumerable` 中的异常：
+
+```csharp
+public async IAsyncEnumerable<string> StreamChatAsync(...)
+{
+    var channel = Channel.CreateUnbounded<string>();
+    
+    _ = Task.Run(async () => {
+        try {
+            await foreach (var token in provider.StreamChatAsync(...))
+                await channel.Writer.WriteAsync(token, ct);
+        } catch (Exception ex) {
+            await channel.Writer.WriteAsync($"[错误] {ex.Message}", ct);
+        } finally {
+            channel.Writer.Complete();
+        }
+    }, ct);
+    
+    await foreach (var token in channel.Reader.ReadAllAsync(ct))
+        yield return token;
+}
+```
+
+### 异步方法调用
+
+在构造函数中调用异步方法，使用 `GetAwaiter().GetResult()` (桌面应用) 或 `_ = InitializeAsync()` (Fire-and-forget)：
+
+```csharp
+// 构造函数中同步等待
+public MainViewModel(IDataService dataService)
+{
+    Settings = dataService.GetSettingsAsync().GetAwaiter().GetResult();
+}
+
+// 或使用 Fire-and-forget
+public SettingsViewModel(IDataService dataService)
+{
+    _ = LoadSettingsAsync();
+}
+```

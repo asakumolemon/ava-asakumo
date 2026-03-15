@@ -1,16 +1,25 @@
 using System;
+using SQLite;
 
 namespace Asakumo.Avalonia.Models;
 
 /// <summary>
 /// Represents a single chat message in a conversation.
 /// </summary>
+[Table("chat_messages")]
 public class ChatMessage
 {
     /// <summary>
     /// Gets or sets the unique identifier for the message.
     /// </summary>
+    [PrimaryKey]
     public string Id { get; set; } = Guid.NewGuid().ToString();
+
+    /// <summary>
+    /// Gets or sets the conversation ID this message belongs to.
+    /// </summary>
+    [Indexed]
+    public string ConversationId { get; set; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the content of the message.
@@ -25,16 +34,12 @@ public class ChatMessage
     /// <summary>
     /// Gets or sets the timestamp of the message.
     /// </summary>
+    [Indexed]
     public DateTime Timestamp { get; set; } = DateTime.Now;
-
-    /// <summary>
-    /// Gets or sets the status of the message.
-    /// </summary>
-    public MessageStatus Status { get; set; } = MessageStatus.Sent;
 }
 
 /// <summary>
-/// Represents the status of a message.
+/// Represents the status of a message (for UI display only, not persisted).
 /// </summary>
 public enum MessageStatus
 {

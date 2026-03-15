@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading.Tasks;
 using Asakumo.Avalonia.Models;
 using Asakumo.Avalonia.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -48,7 +49,7 @@ public partial class ProviderSelectionViewModel : ViewModelBase
     {
         _dataService = dataService;
         _navigationService = navigationService;
-        LoadProviders();
+        _ = LoadProvidersAsync();
     }
 
     /// <summary>
@@ -65,13 +66,13 @@ public partial class ProviderSelectionViewModel : ViewModelBase
     /// </summary>
     /// <param name="provider">The selected provider.</param>
     [RelayCommand]
-    private void SelectProvider(AIProvider provider)
+    private async Task SelectProviderAsync(AIProvider provider)
     {
         SelectedProvider = provider;
 
-        var settings = _dataService.GetSettings();
+        var settings = await _dataService.GetSettingsAsync();
         settings.CurrentProviderId = provider.Id;
-        _dataService.SaveSettingsAsync(settings);
+        await _dataService.SaveSettingsAsync(settings);
 
         if (provider.RequiresApiKey)
         {
@@ -82,12 +83,12 @@ public partial class ProviderSelectionViewModel : ViewModelBase
             // For quick start or local providers without API key requirement
             var config = new ProviderConfig { IsValid = true };
             settings.ProviderConfigs[provider.Id] = config;
-            _dataService.SaveSettingsAsync(settings);
+            await _dataService.SaveSettingsAsync(settings);
             _navigationService.NavigateTo<ModelSelectionViewModel>();
         }
     }
 
-    private void LoadProviders()
+    private async Task LoadProvidersAsync()
     {
         var providers = _dataService.GetProviders();
 
@@ -112,7 +113,7 @@ public partial class ProviderSelectionViewModel : ViewModelBase
         }
 
         // Mark current provider as selected
-        var settings = _dataService.GetSettings();
+        var settings = await _dataService.GetSettingsAsync();
         if (!string.IsNullOrEmpty(settings.CurrentProviderId))
         {
             var currentProvider = providers.FirstOrDefault(p => p.Id == settings.CurrentProviderId);

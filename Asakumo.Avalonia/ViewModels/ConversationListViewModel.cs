@@ -76,8 +76,8 @@ public partial class ConversationListViewModel : ViewModelBase
     [RelayCommand]
     private void SelectConversation(Conversation conversation)
     {
-        // Navigate to chat view with the selected conversation
-        _navigationService.NavigateTo<ChatViewModel>();
+        // Navigate to chat view with the selected conversation ID
+        _navigationService.NavigateTo<ChatViewModel>(conversation.Id);
     }
 
     /// <summary>

@@ -242,8 +242,9 @@
             <!-- Stop Button (when AI is responding) -->
             <Button Grid.Column="2"
                     Classes="icon"
+                    Command="{Binding StopResponseCommand}"
                     IsVisible="{Binding IsAiResponding}">
-              <TextBlock Text="&#x2016;" FontSize="18" Foreground="{DynamicResource ErrorBrush}"/>
+              <TextBlock Text="&#x25A0;" FontSize="16" Foreground="{DynamicResource ErrorBrush}"/>
             </Button>
             
             <!-- Send Button -->
