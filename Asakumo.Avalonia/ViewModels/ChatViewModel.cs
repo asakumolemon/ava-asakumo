@@ -137,10 +137,15 @@ public partial class ChatViewModel : ViewModelBase
             {
                 Messages.Add(msg);
             }
-        }
 
-        // Clear AI history and reload from messages
-        _aiService.ClearHistory(conversationId);
+            // Restore AI conversation history from loaded messages
+            _aiService.RestoreHistory(conversationId, messages);
+        }
+        else
+        {
+            // Clear AI history for new conversation
+            _aiService.ClearHistory(conversationId);
+        }
     }
 
     /// <summary>

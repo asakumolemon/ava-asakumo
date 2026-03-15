@@ -120,6 +120,21 @@ public class AIService : IAIService
         _conversationHistory.TryRemove(conversationId, out _);
     }
 
+    public void RestoreHistory(string conversationId, IEnumerable<ChatMessage> messages)
+    {
+        var history = _conversationHistory.GetOrAdd(conversationId, _ => new List<ProviderMessage>());
+        history.Clear();
+
+        foreach (var msg in messages)
+        {
+            var role = msg.IsUser ? "user" : "assistant";
+            history.Add(new ProviderMessage(role, msg.Content));
+        }
+
+        // Trim to max history length
+        TrimHistory(history);
+    }
+
     public Task<IEnumerable<AIModel>> GetAvailableModelsAsync()
     {
         if (_currentProvider == null)
@@ -141,6 +156,30 @@ public class AIService : IAIService
         }
 
         return await _currentProvider!.ValidateAsync();
+    }
+
+    public async Task<bool> ValidateProviderAsync(string providerId, string apiKey, string? baseUrl, CancellationToken ct = default)
+    {
+        try
+        {
+            // Get a default model for validation (any model will work for API key validation)
+            var providers = _dataService.GetProviders();
+            var provider = providers.FirstOrDefault(p => p.Id == providerId);
+            var defaultModel = provider?.Models.FirstOrDefault()?.Id ?? "gpt-3.5-turbo";
+
+            var tempProvider = _providerFactory.CreateProvider(
+                providerId,
+                apiKey,
+                baseUrl,
+                defaultModel);
+
+            return await tempProvider.ValidateAsync();
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, "Provider validation failed for {ProviderId}", providerId);
+            return false;
+        }
     }
 
     /// <summary>

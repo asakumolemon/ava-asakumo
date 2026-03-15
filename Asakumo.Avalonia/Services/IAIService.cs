@@ -35,6 +35,13 @@ public interface IAIService
     void ClearHistory(string conversationId);
 
     /// <summary>
+    /// Restores chat history from a list of messages.
+    /// </summary>
+    /// <param name="conversationId">The conversation ID.</param>
+    /// <param name="messages">The messages to restore.</param>
+    void RestoreHistory(string conversationId, IEnumerable<ChatMessage> messages);
+
+    /// <summary>
     /// Gets available models for the current provider.
     /// </summary>
     /// <returns>List of available models.</returns>
@@ -45,4 +52,14 @@ public interface IAIService
     /// </summary>
     /// <returns>True if configuration is valid.</returns>
     Task<bool> ValidateConfigurationAsync();
+
+    /// <summary>
+    /// Validates a provider configuration without saving it.
+    /// </summary>
+    /// <param name="providerId">The provider ID.</param>
+    /// <param name="apiKey">The API key.</param>
+    /// <param name="baseUrl">Optional custom base URL.</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>True if the configuration is valid.</returns>
+    Task<bool> ValidateProviderAsync(string providerId, string apiKey, string? baseUrl, CancellationToken ct = default);
 }

@@ -15,6 +15,7 @@ public partial class ApiKeyConfigViewModel : ViewModelBase
 {
     private readonly IDataService _dataService;
     private readonly INavigationService _navigationService;
+    private readonly IAIService _aiService;
 
     /// <summary>
     /// Gets or sets the provider name.
@@ -53,20 +54,42 @@ public partial class ApiKeyConfigViewModel : ViewModelBase
     private bool _isValidating;
 
     /// <summary>
+    /// Gets or sets a value indicating whether validation failed.
+    /// </summary>
+    [ObservableProperty]
+    private bool _validationFailed;
+
+    /// <summary>
+    /// Gets or sets the validation error message.
+    /// </summary>
+    [ObservableProperty]
+    private string _validationError = string.Empty;
+
+    /// <summary>
     /// Gets or sets the provider icon.
     /// </summary>
     [ObservableProperty]
     private string _providerIcon = string.Empty;
 
     /// <summary>
+    /// Gets the current provider ID.
+    /// </summary>
+    private string? _currentProviderId;
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="ApiKeyConfigViewModel"/> class.
     /// </summary>
     /// <param name="dataService">The data service.</param>
     /// <param name="navigationService">The navigation service.</param>
-    public ApiKeyConfigViewModel(IDataService dataService, INavigationService navigationService)
+    /// <param name="aiService">The AI service.</param>
+    public ApiKeyConfigViewModel(
+        IDataService dataService,
+        INavigationService navigationService,
+        IAIService aiService)
     {
         _dataService = dataService;
         _navigationService = navigationService;
+        _aiService = aiService;
         _ = LoadProviderInfoAsync();
     }
 
@@ -107,12 +130,25 @@ public partial class ApiKeyConfigViewModel : ViewModelBase
             return;
 
         IsValidating = true;
+        ValidationFailed = false;
+        ValidationError = string.Empty;
 
         try
         {
-            // Simulate API validation
-            await Task.Delay(1500);
+            // Real API validation
+            var isValid = await _aiService.ValidateProviderAsync(
+                _currentProviderId ?? string.Empty,
+                ApiKey,
+                BaseUrl);
 
+            if (!isValid)
+            {
+                ValidationFailed = true;
+                ValidationError = "API Key 验证失败，请检查您的配置";
+                return;
+            }
+
+            // Save configuration
             var settings = await _dataService.GetSettingsAsync();
             var config = new ProviderConfig
             {
@@ -129,10 +165,25 @@ public partial class ApiKeyConfigViewModel : ViewModelBase
             await _dataService.SaveSettingsAsync(settings);
             _navigationService.NavigateTo<ModelSelectionViewModel>();
         }
+        catch (Exception ex)
+        {
+            ValidationFailed = true;
+            ValidationError = $"验证出错: {ex.Message}";
+        }
         finally
         {
             IsValidating = false;
         }
+    }
+
+    /// <summary>
+    /// Command to dismiss validation error.
+    /// </summary>
+    [RelayCommand]
+    private void DismissError()
+    {
+        ValidationFailed = false;
+        ValidationError = string.Empty;
     }
 
     private async Task LoadProviderInfoAsync()
@@ -140,6 +191,8 @@ public partial class ApiKeyConfigViewModel : ViewModelBase
         var settings = await _dataService.GetSettingsAsync();
         if (string.IsNullOrEmpty(settings.CurrentProviderId))
             return;
+
+        _currentProviderId = settings.CurrentProviderId;
 
         var providers = _dataService.GetProviders();
         var provider = providers.FirstOrDefault(p => p.Id == settings.CurrentProviderId);
