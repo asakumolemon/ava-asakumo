@@ -1,13 +1,15 @@
 using System;
 using SQLite;
+using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace Asakumo.Avalonia.Models;
 
 /// <summary>
 /// Represents a single chat message in a conversation.
+/// Implements ObservableObject to support real-time UI updates during streaming.
 /// </summary>
 [Table("chat_messages")]
-public class ChatMessage
+public partial class ChatMessage : ObservableObject
 {
     /// <summary>
     /// Gets or sets the unique identifier for the message.
@@ -23,8 +25,10 @@ public class ChatMessage
 
     /// <summary>
     /// Gets or sets the content of the message.
+    /// Uses ObservableProperty to notify UI of changes during streaming.
     /// </summary>
-    public string Content { get; set; } = string.Empty;
+    [ObservableProperty]
+    private string _content = string.Empty;
 
     /// <summary>
     /// Gets or sets a value indicating whether the message is from the user (true) or AI (false).

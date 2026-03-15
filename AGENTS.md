@@ -32,7 +32,7 @@
 Asakumo.Avalonia/
 ├── Asakumo.Avalonia/              # 核心项目 (共享代码)
 │   ├── Models/                    # 数据模型
-│   │   ├── ChatMessage.cs         # 聊天消息 (SQLite 表)
+│   │   ├── ChatMessage.cs         # 聊天消息 (SQLite 表 + ObservableObject)
 │   │   ├── Conversation.cs        # 会话 (SQLite 表)
 │   │   ├── AIProvider.cs          # AI 服务提供商 (静态数据)
 │   │   ├── AIModel.cs             # AI 模型 (静态数据)
@@ -132,15 +132,18 @@ public class Conversation
     public DateTime UpdatedAt { get; set; }
 }
 
-// ChatMessage - SQLite 表
+// ChatMessage - SQLite 表 + ObservableObject (支持流式响应 UI 更新)
 [Table("chat_messages")]
-public class ChatMessage
+public partial class ChatMessage : ObservableObject
 {
     [PrimaryKey]
     public string Id { get; set; }
     
-    [Indexed]  // 外键查询需要索引
+    [Indexed]
     public string ConversationId { get; set; }
+    
+    [ObservableProperty]  // 支持 UI 实时更新
+    private string _content = string.Empty;
     
     [Indexed]
     public DateTime Timestamp { get; set; }
@@ -189,6 +192,29 @@ public partial class ExampleViewModel : ViewModelBase
     {
         // 异步业务逻辑
     }
+}
+```
+
+### Model 规范 (需要 UI 更新的场景)
+
+对于需要在运行时动态更新并通知 UI 的数据模型（如流式响应消息），Model 类应继承 `ObservableObject`：
+
+```csharp
+// 支持实时 UI 更新的 Model
+public partial class ChatMessage : ObservableObject
+{
+    // 使用 ObservableProperty 支持属性变更通知
+    [ObservableProperty]
+    private string _content = string.Empty;
+}
+
+// 使用示例：流式响应时实时更新
+var response = new ChatMessage { Content = "" };
+Messages.Add(response);
+
+await foreach (var token in aiService.StreamChatAsync(...))
+{
+    response.Content += token;  // 自动触发 UI 更新
 }
 ```
 
@@ -430,6 +456,32 @@ public async IAsyncEnumerable<string> StreamChatAsync(...)
     await foreach (var token in channel.Reader.ReadAllAsync(ct))
         yield return token;
 }
+```
+
+### 流式响应 UI 不更新
+
+**问题**: 流式响应时消息内容在更新，但 UI 没有实时显示。
+
+**原因**: Model 类是普通 POCO，属性变更不会触发 `INotifyPropertyChanged`。
+
+**解决方案**: 让 Model 类继承 `ObservableObject`，使用 `[ObservableProperty]`：
+
+```csharp
+// 错误: 普通 POCO，UI 不会更新
+public class ChatMessage
+{
+    public string Content { get; set; }  // 无通知
+}
+
+// 正确: 继承 ObservableObject
+public partial class ChatMessage : ObservableObject
+{
+    [ObservableProperty]
+    private string _content = string.Empty;  // 自动通知 UI
+}
+
+// 使用时
+response.Content += token;  // 自动触发 PropertyChanged 事件
 ```
 
 ### 异步方法调用

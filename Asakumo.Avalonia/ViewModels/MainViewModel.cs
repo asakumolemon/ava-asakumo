@@ -1,4 +1,6 @@
+using System;
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using Asakumo.Avalonia.Models;
 using Asakumo.Avalonia.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -24,7 +26,7 @@ public partial class MainViewModel : ViewModelBase
     /// Gets or sets the application settings.
     /// </summary>
     [ObservableProperty]
-    private AppSettings _settings = null!;
+    private AppSettings _settings = new();
 
     /// <summary>
     /// Gets the list of conversations.
@@ -40,17 +42,32 @@ public partial class MainViewModel : ViewModelBase
     {
         _dataService = dataService;
         _navigationService = navigationService;
-        Settings = _dataService.GetSettingsAsync().GetAwaiter().GetResult();
         _navigationService.NavigationChanged += OnNavigationChanged;
 
-        // Initialize with welcome view if first time, otherwise conversation list
-        if (!Settings.HasSeenWelcome)
+        // Initialize asynchronously to avoid blocking the UI thread
+        _ = InitializeAsync();
+    }
+
+    private async Task InitializeAsync()
+    {
+        try
         {
-            _navigationService.NavigateTo<WelcomeViewModel>();
+            Settings = await _dataService.GetSettingsAsync();
+
+            // Initialize with welcome view if first time, otherwise conversation list
+            if (!Settings.HasSeenWelcome)
+            {
+                _navigationService.NavigateTo<WelcomeViewModel>();
+            }
+            else
+            {
+                _navigationService.NavigateTo<ConversationListViewModel>();
+            }
         }
-        else
+        catch (Exception)
         {
-            _navigationService.NavigateTo<ConversationListViewModel>();
+            // If settings fail to load, show welcome view as fallback
+            _navigationService.NavigateTo<WelcomeViewModel>();
         }
     }
 
