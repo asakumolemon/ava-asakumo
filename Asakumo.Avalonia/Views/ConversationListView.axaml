@@ -7,6 +7,7 @@
              mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="700"
              x:Class="Asakumo.Avalonia.Views.ConversationListView"
              x:DataType="vm:ConversationListViewModel"
+             x:Name="ConversationListControl"
              Background="{DynamicResource AppBackgroundBrush}">
 
   <Grid RowDefinitions="Auto, *, Auto">
@@ -97,7 +98,7 @@
                   <ItemsControl.ItemTemplate>
                     <DataTemplate x:DataType="model:Conversation">
                       <Border Classes="card" Margin="0,0,0,8">
-                        <Button Command="{Binding $parent[ItemsControl].((vm:ConversationListViewModel)DataContext).SelectConversationCommand}"
+                        <Button Command="{Binding #ConversationListControl.((vm:ConversationListViewModel)DataContext).SelectConversationCommand}"
                                 CommandParameter="{Binding}"
                                 Background="Transparent" 
                                 BorderThickness="0"
