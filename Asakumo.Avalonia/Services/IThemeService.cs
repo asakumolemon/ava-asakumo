@@ -1,3 +1,4 @@
+using System;
 using Avalonia.Styling;
 
 namespace Asakumo.Avalonia.Services;
@@ -11,6 +12,12 @@ public interface IThemeService
     /// Gets or sets a value indicating whether dark mode is enabled.
     /// </summary>
     bool IsDarkMode { get; set; }
+
+    /// <summary>
+    /// Initializes the theme from saved settings.
+    /// </summary>
+    /// <param name="isDarkMode">Whether dark mode should be enabled.</param>
+    void Initialize(bool isDarkMode);
 
     /// <summary>
     /// Occurs when the theme is changed.
@@ -52,10 +59,7 @@ public class ThemeService : IThemeService
         // Will be overridden by saved settings
     }
 
-    /// <summary>
-    /// Initializes the theme from saved settings.
-    /// </summary>
-    /// <param name="isDarkMode">Whether dark mode should be enabled.</param>
+    /// <inheritdoc/>
     public void Initialize(bool isDarkMode)
     {
         _isDarkMode = isDarkMode;
@@ -64,9 +68,9 @@ public class ThemeService : IThemeService
 
     private void ApplyTheme()
     {
-        if (Avalonia.Application.Current != null)
+        if (global::Avalonia.Application.Current != null)
         {
-            Avalonia.Application.Current.RequestedThemeVariant = _isDarkMode
+            global::Avalonia.Application.Current.RequestedThemeVariant = _isDarkMode
                 ? ThemeVariant.Dark
                 : ThemeVariant.Light;
         }

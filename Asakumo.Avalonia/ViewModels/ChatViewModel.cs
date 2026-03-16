@@ -140,6 +140,8 @@ public partial class ChatViewModel : ViewModelBase
 
             // Load messages separately
             var messages = await _dataService.GetMessagesAsync(conversationId);
+            
+            // Update UI on main thread
             Messages.Clear();
             foreach (var msg in messages)
             {
