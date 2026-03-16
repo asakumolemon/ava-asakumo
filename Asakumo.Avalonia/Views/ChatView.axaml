@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="using:Asakumo.Avalonia.ViewModels"
              xmlns:model="using:Asakumo.Avalonia.Models"
+             xmlns:markdown="clr-namespace:Markdown.Avalonia;assembly=Markdown.Avalonia"
              mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="700"
              x:Class="Asakumo.Avalonia.Views.ChatView"
              x:DataType="vm:ChatViewModel"
@@ -81,14 +82,15 @@
     <!-- Chat Messages Area -->
     <ScrollViewer Grid.Row="2" 
                   Background="{DynamicResource AppBackgroundBrush}"
-                  Padding="16,16"
+                  Padding="16,16,16,8"
                   Name="MessagesScrollViewer">
-      <Grid>
+      <Grid Margin="0,0,0,8" Background="{DynamicResource AppBackgroundBrush}">
         <!-- Empty State -->
-        <StackPanel IsVisible="{Binding Messages.Count, Converter={x:Static StringConverters.IsNullOrEmpty}}"
+        <StackPanel IsVisible="{Binding !HasMessages}"
                     VerticalAlignment="Center"
                     HorizontalAlignment="Center"
-                    Spacing="20">
+                    Spacing="20"
+                    ZIndex="1">
           <TextBlock Text="&#x1F319;" FontSize="48" 
                      HorizontalAlignment="Center"
                      Foreground="{DynamicResource AppTextSecondaryBrush}"/>
@@ -103,30 +105,80 @@
         </StackPanel>
 
         <!-- Messages List -->
-        <ItemsControl ItemsSource="{Binding Messages}">
+        <ItemsControl ItemsSource="{Binding Messages}" ZIndex="0">
           <ItemsControl.ItemTemplate>
             <DataTemplate x:DataType="model:ChatMessage">
               <!-- Message Container -->
               <Grid Margin="0,4">
                 
                 <!-- User Message (Right aligned, Green background) -->
-                <Border IsVisible="{Binding IsUser}"
-                        Background="{DynamicResource UserMessageBrush}" 
-                        CornerRadius="16,4,16,16"
-                        Padding="12,8" 
-                        HorizontalAlignment="Right" 
-                        MaxWidth="280">
-                  <StackPanel Spacing="4">
-                    <TextBlock Text="{Binding Content}" 
-                               TextWrapping="Wrap" 
-                               Foreground="White"
-                               FontSize="14"/>
-                    <TextBlock Text="{Binding Timestamp, StringFormat='{}{0:HH:mm}'}"
-                               FontSize="10" 
-                               Foreground="#FFFFFF99" 
-                               HorizontalAlignment="Right"/>
-                  </StackPanel>
-                </Border>
+                <Grid IsVisible="{Binding IsUser}"
+                      HorizontalAlignment="Right"
+                      MaxWidth="300">
+                  <!-- Edit Mode -->
+                  <Border IsVisible="{Binding IsEditing}"
+                          Background="{DynamicResource UserMessageBrush}" 
+                          CornerRadius="16,4,16,16"
+                          Padding="12,8">
+                    <StackPanel Spacing="8">
+                      <TextBox Text="{Binding EditableContent}"
+                               AcceptsReturn="True"
+                               TextWrapping="Wrap"
+                               MinWidth="200"
+                               MaxWidth="260"/>
+                      <StackPanel Orientation="Horizontal" 
+                                  HorizontalAlignment="Right" 
+                                  Spacing="8">
+                        <Button Content="取消" 
+                                Classes="secondary"
+                                Command="{Binding $parent[ItemsControl].((vm:ChatViewModel)DataContext).CancelEditMessageCommand}"
+                                CommandParameter="{Binding}"/>
+                        <Button Content="保存" 
+                                Classes="primary"
+                                Command="{Binding $parent[ItemsControl].((vm:ChatViewModel)DataContext).SaveEditedMessageCommand}"
+                                CommandParameter="{Binding}"/>
+                      </StackPanel>
+                    </StackPanel>
+                  </Border>
+                  
+                  <!-- Normal Mode -->
+                  <Border IsVisible="{Binding !IsEditing}"
+                          Background="{DynamicResource UserMessageBrush}" 
+                          CornerRadius="16,4,16,16"
+                          Padding="12,8">
+                    <StackPanel Spacing="4">
+                      <TextBlock Text="{Binding Content}" 
+                                 TextWrapping="Wrap" 
+                                 Foreground="White"
+                                 FontSize="14"/>
+                      <Grid ColumnDefinitions="*, Auto">
+                        <TextBlock Grid.Column="0"
+                                   Text="{Binding Timestamp, StringFormat='{}{0:HH:mm}'}"
+                                   FontSize="10" 
+                                   Foreground="#FFFFFF99"/>
+                        <!-- Edit/Delete buttons -->
+                        <StackPanel Grid.Column="1" 
+                                    Orientation="Horizontal" 
+                                    Spacing="4">
+                          <Button Content="✏️" 
+                                  FontSize="10"
+                                  Padding="4,2"
+                                  Command="{Binding $parent[ItemsControl].((vm:ChatViewModel)DataContext).EditMessageCommand}"
+                                  CommandParameter="{Binding}"
+                                  Background="Transparent"
+                                  Foreground="#FFFFFF99"/>
+                          <Button Content="🗑️" 
+                                  FontSize="10"
+                                  Padding="4,2"
+                                  Command="{Binding $parent[ItemsControl].((vm:ChatViewModel)DataContext).DeleteMessageCommand}"
+                                  CommandParameter="{Binding}"
+                                  Background="Transparent"
+                                  Foreground="#FFFFFF99"/>
+                        </StackPanel>
+                      </Grid>
+                    </StackPanel>
+                  </Border>
+                </Grid>
 
                 <!-- AI Message (Left aligned, with avatar) -->
                 <Grid IsVisible="{Binding !IsUser}" 
@@ -146,7 +198,7 @@
                                FontSize="14"/>
                   </Border>
                   
-                  <!-- AI Message Bubble -->
+                  <!-- AI Message Bubble with Markdown -->
                   <Border Grid.Column="1" 
                           Background="{DynamicResource AppAiMessageBrush}"
                           CornerRadius="4,16,16,16" 
@@ -154,10 +206,9 @@
                           MaxWidth="280"
                           HorizontalAlignment="Left">
                     <StackPanel Spacing="4">
-                      <TextBlock Text="{Binding Content}" 
-                                 TextWrapping="Wrap"
-                                 FontSize="14"
-                                 Foreground="{DynamicResource AppTextPrimaryBrush}"/>
+                      <!-- Markdown content -->
+                      <markdown:MarkdownScrollViewer 
+                          Markdown="{Binding Content}"/>
                       <TextBlock Text="{Binding Timestamp, StringFormat='{}{0:HH:mm}'}"
                                  FontSize="10" 
                                  Foreground="{DynamicResource AppTextSecondaryBrush}"

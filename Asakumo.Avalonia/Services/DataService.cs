@@ -157,6 +157,18 @@ public class DataService : IDataService
     }
 
     /// <inheritdoc/>
+    public async Task DeleteMessageAsync(string messageId)
+    {
+        await EnsureInitializedAsync();
+
+        await _database!.ExecuteAsync(
+            "DELETE FROM chat_messages WHERE Id = ?",
+            messageId);
+
+        _logger.LogDebug("Deleted message {Id}", messageId);
+    }
+
+    /// <inheritdoc/>
     public async Task DeleteMessagesAsync(string conversationId)
     {
         await EnsureInitializedAsync();
@@ -480,4 +492,75 @@ public class DataService : IDataService
     }
 
     #endregion
+
+    #region Backup & Maintenance
+
+    /// <summary>
+    /// Clears all conversations and messages from the database.
+    /// </summary>
+    public async Task ClearAllConversationsAsync()
+    {
+        await EnsureInitializedAsync();
+
+        await _database!.ExecuteAsync("DELETE FROM chat_messages");
+        await _database.ExecuteAsync("DELETE FROM conversations");
+
+        _logger.LogInformation("Cleared all conversations and messages");
+    }
+
+    /// <summary>
+    /// Exports all data to a backup file.
+    /// </summary>
+    /// <param name="backupPath">The path to save the backup.</param>
+    public async Task BackupDataAsync(string backupPath)
+    {
+        await EnsureInitializedAsync();
+
+        try
+        {
+            var backup = new BackupData
+            {
+                ExportedAt = DateTime.Now,
+                Settings = await GetSettingsAsync(),
+                Conversations = await GetConversationsAsync()
+            };
+
+            // Get all messages for each conversation
+            var allMessages = new List<ChatMessage>();
+            foreach (var conv in backup.Conversations)
+            {
+                var messages = await GetMessagesAsync(conv.Id);
+                allMessages.AddRange(messages);
+            }
+            backup.Messages = allMessages;
+
+            var json = JsonSerializer.Serialize(backup, _jsonOptions);
+            await File.WriteAllTextAsync(backupPath, json);
+
+            _logger.LogInformation("Backup created at {Path}", backupPath);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to create backup");
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Gets the database file path.
+    /// </summary>
+    public string GetDatabasePath() => _dbPath;
+
+    #endregion
+}
+
+/// <summary>
+/// Represents a backup of all application data.
+/// </summary>
+internal class BackupData
+{
+    public DateTime ExportedAt { get; set; }
+    public AppSettings? Settings { get; set; }
+    public List<Conversation> Conversations { get; set; } = new();
+    public List<ChatMessage> Messages { get; set; } = new();
 }

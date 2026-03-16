@@ -72,7 +72,12 @@ public partial class ChatViewModel : ViewModelBase
     /// <summary>
     /// Gets the messages in the conversation.
     /// </summary>
-    public ObservableCollection<ChatMessage> Messages { get; } = new();
+    public ObservableCollection<ChatMessage> Messages { get; }
+
+    /// <summary>
+    /// Gets a value indicating whether there are any messages.
+    /// </summary>
+    public bool HasMessages => Messages.Count > 0;
 
     /// <summary>
     /// Gets the conversation ID.
@@ -93,6 +98,9 @@ public partial class ChatViewModel : ViewModelBase
         _dataService = dataService;
         _navigationService = navigationService;
         _aiService = aiService;
+
+        Messages = new ObservableCollection<ChatMessage>();
+        Messages.CollectionChanged += (s, e) => OnPropertyChanged(nameof(HasMessages));
 
         _ = InitializeAsync();
     }
@@ -216,6 +224,57 @@ public partial class ChatViewModel : ViewModelBase
     {
         _responseCts?.Cancel();
         IsAiResponding = false;
+    }
+
+    /// <summary>
+    /// Command to edit a message.
+    /// </summary>
+    [RelayCommand]
+    private void EditMessage(ChatMessage? message)
+    {
+        if (message == null || !message.IsUser) return;
+        message.BeginEdit();
+    }
+
+    /// <summary>
+    /// Command to save edited message.
+    /// </summary>
+    [RelayCommand]
+    private async Task SaveEditedMessageAsync(ChatMessage? message)
+    {
+        if (message == null || string.IsNullOrWhiteSpace(message.EditableContent)) return;
+
+        message.Content = message.EditableContent;
+        message.CancelEdit();
+
+        await _dataService.SaveMessageAsync(message);
+    }
+
+    /// <summary>
+    /// Command to cancel editing a message.
+    /// </summary>
+    [RelayCommand]
+    private void CancelEditMessage(ChatMessage? message)
+    {
+        message?.CancelEdit();
+    }
+
+    /// <summary>
+    /// Command to delete a message.
+    /// </summary>
+    [RelayCommand]
+    private async Task DeleteMessageAsync(ChatMessage? message)
+    {
+        if (message == null) return;
+
+        Messages.Remove(message);
+        await _dataService.DeleteMessageAsync(message.Id);
+
+        // Update conversation if needed
+        if (Messages.Count > 0)
+        {
+            await SaveConversationAsync();
+        }
     }
 
     /// <summary>

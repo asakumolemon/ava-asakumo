@@ -1,0 +1,128 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+env:
+  DOTNET_VERSION: '9.0.x'
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+            rid: win-x64
+            artifact: windows
+            ext: .zip
+          - os: macos-latest
+            rid: osx-x64
+            artifact: macos
+            ext: .tar.gz
+          - os: ubuntu-latest
+            rid: linux-x64
+            artifact: linux
+            ext: .tar.gz
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --configuration Release --no-restore
+
+      - name: Publish
+        run: dotnet publish Asakumo.Avalonia.Desktop/Asakumo.Avalonia.Desktop.csproj \
+          --configuration Release \
+          --runtime ${{ matrix.rid }} \
+          --self-contained true \
+          --publish-single-file true \
+          --publish-trimmed true \
+          --output ./publish/${{ matrix.artifact }}
+
+      - name: Create archive (Windows)
+        if: matrix.os == 'windows-latest'
+        run: Compress-Archive -Path ./publish/${{ matrix.artifact }}/* -DestinationPath ./asakumo-${{ matrix.artifact }}${{ matrix.ext }}
+
+      - name: Create archive (Unix)
+        if: matrix.os != 'windows-latest'
+        run: tar -czvf asakumo-${{ matrix.artifact }}${{ matrix.ext }} -C ./publish/${{ matrix.artifact }} .
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: asakumo-${{ matrix.artifact }}
+          path: asakumo-${{ matrix.artifact }}${{ matrix.ext }}
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ./artifacts
+
+      - name: Display structure of downloaded files
+        run: ls -R ./artifacts
+
+      - name: Get version from tag
+        id: get_version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: Asakumo ${{ steps.get_version.outputs.VERSION }}
+          body: |
+            ## Asakumo ${{ steps.get_version.outputs.VERSION }}
+            
+            ### 下载
+            | 平台 | 文件 |
+            |------|------|
+            | Windows | `asakumo-windows.zip` |
+            | macOS | `asakumo-macos.tar.gz` |
+            | Linux | `asakumo-linux.tar.gz` |
+            
+            ### 更新日志
+            请查看 [commits](https://github.com/asakumolemon/ava-asakumo/commits/${{ steps.get_version.outputs.VERSION }}) 了解详情。
+          files: |
+            ./artifacts/asakumo-windows/asakumo-windows.zip
+            ./artifacts/asakumo-macos/asakumo-macos.tar.gz
+            ./artifacts/asakumo-linux/asakumo-linux.tar.gz
+          draft: false
+          prerelease: false
+
+  push-to-remote:
+    needs: release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Push to remote repository
+        run: |
+          git remote add remote-repo https://github.com/asakumolemon/ava-asakumo.git
+          git push remote-repo --tags
+          git push remote-repo HEAD:main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -31,6 +31,18 @@ public partial class ChatMessage : ObservableObject
     private string _content = string.Empty;
 
     /// <summary>
+    /// Gets or sets the editable content (used during edit mode).
+    /// </summary>
+    [ObservableProperty]
+    private string _editableContent = string.Empty;
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the message is in edit mode.
+    /// </summary>
+    [ObservableProperty]
+    private bool _isEditing;
+
+    /// <summary>
     /// Gets or sets a value indicating whether the message is from the user (true) or AI (false).
     /// </summary>
     public bool IsUser { get; set; }
@@ -40,6 +52,24 @@ public partial class ChatMessage : ObservableObject
     /// </summary>
     [Indexed]
     public DateTime Timestamp { get; set; } = DateTime.Now;
+
+    /// <summary>
+    /// Starts editing this message.
+    /// </summary>
+    public void BeginEdit()
+    {
+        EditableContent = Content;
+        IsEditing = true;
+    }
+
+    /// <summary>
+    /// Cancels editing and restores original content.
+    /// </summary>
+    public void CancelEdit()
+    {
+        EditableContent = string.Empty;
+        IsEditing = false;
+    }
 }
 
 /// <summary>

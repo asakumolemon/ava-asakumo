@@ -26,6 +26,10 @@
 
         <!-- AI API -->
         <PackageVersion Include="OpenAI" Version="2.2.0" />
+        <PackageVersion Include="Google.GenAI" Version="1.0.0" />
+
+        <!-- Markdown rendering -->
+        <PackageVersion Include="Markdown.Avalonia" Version="11.0.3-a1" />
 
         <PackageVersion Include="Xamarin.AndroidX.Core.SplashScreen" Version="1.0.1.15" />
     </ItemGroup>

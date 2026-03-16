@@ -51,7 +51,8 @@ public class NavigationService : INavigationService
             // Handle parameter for ChatViewModel
             if (viewModel is ChatViewModel chatViewModel)
             {
-                chatViewModel.SetConversationAsync(parameter).ConfigureAwait(false);
+                // Synchronously wait for conversation to load before navigating
+                chatViewModel.SetConversationAsync(parameter).GetAwaiter().GetResult();
             }
             
             _navigationStack.Push(viewModel);

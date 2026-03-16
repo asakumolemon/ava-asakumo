@@ -54,6 +54,12 @@ public interface IDataService
     Task SaveMessageAsync(ChatMessage message);
 
     /// <summary>
+    /// Deletes a message by ID.
+    /// </summary>
+    /// <param name="messageId">The message ID.</param>
+    Task DeleteMessageAsync(string messageId);
+
+    /// <summary>
     /// Deletes all messages for a conversation.
     /// </summary>
     /// <param name="conversationId">The conversation ID.</param>
@@ -102,6 +108,27 @@ public interface IDataService
     /// </summary>
     /// <returns>A list of AI providers.</returns>
     List<AIProvider> GetProviders();
+
+    #endregion
+
+    #region Backup & Maintenance
+
+    /// <summary>
+    /// Clears all conversations and messages.
+    /// </summary>
+    Task ClearAllConversationsAsync();
+
+    /// <summary>
+    /// Exports all data to a backup file.
+    /// </summary>
+    /// <param name="backupPath">The path to save the backup.</param>
+    Task BackupDataAsync(string backupPath);
+
+    /// <summary>
+    /// Gets the database file path.
+    /// </summary>
+    /// <returns>The database file path.</returns>
+    string GetDatabasePath();
 
     #endregion
 }

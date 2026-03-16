@@ -82,8 +82,15 @@ public class AIProviderFactory
                 apiKey ?? "no-key",
                 modelId,
                 effectiveBaseUrl),
-            ProviderType.Anthropic => throw new NotImplementedException("Anthropic adapter coming soon"),
-            ProviderType.Gemini => throw new NotImplementedException("Gemini adapter coming soon"),
+            ProviderType.Anthropic => new AnthropicProvider(
+                providerId,
+                apiKey ?? string.Empty,
+                modelId,
+                effectiveBaseUrl),
+            ProviderType.Gemini => new GeminiProvider(
+                providerId,
+                apiKey ?? string.Empty,
+                modelId),
             _ => throw new NotSupportedException($"不支持的 Provider 类型: {info.Type}")
         };
     }

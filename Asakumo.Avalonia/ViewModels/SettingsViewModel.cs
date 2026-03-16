@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Asakumo.Avalonia.Models;
@@ -100,18 +101,44 @@ public partial class SettingsViewModel : ViewModelBase
     /// Command to backup data.
     /// </summary>
     [RelayCommand]
-    private void Backup()
+    private async Task BackupAsync()
     {
-        // Implement backup logic
+        try
+        {
+            var timestamp = System.DateTime.Now.ToString("yyyyMMdd_HHmmss");
+            var backupFileName = $"asakumo_backup_{timestamp}.json";
+            
+            // Use Documents folder for backup
+            var documentsPath = System.Environment.GetFolderPath(
+                System.Environment.SpecialFolder.MyDocuments);
+            var backupPath = Path.Combine(documentsPath, backupFileName);
+            
+            await _dataService.BackupDataAsync(backupPath);
+            
+            // TODO: Show success message to user
+        }
+        catch
+        {
+            // TODO: Show error message to user
+        }
     }
 
     /// <summary>
     /// Command to clear all conversations.
     /// </summary>
     [RelayCommand]
-    private void ClearConversations()
+    private async Task ClearConversationsAsync()
     {
-        // Implement clear conversations logic
+        try
+        {
+            await _dataService.ClearAllConversationsAsync();
+            
+            // TODO: Show success message to user
+        }
+        catch
+        {
+            // TODO: Show error message to user
+        }
     }
 
     private async Task LoadSettingsAsync()
