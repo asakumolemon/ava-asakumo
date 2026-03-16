@@ -32,6 +32,9 @@
                      FontWeight="Medium"
                      FontSize="16"
                      HorizontalAlignment="Center"
+                     TextWrapping="NoWrap"
+                     TextTrimming="CharacterEllipsis"
+                     MaxWidth="200"
                      Foreground="{DynamicResource AppTextPrimaryBrush}"/>
           <TextBlock Text="{Binding CurrentModel}" 
                      FontSize="12"

@@ -124,16 +124,16 @@
                             <TextBlock Grid.Row="0" Grid.Column="1" 
                                        Text="{Binding Title}"
                                        FontWeight="Medium" 
+                                       TextWrapping="NoWrap"
                                        TextTrimming="CharacterEllipsis"
-                                       MaxLines="1"
                                        Foreground="{DynamicResource AppTextPrimaryBrush}"/>
                             
                             <!-- 预览 -->
                             <TextBlock Grid.Row="1" Grid.Column="1" 
                                        Text="{Binding Preview}"
                                        Classes="caption"
-                                       TextTrimming="CharacterEllipsis" 
-                                       MaxLines="1"/>
+                                       TextWrapping="NoWrap"
+                                       TextTrimming="CharacterEllipsis"/>
                             
                             <!-- 模型标签 -->
                             <Border Grid.Row="2" Grid.Column="1"
