@@ -81,6 +81,17 @@ public partial class ConversationListViewModel : ViewModelBase
     }
 
     /// <summary>
+    /// Command to delete a conversation.
+    /// </summary>
+    /// <param name="conversation">The conversation to delete.</param>
+    [RelayCommand]
+    private async Task DeleteConversationAsync(Conversation conversation)
+    {
+        await _dataService.DeleteConversationAsync(conversation.Id);
+        await LoadConversationsAsync();
+    }
+
+    /// <summary>
     /// Command to use a quick prompt.
     /// </summary>
     /// <param name="prompt">The quick prompt.</param>

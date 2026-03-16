@@ -43,6 +43,18 @@ public partial class ChatMessage : ObservableObject
     private bool _isEditing;
 
     /// <summary>
+    /// Gets or sets a value indicating whether the message is loading (streaming).
+    /// </summary>
+    [ObservableProperty]
+    private bool _isLoading;
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the message has an error.
+    /// </summary>
+    [ObservableProperty]
+    private bool _isError;
+
+    /// <summary>
     /// Gets or sets a value indicating whether the message is from the user (true) or AI (false).
     /// </summary>
     public bool IsUser { get; set; }

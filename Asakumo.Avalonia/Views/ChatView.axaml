@@ -206,13 +206,48 @@
                           MaxWidth="280"
                           HorizontalAlignment="Left">
                     <StackPanel Spacing="4">
-                      <!-- Markdown content -->
-                      <markdown:MarkdownScrollViewer 
-                          Markdown="{Binding Content}"/>
-                      <TextBlock Text="{Binding Timestamp, StringFormat='{}{0:HH:mm}'}"
-                                 FontSize="10" 
-                                 Foreground="{DynamicResource AppTextSecondaryBrush}"
-                                 HorizontalAlignment="Right"/>
+                      <!-- Typing Animation (shown when loading and content is empty) -->
+                      <StackPanel IsVisible="{Binding IsLoading}"
+                                  Orientation="Horizontal" 
+                                  Spacing="4">
+                        <Border Classes="typing-dot" Width="8" Height="8" CornerRadius="4"/>
+                        <Border Classes="typing-dot" Width="8" Height="8" CornerRadius="4"/>
+                        <Border Classes="typing-dot" Width="8" Height="8" CornerRadius="4"/>
+                      </StackPanel>
+                      
+                      <!-- Error State -->
+                      <StackPanel IsVisible="{Binding IsError}" Spacing="8">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                          <TextBlock Text="&#x274C;" FontSize="14"/>
+                          <TextBlock Text="发生错误" 
+                                     FontWeight="Medium" 
+                                     Foreground="{DynamicResource ErrorBrush}"/>
+                        </StackPanel>
+                        <TextBlock Text="{Binding Content}" 
+                                   TextWrapping="Wrap"
+                                   FontSize="13"
+                                   Foreground="{DynamicResource AppTextPrimaryBrush}"/>
+                        <Button Content="重试" 
+                                Classes="secondary"
+                                Padding="12,6"
+                                Command="{Binding $parent[ItemsControl].((vm:ChatViewModel)DataContext).RetryMessageCommand}"
+                                CommandParameter="{Binding}"/>
+                      </StackPanel>
+                      
+                      <!-- Normal content (shown when not loading and not error) -->
+                      <StackPanel Spacing="4">
+                        <StackPanel.IsVisible>
+                          <MultiBinding Converter="{x:Static BoolConverters.And}">
+                            <Binding Path="!IsLoading"/>
+                            <Binding Path="!IsError"/>
+                          </MultiBinding>
+                        </StackPanel.IsVisible>
+                        <markdown:MarkdownScrollViewer Markdown="{Binding Content}"/>
+                        <TextBlock Text="{Binding Timestamp, StringFormat='{}{0:HH:mm}'}"
+                                   FontSize="10" 
+                                   Foreground="{DynamicResource AppTextSecondaryBrush}"
+                                   HorizontalAlignment="Right"/>
+                      </StackPanel>
                     </StackPanel>
                   </Border>
                 </Grid>

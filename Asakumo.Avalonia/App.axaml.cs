@@ -27,6 +27,7 @@ public partial class App : Application
         services.AddLogging(builder => builder.AddDebug());
 
         // Register services
+        services.AddSingleton<IThemeService, ThemeService>();
         services.AddSingleton<IDataService, DataService>();
         services.AddSingleton<INavigationService, NavigationService>();
         services.AddSingleton<AIProviderFactory>();
@@ -66,7 +67,19 @@ public partial class App : Application
             };
         }
 
+        // Initialize theme from saved settings
+        InitializeThemeAsync();
+
         base.OnFrameworkInitializationCompleted();
+    }
+
+    private async void InitializeThemeAsync()
+    {
+        var dataService = _serviceProvider!.GetRequiredService<IDataService>();
+        var themeService = _serviceProvider!.GetRequiredService<IThemeService>();
+        
+        var settings = await dataService.GetSettingsAsync();
+        themeService.Initialize(settings.IsDarkMode);
     }
 
     private void DisableAvaloniaDataAnnotationValidation()

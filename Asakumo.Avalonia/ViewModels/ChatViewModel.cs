@@ -278,6 +278,26 @@ public partial class ChatViewModel : ViewModelBase
     }
 
     /// <summary>
+    /// Command to retry a failed message.
+    /// </summary>
+    [RelayCommand]
+    private async Task RetryMessageAsync(ChatMessage? message)
+    {
+        if (message == null || !message.IsError) return;
+
+        // Remove the error message
+        Messages.Remove(message);
+
+        // Find the last user message to retry
+        var lastUserMessage = Messages.LastOrDefault(m => m.IsUser);
+        if (lastUserMessage != null)
+        {
+            // Resend to AI
+            await SendToAiAsync(lastUserMessage.Content);
+        }
+    }
+
+    /// <summary>
     /// Command to open provider selection.
     /// </summary>
     [RelayCommand]
@@ -334,6 +354,7 @@ public partial class ChatViewModel : ViewModelBase
             ConversationId = _conversationId,
             Content = string.Empty,
             IsUser = false,
+            IsLoading = true,
             Timestamp = DateTime.Now
         };
 
@@ -361,10 +382,12 @@ public partial class ChatViewModel : ViewModelBase
         }
         catch (Exception ex)
         {
-            response.Content = $"[错误] {ex.Message}";
+            response.IsError = true;
+            response.Content = ex.Message;
         }
         finally
         {
+            response.IsLoading = false;
             IsAiResponding = false;
         }
     }

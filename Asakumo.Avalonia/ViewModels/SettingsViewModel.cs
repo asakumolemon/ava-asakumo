@@ -16,12 +16,13 @@ public partial class SettingsViewModel : ViewModelBase
 {
     private readonly IDataService _dataService;
     private readonly INavigationService _navigationService;
+    private readonly IThemeService _themeService;
 
     /// <summary>
     /// Gets or sets a value indicating whether dark mode is enabled.
     /// </summary>
     [ObservableProperty]
-    private bool _isDarkMode = true;
+    private bool _isDarkMode;
 
     /// <summary>
     /// Gets or sets the selected language.
@@ -62,11 +63,31 @@ public partial class SettingsViewModel : ViewModelBase
     /// </summary>
     /// <param name="dataService">The data service.</param>
     /// <param name="navigationService">The navigation service.</param>
-    public SettingsViewModel(IDataService dataService, INavigationService navigationService)
+    /// <param name="themeService">The theme service.</param>
+    public SettingsViewModel(
+        IDataService dataService, 
+        INavigationService navigationService,
+        IThemeService themeService)
     {
         _dataService = dataService;
         _navigationService = navigationService;
+        _themeService = themeService;
+        
+        // Sync with theme service
+        IsDarkMode = _themeService.IsDarkMode;
+        _themeService.ThemeChanged += OnThemeChanged;
+        
         _ = LoadSettingsAsync();
+    }
+
+    private void OnThemeChanged(bool isDarkMode)
+    {
+        IsDarkMode = isDarkMode;
+    }
+
+    partial void OnIsDarkModeChanged(bool value)
+    {
+        _themeService.IsDarkMode = value;
     }
 
     /// <summary>
@@ -144,7 +165,7 @@ public partial class SettingsViewModel : ViewModelBase
     private async Task LoadSettingsAsync()
     {
         var settings = await _dataService.GetSettingsAsync();
-        IsDarkMode = settings.IsDarkMode;
+        // IsDarkMode is already synced from ThemeService
         SelectedLanguage = settings.Language switch
         {
             "zh-CN" => "简体中文",

@@ -145,12 +145,23 @@
                                          Foreground="{DynamicResource PrimaryBrush}"/>
                             </Border>
                             
-                            <!-- 时间 -->
-                            <TextBlock Grid.Row="0" Grid.Column="2" 
-                                       Text="{Binding UpdatedAt, StringFormat='{}{0:HH:mm}'}"
-                                       Classes="timestamp"
-                                       VerticalAlignment="Top"
-                                       Margin="8,0,0,0"/>
+                            <!-- 时间和删除按钮 -->
+                            <StackPanel Grid.Row="0" Grid.Column="2" 
+                                        Orientation="Horizontal" 
+                                        Spacing="4"
+                                        VerticalAlignment="Top">
+                              <TextBlock Text="{Binding UpdatedAt, StringFormat='{}{0:HH:mm}'}"
+                                         Classes="timestamp"
+                                         Margin="0,0,4,0"/>
+                              <Button Width="28" Height="28"
+                                      CornerRadius="14"
+                                      Background="Transparent"
+                                      Foreground="{DynamicResource AppTextSecondaryBrush}"
+                                      Command="{Binding #ConversationListControl.((vm:ConversationListViewModel)DataContext).DeleteConversationCommand}"
+                                      CommandParameter="{Binding}">
+                                <TextBlock Text="&#x1F5D1;" FontSize="12"/>
+                              </Button>
+                            </StackPanel>
                           </Grid>
                         </Button>
                       </Border>
