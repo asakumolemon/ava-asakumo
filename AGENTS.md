@@ -11,8 +11,9 @@
 - **MVVM**: CommunityToolkit.Mvvm 8.4.0
 - **DI**: Microsoft.Extensions.DependencyInjection 9.0.0
 - **日志**: Microsoft.Extensions.Logging 9.0.0
-- **AI SDK**: OpenAI 2.2.0
+- **AI SDK**: OpenAI 2.2.0, Google.GenAI 1.0.0
 - **数据存储**: sqlite-net-pcl 1.9.172 + SQLitePCLRaw.bundle_green 2.1.10
+- **Markdown**: Markdown.Avalonia 11.0.3-a1
 - **主题**: Fluent Theme + Inter 字体
 
 ### 架构模式
@@ -21,8 +22,8 @@
 - **Models**: 数据实体 (ChatMessage, Conversation, AIProvider, AIModel, AppSettings)
 - **ViewModels**: 业务逻辑和视图状态管理
 - **Views**: AXAML 视图定义
-- **Services**: 服务层 (INavigationService, IDataService, IAIService)
-- **Providers**: AI 服务商适配器 (IAIProvider, OpenAICompatibleProvider)
+- **Services**: 服务层 (INavigationService, IDataService, IAIService, IThemeService)
+- **Providers**: AI 服务商适配器 (IAIProvider, OpenAICompatibleProvider, GeminiProvider, AnthropicProvider)
 
 ---
 
@@ -55,10 +56,13 @@ Asakumo.Avalonia/
 │   │   ├── NavigationService.cs   # 导航服务实现
 │   │   ├── IAIService.cs          # AI 服务接口
 │   │   ├── AIService.cs           # AI 服务实现
+│   │   ├── IThemeService.cs       # 主题服务接口和实现
 │   │   └── Providers/             # AI 服务商适配器
 │   │       ├── IAIProvider.cs     # 适配器接口
 │   │       ├── AIProviderFactory.cs # 工厂类
-│   │       └── OpenAICompatibleProvider.cs # OpenAI 兼容实现
+│   │       ├── OpenAICompatibleProvider.cs # OpenAI 兼容实现
+│   │       ├── GeminiProvider.cs  # Google Gemini 实现
+│   │       └── AnthropicProvider.cs # Anthropic Claude 实现
 │   ├── skills/                    # 项目专属 Skills
 │   ├── prototype/                 # UI 原型设计文档
 │   └── App.axaml.cs               # 应用入口 + DI 配置
@@ -142,8 +146,19 @@ public partial class ChatMessage : ObservableObject
     [Indexed]
     public string ConversationId { get; set; }
     
-    [ObservableProperty]  // 支持 UI 实时更新
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasContent))]
     private string _content = string.Empty;
+    
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsComplete))]
+    [NotifyPropertyChangedFor(nameof(IsStreaming))]
+    private bool _isLoading;
+    
+    // 计算属性 - 用于 UI 绑定
+    public bool HasContent => !string.IsNullOrEmpty(Content);
+    public bool IsComplete => !IsLoading && !IsError;
+    public bool IsStreaming => IsLoading && HasContent;
     
     [Indexed]
     public DateTime Timestamp { get; set; }
@@ -179,19 +194,28 @@ public async Task SaveSettingsAsync(AppSettings settings)
 3. **使用 `[RelayCommand]` 自动生成命令**
 4. **ViewModel 不得引用 UI 控件**
 5. **异步方法使用 `Async` 后缀**
+6. **使用 `#region` 组织代码结构**
 
 ```csharp
 // 标准 ViewModel 模式
 public partial class ExampleViewModel : ViewModelBase
 {
+    #region Observable Properties
+    
     [ObservableProperty]
     private string _title = string.Empty;
+    
+    #endregion
 
+    #region Commands
+    
     [RelayCommand]
     private async Task LoadDataAsync()
     {
         // 异步业务逻辑
     }
+    
+    #endregion
 }
 ```
 
@@ -205,7 +229,13 @@ public partial class ChatMessage : ObservableObject
 {
     // 使用 ObservableProperty 支持属性变更通知
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasContent))]
     private string _content = string.Empty;
+    
+    // 计算属性简化 XAML 绑定
+    public bool HasContent => !string.IsNullOrEmpty(Content);
+    public bool IsStreaming => IsLoading && HasContent;
+    public bool IsComplete => !IsLoading && !IsError;
 }
 
 // 使用示例：流式响应时实时更新
@@ -223,13 +253,23 @@ await foreach (var token in aiService.StreamChatAsync(...))
 1. **必须使用 `x:DataType` 启用编译绑定**
 2. **使用 `{DynamicResource}` 引用主题资源**
 3. **使用 `Classes` 属性应用样式**
+4. **使用 PathIcon 替代 emoji 图标**
+5. **使用简单属性绑定替代复杂 MultiBinding**
 
 ```xml
 <UserControl x:Class="MyApp.Views.ExampleView"
              x:DataType="vm:ExampleViewModel">
-  <Button Classes="primary" Command="{Binding DoSomethingCommand}">
-    <TextBlock Text="{Binding Title}"/>
+  <!-- 使用 PathIcon -->
+  <Button Classes="icon" ToolTip.Tip="返回">
+    <PathIcon Data="M20,11H7.83L13.42,5.41L12,4L4,12L12,20L13.41,18.59L7.83,13H20V11Z"
+              Width="20" Height="20"/>
   </Button>
+  
+  <!-- 使用简单绑定 -->
+  <StackPanel IsVisible="{Binding IsStreaming}">
+    <TextBlock Text="{Binding Content}"/>
+    <Border Classes="streaming-cursor"/>
+  </StackPanel>
 </UserControl>
 ```
 
@@ -295,8 +335,18 @@ public interface IAIService
     IAsyncEnumerable<string> StreamChatAsync(string conversationId, string message, CancellationToken ct = default);
     Task<string> ChatAsync(string conversationId, string message, CancellationToken ct = default);
     void ClearHistory(string conversationId);
+    void RestoreHistory(string conversationId, IEnumerable<ChatMessage> messages);
     Task<IEnumerable<AIModel>> GetAvailableModelsAsync();
     Task<bool> ValidateConfigurationAsync();
+    Task<bool> ValidateProviderAsync(string providerId, string apiKey, string? baseUrl, CancellationToken ct = default);
+}
+
+// 主题服务
+public interface IThemeService
+{
+    bool IsDarkMode { get; set; }
+    void Initialize(bool isDarkMode);
+    event Action<bool>? ThemeChanged;
 }
 ```
 
@@ -329,6 +379,7 @@ services.AddLogging(builder => builder.AddDebug());
 // 服务
 services.AddSingleton<IDataService, DataService>();
 services.AddSingleton<INavigationService, NavigationService>();
+services.AddSingleton<IThemeService, ThemeService>();
 services.AddSingleton<AIProviderFactory>();
 services.AddSingleton<IAIService, AIService>();
 
@@ -350,8 +401,8 @@ services.AddTransient<ModelSelectionViewModel>();
 | Provider | 类型 | 说明 |
 |----------|------|------|
 | OpenAI | OpenAI 兼容 | GPT-4o, GPT-4o-mini, o3-mini, GPT-3.5-turbo |
-| Anthropic | 需适配 | Claude 3.5 Sonnet, Claude 3 Opus |
-| Google | 需适配 | Gemini 2.0 Flash, Gemini 1.5 Pro |
+| Anthropic | 原生 SDK | Claude 3.5 Sonnet, Claude 3 Opus |
+| Google | 原生 SDK | Gemini 2.0 Flash, Gemini 1.5 Pro |
 | DeepSeek | OpenAI 兼容 | DeepSeek Chat, DeepSeek Reasoner |
 | Ollama | OpenAI 兼容 | Llama 3.2, Qwen 2.5, DeepSeek R1, Code Llama |
 
@@ -377,6 +428,55 @@ API 配置 (ApiKeyConfigView)
 模型选择 (ModelSelectionView)
     ↓ 确认选择
 返回聊天页
+```
+
+---
+
+## 聊天界面功能
+
+### 消息显示状态
+
+ChatMessage 模型支持多种显示状态：
+
+| 状态 | 条件 | UI 表现 |
+|------|------|----------|
+| 加载中 | `IsLoading && !HasContent` | 三个点动画 |
+| 流式输出 | `IsLoading && HasContent` | 内容 + 闪烁光标 |
+| 完成 | `!IsLoading && !IsError` | Markdown 渲染 + 时间戳 |
+| 错误 | `IsError` | 错误图标 + 错误信息 + 重试按钮 |
+
+### 交互功能
+
+- **消息编辑**: 用户消息支持编辑和重新发送
+- **消息删除**: 支持删除单条消息
+- **停止生成**: 流式输出时可中断
+- **自动滚动**: 新消息自动滚动到底部
+- **键盘快捷键**: Enter 发送，Shift+Enter 换行
+
+### 动画效果
+
+```xml
+<!-- 打字指示器动画 -->
+<Style Selector="StackPanel.typing-indicator > Border.typing-dot:nth-child(1)">
+    <Style.Animations>
+        <Animation Duration="0:0:1.2" IterationCount="Infinite">
+            <KeyFrame Cue="0%"><Setter Property="Opacity" Value="0.3"/></KeyFrame>
+            <KeyFrame Cue="25%"><Setter Property="Opacity" Value="1"/></KeyFrame>
+            <KeyFrame Cue="50%"><Setter Property="Opacity" Value="0.3"/></KeyFrame>
+        </Animation>
+    </Style.Animations>
+</Style>
+
+<!-- 流式光标闪烁 -->
+<Style Selector="Border.streaming-cursor">
+    <Style.Animations>
+        <Animation Duration="0:0:1" IterationCount="Infinite">
+            <KeyFrame Cue="0%"><Setter Property="Opacity" Value="1"/></KeyFrame>
+            <KeyFrame Cue="50%"><Setter Property="Opacity" Value="0"/></KeyFrame>
+            <KeyFrame Cue="100%"><Setter Property="Opacity" Value="1"/></KeyFrame>
+        </Animation>
+    </Style.Animations>
+</Style>
 ```
 
 ---
@@ -484,6 +584,24 @@ public partial class ChatMessage : ObservableObject
 response.Content += token;  // 自动触发 PropertyChanged 事件
 ```
 
+### 复杂 MultiBinding 问题
+
+**问题**: 在 MultiBinding 中使用否定绑定 (`!IsLoading`) 可能无法正确解析。
+
+**解决方案**: 为 Model 添加计算属性，简化绑定：
+
+```csharp
+// 添加计算属性
+public bool IsComplete => !IsLoading && !IsError;
+public bool IsStreaming => IsLoading && HasContent;
+
+// XAML 使用简单绑定
+<StackPanel IsVisible="{Binding IsStreaming}">
+    <TextBlock Text="{Binding Content}"/>
+    <Border Classes="streaming-cursor"/>
+</StackPanel>
+```
+
 ### 异步方法调用
 
 在构造函数中调用异步方法，使用 `GetAwaiter().GetResult()` (桌面应用) 或 `_ = InitializeAsync()` (Fire-and-forget)：
@@ -499,5 +617,33 @@ public MainViewModel(IDataService dataService)
 public SettingsViewModel(IDataService dataService)
 {
     _ = LoadSettingsAsync();
+}
+```
+
+### 自动滚动实现
+
+在 View 的 code-behind 中处理自动滚动：
+
+```csharp
+public partial class ChatView : UserControl
+{
+    public ChatView()
+    {
+        InitializeComponent();
+        DataContextChanged += OnDataContextChanged;
+    }
+
+    private void OnDataContextChanged(object? sender, EventArgs e)
+    {
+        if (DataContext is ChatViewModel viewModel)
+        {
+            viewModel.MessageAdded += (_, _) => ScrollToBottom();
+        }
+    }
+
+    private void ScrollToBottom()
+    {
+        _messagesScrollViewer?.ScrollToEnd();
+    }
 }
 ```

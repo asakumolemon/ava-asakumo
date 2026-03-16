@@ -28,6 +28,7 @@ public partial class ChatMessage : ObservableObject
     /// Uses ObservableProperty to notify UI of changes during streaming.
     /// </summary>
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasContent))]
     private string _content = string.Empty;
 
     /// <summary>
@@ -46,13 +47,31 @@ public partial class ChatMessage : ObservableObject
     /// Gets or sets a value indicating whether the message is loading (streaming).
     /// </summary>
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsComplete))]
+    [NotifyPropertyChangedFor(nameof(IsStreaming))]
     private bool _isLoading;
 
     /// <summary>
     /// Gets or sets a value indicating whether the message has an error.
     /// </summary>
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsComplete))]
     private bool _isError;
+
+    /// <summary>
+    /// Gets a value indicating whether the message has content.
+    /// </summary>
+    public bool HasContent => !string.IsNullOrEmpty(Content);
+
+    /// <summary>
+    /// Gets a value indicating whether the message is complete (not loading and not error).
+    /// </summary>
+    public bool IsComplete => !IsLoading && !IsError;
+
+    /// <summary>
+    /// Gets a value indicating whether the message is streaming (loading with content).
+    /// </summary>
+    public bool IsStreaming => IsLoading && HasContent;
 
     /// <summary>
     /// Gets or sets a value indicating whether the message is from the user (true) or AI (false).

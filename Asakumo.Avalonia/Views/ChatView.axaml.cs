@@ -1,16 +1,18 @@
-using System.Collections.Specialized;
+using System;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
+using Avalonia.Threading;
 using Asakumo.Avalonia.ViewModels;
 
 namespace Asakumo.Avalonia.Views;
 
 /// <summary>
-/// Chat view.
+/// Code-behind for the chat view, handling UI-specific behaviors like auto-scroll.
 /// </summary>
 public partial class ChatView : UserControl
 {
     private ScrollViewer? _messagesScrollViewer;
+    private ChatViewModel? _currentViewModel;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ChatView"/> class.
@@ -19,41 +21,53 @@ public partial class ChatView : UserControl
     {
         InitializeComponent();
         Loaded += OnLoaded;
+        Unloaded += OnUnloaded;
         DataContextChanged += OnDataContextChanged;
     }
 
     private void OnLoaded(object? sender, RoutedEventArgs e)
     {
         _messagesScrollViewer = this.FindControl<ScrollViewer>("MessagesScrollViewer");
-        
-        if (DataContext is ChatViewModel viewModel)
-        {
-            viewModel.Messages.CollectionChanged += OnMessagesCollectionChanged;
-        }
+        SubscribeToViewModel();
     }
 
-    private void OnDataContextChanged(object? sender, System.EventArgs e)
+    private void OnUnloaded(object? sender, RoutedEventArgs e)
+    {
+        UnsubscribeFromViewModel();
+    }
+
+    private void OnDataContextChanged(object? sender, EventArgs e)
+    {
+        UnsubscribeFromViewModel();
+        SubscribeToViewModel();
+    }
+
+    private void SubscribeToViewModel()
     {
         if (DataContext is ChatViewModel viewModel)
         {
-            viewModel.Messages.CollectionChanged += OnMessagesCollectionChanged;
+            _currentViewModel = viewModel;
+            _currentViewModel.MessageAdded += OnMessageAdded;
         }
     }
 
-    private void OnMessagesCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    private void UnsubscribeFromViewModel()
     {
-        if (e.Action == NotifyCollectionChangedAction.Add)
+        if (_currentViewModel != null)
         {
-            // Scroll to bottom when new message is added
-            ScrollToBottom();
+            _currentViewModel.MessageAdded -= OnMessageAdded;
+            _currentViewModel = null;
         }
+    }
+
+    private void OnMessageAdded(object? sender, EventArgs e)
+    {
+        // Use Dispatcher to ensure scroll happens after UI update
+        Dispatcher.UIThread.Post(ScrollToBottom, DispatcherPriority.Background);
     }
 
     private void ScrollToBottom()
     {
-        if (_messagesScrollViewer != null)
-        {
-            _messagesScrollViewer.ScrollToEnd();
-        }
+        _messagesScrollViewer?.ScrollToEnd();
     }
 }
