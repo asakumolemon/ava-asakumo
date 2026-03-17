@@ -4,7 +4,6 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="using:Asakumo.Avalonia.ViewModels"
              xmlns:model="using:Asakumo.Avalonia.Models"
-             xmlns:markdown="clr-namespace:Markdown.Avalonia;assembly=Markdown.Avalonia"
              mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="700"
              x:Class="Asakumo.Avalonia.Views.ChatView"
              x:DataType="vm:ChatViewModel"
@@ -246,7 +245,10 @@
 
                       <!-- Normal Content (complete, not loading and not error) -->
                       <StackPanel Spacing="4" IsVisible="{Binding IsComplete}">
-                        <markdown:MarkdownScrollViewer Markdown="{Binding Content}"/>
+                        <!-- 使用 TextBlock 显示内容（更可靠） -->
+                        <TextBlock Text="{Binding Content, Mode=OneWay}"
+                                   TextWrapping="Wrap" FontSize="14"
+                                   Foreground="{DynamicResource AppTextPrimaryBrush}"/>
                         <TextBlock Text="{Binding Timestamp, StringFormat='{}{0:HH:mm}'}"
                                    FontSize="10"
                                    Foreground="{DynamicResource AppTextSecondaryBrush}"

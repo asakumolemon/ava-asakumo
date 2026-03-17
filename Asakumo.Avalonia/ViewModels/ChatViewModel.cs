@@ -168,6 +168,7 @@ public partial class ChatViewModel : ViewModelBase
     /// <param name="conversationId">The conversation ID.</param>
     public async Task SetConversationAsync(string conversationId)
     {
+        ArgumentException.ThrowIfNullOrEmpty(conversationId);
         _conversationId = conversationId;
 
         var conversation = await _dataService.GetConversationAsync(conversationId);
@@ -182,6 +183,13 @@ public partial class ChatViewModel : ViewModelBase
             Messages.Clear();
             foreach (var msg in messages)
             {
+                // 恢复消息状态：从数据库加载的消息一定不是加载中
+                msg.IsLoading = false;
+                // 向后兼容：为旧数据自动设置 IsComplete
+                if (!msg.IsComplete && !msg.IsError)
+                {
+                    msg.IsComplete = true;
+                }
                 Messages.Add(msg);
             }
 
@@ -418,6 +426,7 @@ public partial class ChatViewModel : ViewModelBase
                 response.Content += token;
             }
 
+            response.IsComplete = true;
             await _dataService.SaveMessageAsync(response);
             await SaveConversationAsync();
         }
@@ -427,6 +436,7 @@ public partial class ChatViewModel : ViewModelBase
             {
                 response.Content = "[已中断]";
             }
+            response.IsComplete = true;
         }
         catch (Exception ex)
         {

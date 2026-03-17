@@ -48,7 +48,6 @@ public partial class ChatMessage : ObservableObject
     /// Gets or sets a value indicating whether the message is loading (streaming).
     /// </summary>
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(IsComplete))]
     [NotifyPropertyChangedFor(nameof(IsStreaming))]
     [NotifyPropertyChangedFor(nameof(HasContent))]
     private bool _isLoading;
@@ -61,14 +60,16 @@ public partial class ChatMessage : ObservableObject
     private bool _isError;
 
     /// <summary>
+    /// Gets or sets a value indicating whether the message is complete.
+    /// This is persisted to database to correctly restore message state when reopening conversations.
+    /// </summary>
+    [ObservableProperty]
+    private bool _isComplete;
+
+    /// <summary>
     /// Gets a value indicating whether the message has content.
     /// </summary>
     public bool HasContent => !string.IsNullOrEmpty(Content);
-
-    /// <summary>
-    /// Gets a value indicating whether the message is complete (not loading and not error).
-    /// </summary>
-    public bool IsComplete => !IsLoading && !IsError;
 
     /// <summary>
     /// Gets a value indicating whether the message is streaming (loading with content).
