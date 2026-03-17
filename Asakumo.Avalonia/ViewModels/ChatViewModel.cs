@@ -34,6 +34,8 @@ public partial class ChatViewModel : ViewModelBase
     /// Gets or sets the input message text.
     /// </summary>
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CanSend))]
+    [NotifyCanExecuteChangedFor(nameof(SendMessageCommand))]
     private string _inputMessage = string.Empty;
 
     /// <summary>
