@@ -32,7 +32,7 @@ public partial class App : Application
         services.AddSingleton<INavigationService, NavigationService>();
         services.AddSingleton<AIProviderFactory>();
         services.AddSingleton<IAIService, AIService>();
-        services.AddSingleton<IProviderManager, ProviderManager>();
+        services.AddSingleton<IModelService, ModelService>();
 
         // Register view models
         services.AddTransient<MainViewModel>();
@@ -44,7 +44,6 @@ public partial class App : Application
         services.AddTransient<ApiKeyConfigViewModel>();
         services.AddTransient<ModelSelectionViewModel>();
         services.AddTransient<ProviderManagementViewModel>();
-        services.AddTransient<ModelSelectorViewModel>();
 
         _serviceProvider = services.BuildServiceProvider();
     }

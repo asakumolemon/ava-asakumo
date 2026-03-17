@@ -3,6 +3,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="using:Asakumo.Avalonia.ViewModels"
+             xmlns:v="using:Asakumo.Avalonia.Views"
              xmlns:model="using:Asakumo.Avalonia.Models"
              mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="700"
              x:Class="Asakumo.Avalonia.Views.ChatView"
@@ -14,6 +15,24 @@
   </UserControl.KeyBindings>
 
   <Grid RowDefinitions="Auto, *, Auto">
+
+    <!-- Model Picker Overlay -->
+    <Border Grid.Row="0" Grid.RowSpan="4"
+            Background="#80000000"
+            IsVisible="{Binding ShowModelPicker}"
+            ZIndex="1000">
+      <Grid RowDefinitions="*, Auto">
+        <!-- Click outside to close -->
+        <Panel Grid.Row="0" Grid.RowSpan="2"
+               PointerPressed="OnOverlayPointerPressed"/>
+
+        <!-- Model Picker -->
+        <v:ModelPickerView Grid.Row="1"
+                          DataContext="{Binding ModelPickerViewModel}"
+                          VerticalAlignment="Bottom"/>
+      </Grid>
+    </Border>
+
     <!-- Header -->
     <Border Grid.Row="0" Background="{DynamicResource AppBackgroundBrush}" Padding="12,8">
       <Grid ColumnDefinitions="Auto, *, Auto">
@@ -56,9 +75,9 @@
           <Border Background="{DynamicResource AppSurfaceBrush}"
                   CornerRadius="8"
                   Padding="8,2"
-                  IsVisible="{Binding CurrentModel, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                  IsVisible="{Binding CurrentModelDisplay, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
                   HorizontalAlignment="Center">
-            <TextBlock Text="{Binding CurrentModel}"
+            <TextBlock Text="{Binding CurrentModelDisplay}"
                        FontSize="11"
                        Foreground="{DynamicResource AppTextSecondaryBrush}"/>
           </Border>
@@ -424,7 +443,7 @@
       <Grid RowDefinitions="Auto, Auto, Auto">
         <!-- Model Selector Button -->
         <Button Grid.Row="0"
-                Command="{Binding SwitchModelCommand}"
+                Command="{Binding OpenModelPickerCommand}"
                 Background="{DynamicResource AppSurfaceBrush}"
                 BorderThickness="0"
                 Padding="12,6"
@@ -436,7 +455,7 @@
             <PathIcon Data="{Binding CurrentProviderIcon}"
                       Width="14" Height="14"
                       Foreground="{DynamicResource PrimaryBrush}"/>
-            <TextBlock Text="{Binding CurrentModel}"
+            <TextBlock Text="{Binding CurrentModelDisplay}"
                        FontSize="12"
                        FontWeight="Medium"
                        Foreground="{DynamicResource PrimaryBrush}"/>

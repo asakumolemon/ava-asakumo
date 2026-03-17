@@ -1,5 +1,6 @@
 using System;
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
 using Asakumo.Avalonia.ViewModels;
@@ -23,6 +24,17 @@ public partial class ChatView : UserControl
         Loaded += OnLoaded;
         Unloaded += OnUnloaded;
         DataContextChanged += OnDataContextChanged;
+    }
+
+    /// <summary>
+    /// Handles pointer pressed on the overlay to close the model picker.
+    /// </summary>
+    private void OnOverlayPointerPressed(object? sender, PointerPressedEventArgs e)
+    {
+        if (DataContext is ChatViewModel vm && vm.ShowModelPicker)
+        {
+            vm.CloseModelPickerCommand.Execute(null);
+        }
     }
 
     private void OnLoaded(object? sender, RoutedEventArgs e)

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
@@ -6,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Asakumo.Avalonia.Models;
 using Asakumo.Avalonia.Services;
+using ModelDescriptor = Asakumo.Avalonia.Services.ModelDescriptor;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
@@ -19,7 +21,7 @@ public partial class SettingsViewModel : ViewModelBase
     private readonly IDataService _dataService;
     private readonly INavigationService _navigationService;
     private readonly IThemeService _themeService;
-    private readonly IProviderManager _providerManager;
+    private readonly IModelService _modelService;
 
     #region Observable Properties
 
@@ -92,12 +94,12 @@ public partial class SettingsViewModel : ViewModelBase
         IDataService dataService,
         INavigationService navigationService,
         IThemeService themeService,
-        IProviderManager providerManager)
+        IModelService modelService)
     {
         _dataService = dataService ?? throw new ArgumentNullException(nameof(dataService));
         _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
         _themeService = themeService ?? throw new ArgumentNullException(nameof(themeService));
-        _providerManager = providerManager ?? throw new ArgumentNullException(nameof(providerManager));
+        _modelService = modelService ?? throw new ArgumentNullException(nameof(modelService));
 
         // Sync with theme service
         IsDarkMode = _themeService.IsDarkMode;
@@ -143,7 +145,7 @@ public partial class SettingsViewModel : ViewModelBase
             return;
 
         var newState = !provider.IsEnabled;
-        await _providerManager.SetProviderEnabledAsync(provider.Id, newState);
+        await _modelService.SetProviderEnabledAsync(provider.Id, newState);
         provider.IsEnabled = newState;
 
         ShowToastMessage($"{provider.Name} {(newState ? "已启用" : "已禁用")}");
@@ -196,7 +198,7 @@ public partial class SettingsViewModel : ViewModelBase
         if (model == null)
             return;
 
-        await _providerManager.SwitchModelAsync(model.ProviderId, model.Id);
+        await _modelService.SwitchModelAsync(model.ProviderId, model.Id);
 
         // Update UI
         CurrentProviderName = model.ProviderName;
@@ -294,7 +296,7 @@ public partial class SettingsViewModel : ViewModelBase
         };
 
         // Load current model info
-        var currentModel = await _providerManager.GetCurrentModelAsync();
+        var currentModel = _modelService.CurrentModel;
         if (currentModel != null)
         {
             CurrentProviderName = currentModel.ProviderName;
@@ -308,21 +310,25 @@ public partial class SettingsViewModel : ViewModelBase
 
     private async Task LoadProvidersAsync()
     {
-        var providers = await _providerManager.GetConfiguredProvidersAsync();
-        var currentModel = await _providerManager.GetCurrentModelAsync();
+        var providers = await _modelService.GetProvidersAsync();
+        var currentModel = _modelService.CurrentModel;
 
         Providers.Clear();
 
         foreach (var provider in providers)
         {
+            var models = provider.IsConfigured
+                ? await _modelService.GetModelsByProviderAsync(provider.Id)
+                : new List<ModelDescriptor>();
+
             var vm = new SettingsProviderItemViewModel
             {
                 Id = provider.Id,
                 Name = provider.Name,
                 IsEnabled = provider.IsEnabled,
                 IsConfigured = provider.IsConfigured,
-                IsValid = provider.IsValid,
-                EnabledModelCount = provider.EnabledModelCount,
+                IsValid = provider.IsConfigured,
+                EnabledModelCount = models.Count,
                 Icon = GetProviderIcon(provider.Id),
                 IsExpanded = provider.Id == ExpandedProviderId
             };
@@ -337,8 +343,8 @@ public partial class SettingsViewModel : ViewModelBase
 
         try
         {
-            var models = await _providerManager.GetProviderModelsAsync(provider.Id);
-            var currentModel = await _providerManager.GetCurrentModelAsync();
+            var models = await _modelService.GetModelsByProviderAsync(provider.Id);
+            var currentModel = _modelService.CurrentModel;
 
             provider.Models.Clear();
 

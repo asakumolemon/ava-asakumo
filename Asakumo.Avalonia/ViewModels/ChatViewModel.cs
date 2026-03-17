@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Asakumo.Avalonia.Models;
 using Asakumo.Avalonia.Services;
+using ModelDescriptor = Asakumo.Avalonia.Services.ModelDescriptor;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
@@ -20,7 +21,7 @@ public partial class ChatViewModel : ViewModelBase
     private readonly IDataService _dataService;
     private readonly INavigationService _navigationService;
     private readonly IAIService _aiService;
-    private readonly IProviderManager _providerManager;
+    private readonly IModelService _modelService;
     private CancellationTokenSource? _responseCts;
     private string _conversationId = Guid.NewGuid().ToString();
 
@@ -40,7 +41,10 @@ public partial class ChatViewModel : ViewModelBase
     private string _inputMessage = string.Empty;
 
     [ObservableProperty]
-    private string? _currentModel;
+    private string? _currentModelDisplay;
+
+    [ObservableProperty]
+    private string _currentProviderIcon = string.Empty;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(CanSend))]
@@ -70,6 +74,9 @@ public partial class ChatViewModel : ViewModelBase
     [ObservableProperty]
     private bool _showToast;
 
+    [ObservableProperty]
+    private bool _showModelPicker;
+
     private CancellationTokenSource? _toastCts;
 
     #endregion
@@ -83,6 +90,11 @@ public partial class ChatViewModel : ViewModelBase
     public bool CanSend => !IsAiResponding && !string.IsNullOrWhiteSpace(InputMessage);
 
     public string ConversationId => _conversationId;
+
+    /// <summary>
+    /// Gets the view model for the model picker popup.
+    /// </summary>
+    public ModelPickerViewModel? ModelPickerViewModel { get; private set; }
 
     #endregion
 
@@ -98,15 +110,18 @@ public partial class ChatViewModel : ViewModelBase
         IDataService dataService,
         INavigationService navigationService,
         IAIService aiService,
-        IProviderManager providerManager)
+        IModelService modelService)
     {
         _dataService = dataService ?? throw new ArgumentNullException(nameof(dataService));
         _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
         _aiService = aiService ?? throw new ArgumentNullException(nameof(aiService));
-        _providerManager = providerManager ?? throw new ArgumentNullException(nameof(providerManager));
+        _modelService = modelService ?? throw new ArgumentNullException(nameof(modelService));
 
         Messages = new ObservableCollection<ChatMessage>();
         Messages.CollectionChanged += OnMessagesCollectionChanged;
+
+        // Subscribe to model changes
+        _modelService.CurrentModelChanged += OnCurrentModelChanged;
 
         _ = InitializeAsync();
     }
@@ -119,9 +134,11 @@ public partial class ChatViewModel : ViewModelBase
     {
         try
         {
-            var settings = await _dataService.GetSettingsAsync();
-            UpdateApiConfigStatus(settings);
-            UpdateCurrentModelDisplay(settings.CurrentModelId);
+            // Validate current model configuration
+            IsApiConfigured = await _modelService.ValidateCurrentModelAsync();
+
+            // Update display with current model
+            UpdateCurrentModelDisplay();
         }
         catch (Exception ex)
         {
@@ -129,24 +146,25 @@ public partial class ChatViewModel : ViewModelBase
         }
     }
 
-    private void UpdateApiConfigStatus(AppSettings settings)
+    private void UpdateCurrentModelDisplay()
     {
-        IsApiConfigured = !string.IsNullOrEmpty(settings.CurrentProviderId) &&
-                          settings.ProviderConfigs.TryGetValue(settings.CurrentProviderId, out var config) &&
-                          config.IsValid;
-    }
+        var model = _modelService.CurrentModel;
 
-    private void UpdateCurrentModelDisplay(string? modelId)
-    {
-        if (string.IsNullOrEmpty(modelId))
+        if (model == null)
         {
-            CurrentModel = null;
+            CurrentModelDisplay = null;
+            CurrentProviderIcon = string.Empty;
             return;
         }
 
-        var providers = _dataService.GetProviders();
-        var model = providers.SelectMany(p => p.Models).FirstOrDefault(m => m.Id == modelId);
-        CurrentModel = model?.Name;
+        CurrentModelDisplay = model.Name;
+        CurrentProviderIcon = GetProviderIcon(model.ProviderName);
+    }
+
+    private void OnCurrentModelChanged(object? sender, ModelChangedEventArgs e)
+    {
+        UpdateCurrentModelDisplay();
+        ShowToastMessage($"已切换到: {e.NewModel?.Name}");
     }
 
     #endregion
@@ -166,23 +184,21 @@ public partial class ChatViewModel : ViewModelBase
         }
 
         Title = conversation.Title;
-        CurrentModel = conversation.ModelName;
 
-                var messages = await _dataService.GetMessagesAsync(conversationId);
+        var messages = await _dataService.GetMessagesAsync(conversationId);
 
-                Messages.Clear();
+        Messages.Clear();
 
-                RestoreAndAddMessages(messages);
+        RestoreAndAddMessages(messages);
 
-                _aiService.RestoreHistory(conversationId, messages);
+        _aiService.RestoreHistory(conversationId, messages);
     }
 
     public async Task OnConfigurationCompleteAsync()
     {
-        var settings = await _dataService.GetSettingsAsync();
-        IsApiConfigured = true;
+        IsApiConfigured = await _modelService.ValidateCurrentModelAsync();
         ShowSuccessMessage = true;
-        UpdateCurrentModelDisplay(settings.CurrentModelId);
+        UpdateCurrentModelDisplay();
 
         _ = HideSuccessMessageAsync();
     }
@@ -401,47 +417,50 @@ public partial class ChatViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    private void SwitchModel()
+    private void OpenModelPicker()
     {
-        // Navigate to model selector
-        _navigationService.NavigateTo<ModelSelectorViewModel>();
+        // Create the model picker view model with callbacks
+        ModelPickerViewModel = new ModelPickerViewModel(
+            _modelService,
+            onModelSelected: OnModelSelected,
+            onClose: CloseModelPicker);
+
+        ShowModelPicker = true;
     }
 
     [RelayCommand]
-    private async Task QuickSwitchModelAsync(string modelIdentifier)
+    private void CloseModelPicker()
     {
-        // Format: "providerId:modelId"
-        var parts = modelIdentifier.Split(':');
-        if (parts.Length != 2)
-            return;
+        ShowModelPicker = false;
+        ModelPickerViewModel = null;
+    }
 
-        var providerId = parts[0];
-        var modelId = parts[1];
-
-        await _providerManager.SwitchModelAsync(providerId, modelId);
-        UpdateCurrentModelDisplay(modelId);
-        ShowToastMessage("模型已切换");
+    private void OnModelSelected(ModelDescriptor model)
+    {
+        // Model switch is already handled by the ModelService
+        // Just close the picker
+        CloseModelPicker();
     }
 
     /// <summary>
-    /// Gets the current provider icon path.
+    /// Gets the icon for a provider by name.
     /// </summary>
-    public string CurrentProviderIcon => GetProviderIcon(CurrentModel);
-
-    private static string GetProviderIcon(string? modelName)
+    private static string GetProviderIcon(string? providerName)
     {
-        if (string.IsNullOrEmpty(modelName))
+        if (string.IsNullOrEmpty(providerName))
             return "M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2Z";
 
-        var lower = modelName.ToLower();
-        if (lower.Contains("gpt") || lower.Contains("openai"))
+        var lower = providerName.ToLower();
+        if (lower.Contains("openai") || lower.Contains("gpt"))
             return "M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4A8,8 0 0,1 20,12A8,8 0 0,1 12,20A8,8 0 0,1 4,12A8,8 0 0,1 12,4M12,6A6,6 0 0,0 6,12A6,6 0 0,0 12,18A6,6 0 0,0 18,12A6,6 0 0,0 12,6Z";
-        if (lower.Contains("claude"))
+        if (lower.Contains("claude") || lower.Contains("anthropic"))
             return "M12,2L2,7L12,12L22,7L12,2M2,17L12,22L22,17L22,7L12,12L2,7V17Z";
         if (lower.Contains("gemini") || lower.Contains("google"))
             return "M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2M12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4Z";
         if (lower.Contains("deepseek"))
             return "M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2Z";
+        if (lower.Contains("ollama"))
+            return "M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2M12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4Z";
 
         return "M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2Z";
     }
@@ -586,7 +605,7 @@ public partial class ChatViewModel : ViewModelBase
             Id = _conversationId,
             Title = Title,
             Preview = preview,
-            ModelName = CurrentModel,
+            ModelName = CurrentModelDisplay,
             UpdatedAt = DateTime.Now
         };
 

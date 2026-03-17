@@ -1,9 +1,11 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using Asakumo.Avalonia.Models;
 using Asakumo.Avalonia.Services;
+using ModelDescriptor = Asakumo.Avalonia.Services.ModelDescriptor;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
@@ -14,7 +16,7 @@ namespace Asakumo.Avalonia.ViewModels;
 /// </summary>
 public partial class ProviderManagementViewModel : ViewModelBase
 {
-    private readonly IProviderManager _providerManager;
+    private readonly IModelService _modelService;
     private readonly IDataService _dataService;
     private readonly INavigationService _navigationService;
 
@@ -56,11 +58,11 @@ public partial class ProviderManagementViewModel : ViewModelBase
     /// Initializes a new instance of the <see cref="ProviderManagementViewModel"/> class.
     /// </summary>
     public ProviderManagementViewModel(
-        IProviderManager providerManager,
+        IModelService modelService,
         IDataService dataService,
         INavigationService navigationService)
     {
-        _providerManager = providerManager ?? throw new ArgumentNullException(nameof(providerManager));
+        _modelService = modelService ?? throw new ArgumentNullException(nameof(modelService));
         _dataService = dataService ?? throw new ArgumentNullException(nameof(dataService));
         _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
 
@@ -95,7 +97,7 @@ public partial class ProviderManagementViewModel : ViewModelBase
             return;
 
         var newState = !provider.IsEnabled;
-        await _providerManager.SetProviderEnabledAsync(provider.Id, newState);
+        await _modelService.SetProviderEnabledAsync(provider.Id, newState);
         provider.IsEnabled = newState;
     }
 
@@ -131,9 +133,9 @@ public partial class ProviderManagementViewModel : ViewModelBase
 
         try
         {
-            var success = await _providerManager.TestProviderAsync(provider.Id);
+            var success = await _modelService.TestProviderAsync(provider.Id);
             TestSuccess = success;
-            TestResultMessage = success 
+            TestResultMessage = success
                 ? $"{provider.Name} 连接成功！"
                 : $"{provider.Name} 连接失败，请检查配置。";
 
@@ -166,15 +168,16 @@ public partial class ProviderManagementViewModel : ViewModelBase
 
         try
         {
-            var success = await _providerManager.RefreshProviderModelsAsync(provider.Id);
+            var success = await _modelService.RefreshProviderModelsAsync(provider.Id);
             if (success)
             {
                 // Reload to update model count
-                var providers = await _providerManager.GetConfiguredProvidersAsync();
+                var providers = await _modelService.GetProvidersAsync();
                 var updated = providers.FirstOrDefault(p => p.Id == provider.Id);
-                if (updated != null)
+                if (updated != null && updated.IsConfigured)
                 {
-                    provider.EnabledModelCount = updated.EnabledModelCount;
+                    var models = await _modelService.GetModelsByProviderAsync(provider.Id);
+                    provider.EnabledModelCount = models.Count;
                 }
             }
         }
@@ -193,7 +196,7 @@ public partial class ProviderManagementViewModel : ViewModelBase
         if (provider == null)
             return;
 
-        await _providerManager.SetProviderDisplayNameAsync(provider.Id, provider.DisplayName);
+        await _modelService.SetProviderDisplayNameAsync(provider.Id, provider.DisplayName);
     }
 
     /// <summary>
@@ -217,22 +220,26 @@ public partial class ProviderManagementViewModel : ViewModelBase
 
     private async Task LoadProvidersAsync()
     {
-        var providers = await _providerManager.GetConfiguredProvidersAsync();
+        var providers = await _modelService.GetProvidersAsync();
 
         Providers.Clear();
 
         foreach (var provider in providers)
         {
+            var models = provider.IsConfigured
+                ? await _modelService.GetModelsByProviderAsync(provider.Id)
+                : new List<ModelDescriptor>();
+
             Providers.Add(new ProviderItemViewModel
             {
                 Id = provider.Id,
                 Name = provider.Name,
                 DisplayName = provider.Name,
-                Category = provider.Category,
+                Category = ProviderCategory.Popular,
                 IsEnabled = provider.IsEnabled,
                 IsConfigured = provider.IsConfigured,
-                IsValid = provider.IsValid,
-                EnabledModelCount = provider.EnabledModelCount,
+                IsValid = provider.IsConfigured,
+                EnabledModelCount = models.Count,
                 Icon = GetProviderIcon(provider.Id)
             });
         }
