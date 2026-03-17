@@ -421,9 +421,33 @@
     <Border Grid.Row="2"
             Background="{DynamicResource AppBackgroundBrush}"
             Padding="12,12">
-      <Grid RowDefinitions="Auto, Auto">
+      <Grid RowDefinitions="Auto, Auto, Auto">
+        <!-- Model Selector Button -->
+        <Button Grid.Row="0"
+                Command="{Binding SwitchModelCommand}"
+                Background="{DynamicResource AppSurfaceBrush}"
+                BorderThickness="0"
+                Padding="12,6"
+                Margin="0,0,0,8"
+                HorizontalAlignment="Center"
+                CornerRadius="16"
+                IsVisible="{Binding IsApiConfigured}">
+          <StackPanel Orientation="Horizontal" Spacing="6">
+            <PathIcon Data="{Binding CurrentProviderIcon}"
+                      Width="14" Height="14"
+                      Foreground="{DynamicResource PrimaryBrush}"/>
+            <TextBlock Text="{Binding CurrentModel}"
+                       FontSize="12"
+                       FontWeight="Medium"
+                       Foreground="{DynamicResource PrimaryBrush}"/>
+            <PathIcon Data="M7,10L12,15L17,10H7Z"
+                      Width="12" Height="12"
+                      Foreground="{DynamicResource AppTextSecondaryBrush}"/>
+          </StackPanel>
+        </Button>
+
         <!-- Error Dialog -->
-        <Border Grid.Row="0"
+        <Border Grid.Row="1"
                 Background="{DynamicResource AppCardBrush}"
                 CornerRadius="16"
                 Padding="16"
@@ -456,7 +480,7 @@
         </Border>
 
         <!-- Input Area -->
-        <Border Grid.Row="1"
+        <Border Grid.Row="2"
                 Background="{DynamicResource AppSurfaceBrush}"
                 CornerRadius="24"
                 Padding="4">

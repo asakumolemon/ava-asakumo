@@ -20,6 +20,7 @@ public partial class ChatViewModel : ViewModelBase
     private readonly IDataService _dataService;
     private readonly INavigationService _navigationService;
     private readonly IAIService _aiService;
+    private readonly IProviderManager _providerManager;
     private CancellationTokenSource? _responseCts;
     private string _conversationId = Guid.NewGuid().ToString();
 
@@ -96,11 +97,13 @@ public partial class ChatViewModel : ViewModelBase
     public ChatViewModel(
         IDataService dataService,
         INavigationService navigationService,
-        IAIService aiService)
+        IAIService aiService,
+        IProviderManager providerManager)
     {
         _dataService = dataService ?? throw new ArgumentNullException(nameof(dataService));
         _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
         _aiService = aiService ?? throw new ArgumentNullException(nameof(aiService));
+        _providerManager = providerManager ?? throw new ArgumentNullException(nameof(providerManager));
 
         Messages = new ObservableCollection<ChatMessage>();
         Messages.CollectionChanged += OnMessagesCollectionChanged;
@@ -395,6 +398,52 @@ public partial class ChatViewModel : ViewModelBase
     {
         _navigationService.NavigateTo<SettingsViewModel>();
         IsMoreMenuOpen = false;
+    }
+
+    [RelayCommand]
+    private void SwitchModel()
+    {
+        // Navigate to model selector
+        _navigationService.NavigateTo<ModelSelectorViewModel>();
+    }
+
+    [RelayCommand]
+    private async Task QuickSwitchModelAsync(string modelIdentifier)
+    {
+        // Format: "providerId:modelId"
+        var parts = modelIdentifier.Split(':');
+        if (parts.Length != 2)
+            return;
+
+        var providerId = parts[0];
+        var modelId = parts[1];
+
+        await _providerManager.SwitchModelAsync(providerId, modelId);
+        UpdateCurrentModelDisplay(modelId);
+        ShowToastMessage("模型已切换");
+    }
+
+    /// <summary>
+    /// Gets the current provider icon path.
+    /// </summary>
+    public string CurrentProviderIcon => GetProviderIcon(CurrentModel);
+
+    private static string GetProviderIcon(string? modelName)
+    {
+        if (string.IsNullOrEmpty(modelName))
+            return "M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2Z";
+
+        var lower = modelName.ToLower();
+        if (lower.Contains("gpt") || lower.Contains("openai"))
+            return "M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4A8,8 0 0,1 20,12A8,8 0 0,1 12,20A8,8 0 0,1 4,12A8,8 0 0,1 12,4M12,6A6,6 0 0,0 6,12A6,6 0 0,0 12,18A6,6 0 0,0 18,12A6,6 0 0,0 12,6Z";
+        if (lower.Contains("claude"))
+            return "M12,2L2,7L12,12L22,7L12,2M2,17L12,22L22,17L22,7L12,12L2,7V17Z";
+        if (lower.Contains("gemini") || lower.Contains("google"))
+            return "M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2M12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4Z";
+        if (lower.Contains("deepseek"))
+            return "M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2Z";
+
+        return "M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2Z";
     }
 
     #endregion
