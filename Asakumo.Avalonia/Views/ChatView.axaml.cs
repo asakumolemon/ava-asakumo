@@ -11,7 +11,7 @@ namespace Asakumo.Avalonia.Views;
 /// </summary>
 public partial class ChatView : UserControl
 {
-    private ScrollViewer? _messagesScrollViewer;
+    private ListBox? _messagesListBox;
     private ChatViewModel? _currentViewModel;
 
     /// <summary>
@@ -27,7 +27,7 @@ public partial class ChatView : UserControl
 
     private void OnLoaded(object? sender, RoutedEventArgs e)
     {
-        _messagesScrollViewer = this.FindControl<ScrollViewer>("MessagesScrollViewer");
+        _messagesListBox = this.FindControl<ListBox>("MessagesListBox");
         SubscribeToViewModel();
     }
 
@@ -68,6 +68,18 @@ public partial class ChatView : UserControl
 
     private void ScrollToBottom()
     {
-        _messagesScrollViewer?.ScrollToEnd();
+        if (_messagesListBox == null)
+            return;
+
+        // Scroll to the last item
+        var itemCount = _messagesListBox.ItemCount;
+        if (itemCount > 0)
+        {
+            var lastItem = _messagesListBox.Items[itemCount - 1];
+            if (lastItem != null)
+            {
+                _messagesListBox.ScrollIntoView(lastItem);
+            }
+        }
     }
 }

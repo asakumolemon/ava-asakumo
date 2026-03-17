@@ -65,119 +65,148 @@
     </Border>
 
     <!-- Chat Area -->
-    <ScrollViewer Grid.Row="1"
-                  Background="{DynamicResource AppBackgroundBrush}"
-                  x:Name="MessagesScrollViewer">
-      <Grid Margin="16,16,16,8">
-        <!-- Empty State -->
-        <StackPanel IsVisible="{Binding !HasMessages}"
-                    VerticalAlignment="Center"
-                    HorizontalAlignment="Center"
-                    Spacing="16">
-          <Border Background="{DynamicResource AppSurfaceBrush}"
-                  Width="80" Height="80"
-                  CornerRadius="40">
-            <PathIcon Data="M20,2H4A2,2 0 0,0 2,4V22L6,18H20A2,2 0 0,0 22,16V4A2,2 0 0,0 20,2M20,16H6L4,18V4H20V16Z"
-                      Width="36" Height="36"
-                      Foreground="{DynamicResource AppTextSecondaryBrush}"/>
-          </Border>
-          <TextBlock Text="开始新对话"
-                     FontSize="18" FontWeight="SemiBold"
-                     HorizontalAlignment="Center"
-                     Foreground="{DynamicResource AppTextPrimaryBrush}"/>
-          <TextBlock Text="发送消息开始与 AI 交流"
-                     FontSize="14"
-                     HorizontalAlignment="Center"
-                     Foreground="{DynamicResource AppTextSecondaryBrush}"/>
-        </StackPanel>
+    <Grid Grid.Row="1" Background="{DynamicResource AppBackgroundBrush}">
+      <!-- Empty State -->
+      <StackPanel IsVisible="{Binding !HasMessages}"
+                  VerticalAlignment="Center"
+                  HorizontalAlignment="Center"
+                  Spacing="16">
+        <Border Background="{DynamicResource AppSurfaceBrush}"
+                Width="80" Height="80"
+                CornerRadius="40">
+          <PathIcon Data="M20,2H4A2,2 0 0,0 2,4V22L6,18H20A2,2 0 0,0 22,16V4A2,2 0 0,0 20,2M20,16H6L4,18V4H20V16Z"
+                    Width="36" Height="36"
+                    Foreground="{DynamicResource AppTextSecondaryBrush}"/>
+        </Border>
+        <TextBlock Text="开始新对话"
+                   FontSize="18" FontWeight="SemiBold"
+                   HorizontalAlignment="Center"
+                   Foreground="{DynamicResource AppTextPrimaryBrush}"/>
+        <TextBlock Text="发送消息开始与 AI 交流"
+                   FontSize="14"
+                   HorizontalAlignment="Center"
+                   Foreground="{DynamicResource AppTextSecondaryBrush}"/>
+      </StackPanel>
 
-        <!-- Messages List -->
-        <ItemsControl ItemsSource="{Binding Messages}">
-          <ItemsControl.ItemTemplate>
-            <DataTemplate x:DataType="model:ChatMessage">
-              <Grid Margin="0,4">
-                <!-- User Message (Right aligned) -->
-                <Grid IsVisible="{Binding IsUser}"
-                      HorizontalAlignment="Right" MaxWidth="300">
-                  <!-- Edit Mode -->
-                  <Border IsVisible="{Binding IsEditing}"
-                          Background="{DynamicResource AppUserMessageBrush}"
-                          CornerRadius="16,4,16,16"
-                          Padding="12,8">
-                    <StackPanel Spacing="8">
-                      <TextBox Text="{Binding EditableContent}"
-                               AcceptsReturn="True" TextWrapping="Wrap"
-                               MinWidth="200" MaxWidth="260"/>
-                      <StackPanel Orientation="Horizontal"
-                                  HorizontalAlignment="Right" Spacing="8">
-                        <Button Content="取消" Classes="secondary"
-                                Command="{Binding $parent[ItemsControl].((vm:ChatViewModel)DataContext).CancelEditMessageCommand}"
-                                CommandParameter="{Binding}"/>
-                        <Button Content="保存" Classes="primary"
-                                Command="{Binding $parent[ItemsControl].((vm:ChatViewModel)DataContext).SaveEditedMessageCommand}"
-                                CommandParameter="{Binding}"/>
-                      </StackPanel>
-                    </StackPanel>
-                  </Border>
-
-                  <!-- Normal Mode -->
-                  <Border IsVisible="{Binding !IsEditing}"
-                          Background="{DynamicResource AppUserMessageBrush}"
-                          CornerRadius="16,4,16,16"
-                          Padding="12,8">
-                    <StackPanel Spacing="4">
-                      <TextBlock Text="{Binding Content}"
-                                 TextWrapping="Wrap"
-                                 Foreground="White" FontSize="14"/>
-                      <StackPanel Orientation="Horizontal" Spacing="8">
-                        <TextBlock Text="{Binding Timestamp, StringFormat='{}{0:HH:mm}'}"
-                                   FontSize="10" Foreground="#CCFFFFFF"/>
-                        <StackPanel Orientation="Horizontal" Spacing="4" Opacity="0.7">
-                          <Button Classes="icon" Width="24" Height="24" Padding="4"
-                                  Command="{Binding $parent[ItemsControl].((vm:ChatViewModel)DataContext).EditMessageCommand}"
-                                  CommandParameter="{Binding}"
-                                  ToolTip.Tip="编辑">
-                            <PathIcon Data="M3,17.25V21H6.75L17.81,9.94L14.06,6.19L3,17.25M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.13,5.12L18.88,8.87L20.71,7.04Z"
-                                      Width="12" Height="12" Foreground="White"/>
-                          </Button>
-                          <Button Classes="icon" Width="24" Height="24" Padding="4"
-                                  Command="{Binding $parent[ItemsControl].((vm:ChatViewModel)DataContext).DeleteMessageCommand}"
-                                  CommandParameter="{Binding}"
-                                  ToolTip.Tip="删除">
-                            <PathIcon Data="M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19V4Z"
-                                      Width="12" Height="12" Foreground="White"/>
-                          </Button>
-                        </StackPanel>
-                      </StackPanel>
-                    </StackPanel>
-                  </Border>
-                </Grid>
-
-                <!-- AI Message (Left aligned with avatar) -->
-                <Grid IsVisible="{Binding !IsUser}"
-                      ColumnDefinitions="Auto, *" MaxWidth="340">
-                  <!-- AI Avatar -->
-                  <Border Grid.Column="0"
-                          Background="{DynamicResource PrimaryBrush}"
-                          Width="32" Height="32"
-                          CornerRadius="16"
-                          Margin="0,0,8,0"
-                          VerticalAlignment="Top">
-                    <TextBlock Text="AI"
-                               HorizontalAlignment="Center"
-                               VerticalAlignment="Center"
-                               FontSize="11" FontWeight="Bold"
-                               Foreground="White"/>
-                  </Border>
-
-                  <!-- AI Bubble -->
-                  <Border Grid.Column="1"
-                          Background="{DynamicResource AppAiMessageBrush}"
-                          CornerRadius="4,16,16,16"
-                          Padding="12,8"
-                          MaxWidth="280"
-                          HorizontalAlignment="Left">
-                    <StackPanel Spacing="4">
+      <!-- Messages List (ListBox with virtualization) -->
+      <ListBox ItemsSource="{Binding Messages}"
+               Background="Transparent"
+               BorderThickness="0"
+               Padding="16,8"
+               IsVisible="{Binding HasMessages}"
+               ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+               x:Name="MessagesListBox">
+        <ListBox.Styles>
+          <!-- Remove default ListBox item selection visuals -->
+          <Style Selector="ListBoxItem">
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+          </Style>
+          <Style Selector="ListBoxItem:selected">
+            <Setter Property="Background" Value="Transparent"/>
+          </Style>
+          <Style Selector="ListBoxItem:pointerover">
+            <Setter Property="Background" Value="Transparent"/>
+          </Style>
+        </ListBox.Styles>
+        <ListBox.ItemsPanel>
+          <ItemsPanelTemplate>
+            <VirtualizingStackPanel />
+          </ItemsPanelTemplate>
+        </ListBox.ItemsPanel>
+                  <ListBox.ItemTemplate>
+                    <DataTemplate x:DataType="model:ChatMessage">
+                      <!-- Message Container with Interleaved Layout -->
+                      <!-- Left spacer (8*) creates larger gap for user messages -->
+                      <!-- Right spacer (4*) creates smaller gap for AI messages -->
+                      <Grid Margin="0,4" ColumnDefinitions="8*, Auto, 4*">
+                        <!-- User Message (Right side, occupies columns 1-2) -->
+                        <Grid Grid.Column="1"
+                              Grid.ColumnSpan="2"
+                              IsVisible="{Binding IsUser}"
+                              HorizontalAlignment="Right">
+                          <!-- Edit Mode -->
+                          <Border IsVisible="{Binding IsEditing}"
+                                  Background="{DynamicResource AppUserMessageBrush}"
+                                  CornerRadius="16,4,16,16"
+                                  Padding="12,8"
+                                  HorizontalAlignment="Right">
+                            <StackPanel Spacing="8">
+                              <TextBox Text="{Binding EditableContent}"
+                                       AcceptsReturn="True" TextWrapping="Wrap"
+                                       MinWidth="150"/>
+                              <StackPanel Orientation="Horizontal"
+                                          HorizontalAlignment="Right" Spacing="8">
+                                <Button Content="取消" Classes="secondary"
+                                        Command="{Binding $parent[ListBox].((vm:ChatViewModel)DataContext).CancelEditMessageCommand}"
+                                        CommandParameter="{Binding}"/>
+                                <Button Content="保存" Classes="primary"
+                                        Command="{Binding $parent[ListBox].((vm:ChatViewModel)DataContext).SaveEditedMessageCommand}"
+                                        CommandParameter="{Binding}"/>
+                              </StackPanel>
+                            </StackPanel>
+                          </Border>
+        
+                          <!-- Normal Mode -->
+                          <Border IsVisible="{Binding !IsEditing}"
+                                  Background="{DynamicResource AppUserMessageBrush}"
+                                  CornerRadius="16,4,16,16"
+                                  Padding="12,8"
+                                  HorizontalAlignment="Right">
+                            <StackPanel Spacing="4">
+                              <TextBlock Text="{Binding Content}"
+                                         TextWrapping="Wrap"
+                                         Foreground="White" FontSize="14"/>
+                              <StackPanel Orientation="Horizontal" Spacing="8">
+                                <TextBlock Text="{Binding Timestamp, StringFormat='{}{0:HH:mm}'}"
+                                           FontSize="10" Foreground="#CCFFFFFF"/>
+                                <StackPanel Orientation="Horizontal" Spacing="4" Opacity="0.7">
+                                  <Button Classes="icon" Width="24" Height="24" Padding="4"
+                                          Command="{Binding $parent[ListBox].((vm:ChatViewModel)DataContext).EditMessageCommand}"
+                                          CommandParameter="{Binding}"
+                                          ToolTip.Tip="编辑">
+                                    <PathIcon Data="M3,17.25V21H6.75L17.81,9.94L14.06,6.19L3,17.25M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.13,5.12L18.88,8.87L20.71,7.04Z"
+                                              Width="12" Height="12" Foreground="White"/>
+                                  </Button>
+                                  <Button Classes="icon" Width="24" Height="24" Padding="4"
+                                          Command="{Binding $parent[ListBox].((vm:ChatViewModel)DataContext).DeleteMessageCommand}"
+                                          CommandParameter="{Binding}"
+                                          ToolTip.Tip="删除">
+                                    <PathIcon Data="M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19V4Z"
+                                              Width="12" Height="12" Foreground="White"/>
+                                  </Button>
+                                </StackPanel>
+                              </StackPanel>
+                            </StackPanel>
+                          </Border>
+                        </Grid>
+        
+                        <!-- AI Message (Left side, occupies columns 0-1) -->
+                        <Grid Grid.Column="0"
+                              Grid.ColumnSpan="2"
+                              IsVisible="{Binding !IsUser}"
+                              ColumnDefinitions="40, *">
+                          <!-- AI Avatar (fixed 40px width) -->
+                          <Border Grid.Column="0"
+                                  Background="{DynamicResource PrimaryBrush}"
+                                  Width="32" Height="32"
+                                  CornerRadius="16"
+                                  Margin="0,0,8,0"
+                                  VerticalAlignment="Top">
+                            <TextBlock Text="AI"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"
+                                       FontSize="11" FontWeight="Bold"
+                                       Foreground="White"/>
+                          </Border>
+        
+                          <!-- AI Bubble -->
+                          <Border Grid.Column="1"
+                                  Background="{DynamicResource AppAiMessageBrush}"
+                                  CornerRadius="4,16,16,16"
+                                  Padding="12,8"
+                                  HorizontalAlignment="Left">                    <StackPanel Spacing="4">
                       <!-- Typing Indicator (only when loading with no content) -->
                       <StackPanel Classes="typing-indicator"
                                   IsVisible="{Binding IsLoading}">
@@ -208,7 +237,7 @@
                                    TextWrapping="Wrap" FontSize="13"
                                    Foreground="{DynamicResource AppTextPrimaryBrush}"/>
                         <Button Content="重试" Classes="secondary" Padding="12,6"
-                                Command="{Binding $parent[ItemsControl].((vm:ChatViewModel)DataContext).RetryMessageCommand}"
+                                Command="{Binding $parent[ListBox].((vm:ChatViewModel)DataContext).RetryMessageCommand}"
                                 CommandParameter="{Binding}"/>
                       </StackPanel>
 
@@ -259,10 +288,9 @@
                 </Grid>
               </Grid>
             </DataTemplate>
-          </ItemsControl.ItemTemplate>
-        </ItemsControl>
+          </ListBox.ItemTemplate>
+        </ListBox>
       </Grid>
-    </ScrollViewer>
 
     <!-- Bottom Area -->
     <Border Grid.Row="2"
