@@ -180,17 +180,19 @@
                           HorizontalAlignment="Left">
                     <StackPanel Spacing="4">
                       <!-- Typing Indicator (only when loading with no content) -->
-                      <StackPanel IsVisible="{Binding !HasContent}"
-                                  Classes="typing-indicator">
-                        <StackPanel.IsVisible>
-                          <MultiBinding Converter="{x:Static BoolConverters.And}">
-                            <Binding Path="IsLoading"/>
-                            <Binding Path="!HasContent"/>
-                          </MultiBinding>
-                        </StackPanel.IsVisible>
-                        <Border Classes="typing-dot"/>
-                        <Border Classes="typing-dot"/>
-                        <Border Classes="typing-dot"/>
+                      <StackPanel Classes="typing-indicator"
+                                  IsVisible="{Binding IsLoading}">
+                        <TextBlock Text="思考中"
+                                   FontSize="11"
+                                   Foreground="{DynamicResource AppTextSecondaryBrush}"
+                                   Margin="0,0,8,0"
+                                   IsVisible="{Binding !HasContent}"/>
+                        <Border Classes="typing-dot"
+                                IsVisible="{Binding !HasContent}"/>
+                        <Border Classes="typing-dot"
+                                IsVisible="{Binding !HasContent}"/>
+                        <Border Classes="typing-dot"
+                                IsVisible="{Binding !HasContent}"/>
                       </StackPanel>
 
                       <!-- Error State -->
@@ -212,12 +214,34 @@
                       </StackPanel>
 
                       <!-- Streaming Content (loading with content) -->
-                      <StackPanel Orientation="Horizontal" IsVisible="{Binding IsStreaming}">
+                      <StackPanel IsVisible="{Binding IsStreaming}" Spacing="4">
                         <TextBlock Text="{Binding Content}"
                                    TextWrapping="Wrap" FontSize="14"
-                                   Foreground="{DynamicResource AppTextPrimaryBrush}"
-                                   MaxWidth="250"/>
-                        <Border Classes="streaming-cursor"/>
+                                   Foreground="{DynamicResource AppTextPrimaryBrush}"/>
+                        <!-- 流式指示器 -->
+                        <Border Width="6" Height="6"
+                                Background="{DynamicResource PrimaryBrush}"
+                                CornerRadius="3"
+                                Margin="0,4,0,0"
+                                HorizontalAlignment="Left">
+                          <Border.Styles>
+                            <Style Selector="Border">
+                              <Style.Animations>
+                                <Animation Duration="0:0:0.6" IterationCount="INFINITE">
+                                  <KeyFrame Cue="0%">
+                                    <Setter Property="Opacity" Value="0.3"/>
+                                  </KeyFrame>
+                                  <KeyFrame Cue="50%">
+                                    <Setter Property="Opacity" Value="1"/>
+                                  </KeyFrame>
+                                  <KeyFrame Cue="100%">
+                                    <Setter Property="Opacity" Value="0.3"/>
+                                  </KeyFrame>
+                                </Animation>
+                              </Style.Animations>
+                            </Style>
+                          </Border.Styles>
+                        </Border>
                       </StackPanel>
 
                       <!-- Normal Content (complete, not loading and not error) -->

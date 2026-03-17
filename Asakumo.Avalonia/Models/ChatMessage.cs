@@ -29,6 +29,7 @@ public partial class ChatMessage : ObservableObject
     /// </summary>
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasContent))]
+    [NotifyPropertyChangedFor(nameof(IsStreaming))]
     private string _content = string.Empty;
 
     /// <summary>
@@ -49,6 +50,7 @@ public partial class ChatMessage : ObservableObject
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsComplete))]
     [NotifyPropertyChangedFor(nameof(IsStreaming))]
+    [NotifyPropertyChangedFor(nameof(HasContent))]
     private bool _isLoading;
 
     /// <summary>

@@ -1,11 +1,11 @@
-﻿---
+---
 name: dotnet-avalonia-quality
-description: Comprehensive code quality guidelines for Avalonia applications. Enforces StyleCop rules, MVVM best practices, naming conventions, and Microsoft enterprise architecture patterns. Use when reviewing or writing C# Avalonia code to ensure high quality, maintainable, and testable code.
+description: Comprehensive code quality guidelines for Avalonia applications using CommunityToolkit.Mvvm. Enforces MVVM best practices, naming conventions, and Microsoft enterprise architecture patterns. Use when reviewing or writing C# Avalonia code with CommunityToolkit.Mvvm 8.4.0.
 ---
 
 # Avalonia Code Quality Skill
 
-This skill ensures high-quality Avalonia code by enforcing StyleCop rules, Microsoft enterprise architecture patterns, and MVVM best practices.
+This skill ensures high-quality Avalonia code using **CommunityToolkit.Mvvm 8.4.0** by enforcing MVVM best practices, Microsoft enterprise architecture patterns, and proper source generator usage.
 
 ## When to Use This Skill
 
@@ -18,23 +18,31 @@ Use this skill when:
 
 ## Core Principles
 
-### 1. MVVM Pattern Compliance
+### 1. MVVM Pattern with CommunityToolkit.Mvvm 8.4.0
 
-**Correct:**
+**Correct - 使用 Source Generators (推荐):**
 ```csharp
-// ViewModel has no UI dependencies
-public class ChatViewModel : ViewModelBase
+public partial class ChatViewModel : ViewModelBase
 {
-    private string? _userName;
-    public string? UserName
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CanSend))]
+    [NotifyCanExecuteChangedFor(nameof(SendMessageCommand))]
+    private string _inputMessage = string.Empty;
+
+    [ObservableProperty]
+    private bool _isLoading;
+
+    [RelayCommand(CanExecute = nameof(CanSend))]
+    private async Task SendMessageAsync()
     {
-        get => _userName;
-        set => this.RaiseAndSetIfChanged(ref _userName, value);
+        // Implementation
     }
-    
-    public ICommand SendCommand { get; }
+
+    public bool CanSend => !string.IsNullOrWhiteSpace(InputMessage) && !IsLoading;
 }
 ```
+
+**Note:** CommunityToolkit.Mvvm 8.4.0 generates the property automatically from the field.
 
 **Incorrect:**
 ```csharp
@@ -48,7 +56,7 @@ public class ChatViewModel
 }
 ```
 
-### 2. Naming Conventions (StyleCop SA1300-SA1313)
+### 2. Naming Conventions
 
 | Element | Convention | Example |
 |---------|-----------|---------|
@@ -56,10 +64,44 @@ public class ChatViewModel
 | Methods | PascalCase | `SendMessageAsync()` |
 | Properties | PascalCase | `public string UserName { get; set; }` |
 | Private fields | _camelCase | `private readonly HttpClient _httpClient;` |
+| Observable fields | _camelCase with underscore | `private string _inputMessage;` |
 | Constants | UPPER_SNAKE_CASE | `const int MAX_RETRY = 3;` |
 | Parameters | camelCase | `void Method(string userName)` |
 
-### 3. Code Layout (StyleCop SA1500-SA1518)
+### 3. ObservableProperty 最佳实践
+
+**正确的属性通知链:**
+```csharp
+public partial class ChatViewModel : ViewModelBase
+{
+    // 当 InputMessage 变化时，通知 CanSend 和 SendMessageCommand
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CanSend))]           // 通知 CanSend 变化
+    [NotifyCanExecuteChangedFor(nameof(SendMessageCommand))]  // 刷新命令状态
+    private string _inputMessage = string.Empty;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CanSend))]
+    private bool _isAiResponding;
+
+    // 计算属性 - 不需要 ObservableProperty
+    public bool CanSend => !IsAiResponding && !string.IsNullOrWhiteSpace(InputMessage);
+
+    [RelayCommand(CanExecute = nameof(CanSend))]
+    private async Task SendMessageAsync()
+    {
+        if (string.IsNullOrWhiteSpace(InputMessage))
+            return;
+        
+        var message = InputMessage;
+        InputMessage = string.Empty;  // 清空输入框会自动触发通知
+        
+        // ... send message
+    }
+}
+```
+
+### 4. Code Layout
 
 **Correct:**
 ```csharp
@@ -88,7 +130,7 @@ namespace Asakumo.Services
 }
 ```
 
-### 4. Documentation (StyleCop SA1600-SA1650)
+### 5. Documentation
 
 **Required Documentation:**
 ```csharp
@@ -111,7 +153,7 @@ public interface IChatProvider
 }
 ```
 
-### 5. Async/Await Best Practices
+### 6. Async/Await Best Practices
 
 **Correct:**
 ```csharp
@@ -132,6 +174,12 @@ public async Task LoadDataAsync(CancellationToken cancellationToken = default)
         await ShowErrorAsync(ex.Message);
     }
 }
+
+// Fire-and-forget in constructor (acceptable for desktop apps)
+public SettingsViewModel(IDataService dataService)
+{
+    _ = LoadSettingsAsync();
+}
 ```
 
 **Incorrect:**
@@ -139,18 +187,41 @@ public async Task LoadDataAsync(CancellationToken cancellationToken = default)
 // Avoid async void
 public async void BadMethod() { }
 
-// Avoid .Result or .Wait()
+// Avoid .Result or .Wait() - can cause deadlocks
 var result = _service.GetDataAsync().Result;
 ```
 
-### 6. Dependency Injection (Avalonia Specific)
+### 7. Dependency Injection (Avalonia Specific)
 
 **Correct:**
 ```csharp
-// App.axaml.cs or Program.cs
-builder.Services.AddSingleton<IChatService, ChatService>();
-builder.Services.AddTransient<ChatViewModel>();
-builder.Services.AddTransient<ChatView>();
+// App.axaml.cs
+public partial class App : Application
+{
+    public override void Initialize()
+    {
+        AvaloniaXamlLoader.Load(this);
+    }
+
+    public override void OnFrameworkInitializationCompleted()
+    {
+        var services = new ServiceCollection();
+        
+        // Services
+        services.AddSingleton<IDataService, DataService>();
+        services.AddSingleton<INavigationService, NavigationService>();
+        services.AddSingleton<AIProviderFactory>();
+        services.AddSingleton<IAIService, AIService>();
+
+        // ViewModels
+        services.AddTransient<MainViewModel>();
+        services.AddTransient<ChatViewModel>();
+
+        var serviceProvider = services.BuildServiceProvider();
+        
+        // ... use serviceProvider
+    }
+}
 
 // Constructor injection
 public class ChatService : IChatService
@@ -166,18 +237,18 @@ public class ChatService : IChatService
 }
 ```
 
-### 7. Project Structure
+### 8. Project Structure
 
 **Standard Avalonia Project Layout:**
 ```
 Project/
-├── Models/              # Data entities
+├── Models/              # Data entities (ObservableObject for UI updates)
 │   ├── ChatMessage.cs
 │   └── Conversation.cs
 ├── Services/            # Business logic
 │   ├── IChatService.cs
 │   └── ChatService.cs
-├── ViewModels/          # Presentation logic (ReactiveUI or CommunityToolkit.Mvvm)
+├── ViewModels/          # Presentation logic (CommunityToolkit.Mvvm)
 │   ├── ViewModelBase.cs
 │   └── ChatViewModel.cs
 ├── Views/               # AXAML pages
@@ -189,37 +260,43 @@ Project/
     └── Icons/
 ```
 
-### 8. Data Binding (Avalonia AXAML)
+### 9. Data Binding (Avalonia AXAML)
 
 **Correct:**
 ```xml
-<!-- View -->
-<Label Text="{Binding UserName}" />
-<Button Command="{Binding SendCommand}" 
-        IsEnabled="{Binding !IsLoading}" />
+<!-- View with compiled bindings -->
+<UserControl x:Class="MyApp.Views.ChatView"
+             xmlns:vm="using:MyApp.ViewModels"
+             x:DataType="vm:ChatViewModel">
+    <TextBlock Text="{Binding UserName}" />
+    <Button Command="{Binding SendMessageCommand}" 
+            IsEnabled="{Binding CanSend}" />
+</UserControl>
 ```
 
+**ViewModel:**
 ```csharp
-// ViewModel with ReactiveUI
-public class ChatViewModel : ViewModelBase
+public partial class ChatViewModel : ViewModelBase
 {
-    public string? UserName
-    {
-        get => _userName;
-        set => this.RaiseAndSetIfChanged(ref _userName, value);
-    }
+    [ObservableProperty]
+    private string? _userName;
     
-    public ReactiveCommand<Unit, Unit> SendCommand { get; }
+    [RelayCommand]
+    private async Task SendMessageAsync()
+    {
+        // Command automatically implements ICommand
+    }
 }
 ```
 
-### 9. Avalonia-Specific Best Practices
+### 10. Avalonia-Specific Best Practices
 
 #### Compiled Bindings
 ```xml
 <!-- Enable compiled bindings for better performance -->
 <Window x:Class="MyApp.Views.MainWindow"
         xmlns="https://github.com/avaloniaui"
+        xmlns:vm="using:MyApp.ViewModels"
         x:DataType="vm:MainViewModel">
     <TextBlock Text="{Binding Title}" />
 </Window>
@@ -230,46 +307,34 @@ public class ChatViewModel : ViewModelBase
 <!-- App.axaml -->
 <Application.Styles>
     <FluentTheme />
-    <SimpleTheme />
 </Application.Styles>
 
 <Application.Resources>
-    <SolidColorBrush x:Key="AccentBrush">#10A37F</SolidColorBrush>
+    <SolidColorBrush x:Key="AccentBrush" Color="{DynamicResource SystemAccentColor}" />
 </Application.Resources>
-```
-
-#### Control Templates
-```xml
-<Styles.Resources>
-    <ControlTheme x:Key="CustomButton" TargetType="Button">
-        <Setter Property="Background" Value="{DynamicResource AccentBrush}" />
-        <Setter Property="CornerRadius" Value="8" />
-    </ControlTheme>
-</Styles.Resources>
 ```
 
 ## Code Review Checklist
 
 When reviewing C# Avalonia code, check:
 
-### StyleCop Rules
-- [ ] SA1600: All public types documented
-- [ ] SA1604: All public methods documented  
-- [ ] SA1300: PascalCase for types/methods/properties
-- [ ] SA1309: _camelCase for private fields
-- [ ] SA1500: Braces on new lines
-- [ ] SA1516: Blank line between methods
-- [ ] SA1210: Using statements sorted alphabetically
-
-### Avalonia Best Practices
+### CommunityToolkit.Mvvm Best Practices
+- [ ] Using `[ObservableProperty]` for observable fields
+- [ ] Using `[RelayCommand]` for commands
+- [ ] `[NotifyPropertyChangedFor]` for computed properties
+- [ ] `[NotifyCanExecuteChangedFor]` for command state updates
 - [ ] ViewModel has no UI control references
-- [ ] Proper use of data binding
-- [ ] ReactiveCommand or ICommand used
-- [ ] Compiled bindings enabled (x:DataType)
+- [ ] Proper use of data binding with `x:DataType`
 - [ ] Async methods end with "Async" suffix
 - [ ] CancellationToken passed to async methods
 - [ ] Services registered in DI container
 - [ ] Constructor injection used
+
+### Naming Conventions
+- [ ] Private fields use _camelCase
+- [ ] Observable fields have underscore prefix
+- [ ] Properties use PascalCase
+- [ ] Methods use PascalCase
 
 ### Architecture
 - [ ] Single responsibility per class
@@ -278,11 +343,21 @@ When reviewing C# Avalonia code, check:
 - [ ] Proper error handling
 - [ ] No code duplication (DRY)
 
+## Key Differences from ReactiveUI
+
+| Feature | ReactiveUI | CommunityToolkit.Mvvm |
+|---------|-----------|----------------------|
+| Property Notification | `RaiseAndSetIfChanged` | `[ObservableProperty]` |
+| Commands | `ReactiveCommand` | `[RelayCommand]` |
+| Base Class | `ReactiveObject` | `ObservableObject` |
+| Source Generation | No | Yes (compile-time) |
+| Boilerplate | More | Less |
+
 ## Quality Metrics
 
 High-quality Avalonia code should have:
 - 100% public API documentation
-- Zero StyleCop warnings (treat as errors)
+- Zero compiler warnings
 - No async void methods
 - Proper null checking
 - Clear separation of concerns
@@ -291,7 +366,5 @@ High-quality Avalonia code should have:
 
 ## References
 
-- StyleCop Analyzers: https://github.com/DotNetAnalyzers/StyleCopAnalyzers
-- Avalonia Documentation: https://docs.avaloniaui.net/
-- ReactiveUI: https://www.reactiveui.net/
 - CommunityToolkit.Mvvm: https://learn.microsoft.com/dotnet/communitytoolkit/mvvm/
+- Avalonia Documentation: https://docs.avaloniaui.net/
