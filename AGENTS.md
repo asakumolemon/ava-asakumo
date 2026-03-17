@@ -14,7 +14,7 @@
 - **AI SDK**: OpenAI 2.2.0, Google.GenAI 1.0.0
 - **数据存储**: sqlite-net-pcl 1.9.172 + SQLitePCLRaw.bundle_green 2.1.10
 - **Markdown**: Markdown.Avalonia 11.0.3-a1
-- **主题**: Fluent Theme + Inter 字体
+- **主题**: Fluent Theme + Material Design 3 组件
 
 ### 架构模式
 
@@ -49,6 +49,10 @@ Asakumo.Avalonia/
 │   │   ├── ApiKeyConfigViewModel.cs      # API 配置
 │   │   └── ModelSelectionViewModel.cs    # 模型选择
 │   ├── Views/                     # 视图 (AXAML)
+│   │   ├── ConversationListView.axaml    # 会话列表 (MD3 导航栏)
+│   │   ├── ConversationListView.axaml.cs # 滑动手势处理
+│   │   ├── ChatView.axaml                # 聊天界面 (更多菜单/复制)
+│   │   └── ... 其他视图
 │   ├── Services/                  # 服务层
 │   │   ├── IDataService.cs        # 数据服务接口
 │   │   ├── DataService.cs         # 数据服务实现 (SQLite + JSON)
@@ -132,6 +136,12 @@ public class Conversation
     [MaxLength(500)]
     public string Preview { get; set; }
     
+    public bool IsPinned { get; set; }  // 置顶状态
+    
+    public bool HasUnread { get; set; }
+    
+    public int UnreadCount { get; set; }
+    
     [Indexed]
     public DateTime UpdatedAt { get; set; }
 }
@@ -148,20 +158,36 @@ public partial class ChatMessage : ObservableObject
     
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasContent))]
+    [NotifyPropertyChangedFor(nameof(IsStreaming))]
     private string _content = string.Empty;
     
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(IsComplete))]
+    private string _editableContent = string.Empty;
+    
+    [ObservableProperty]
+    private bool _isEditing;
+    
+    [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsStreaming))]
+    [NotifyPropertyChangedFor(nameof(IsComplete))]
     private bool _isLoading;
+    
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsComplete))]
+    private bool _isError;
+    
+    [ObservableProperty]
+    private bool _isComplete;
     
     // 计算属性 - 用于 UI 绑定
     public bool HasContent => !string.IsNullOrEmpty(Content);
-    public bool IsComplete => !IsLoading && !IsError;
     public bool IsStreaming => IsLoading && HasContent;
+    public bool IsComplete => !IsLoading && !IsError;
     
     [Indexed]
     public DateTime Timestamp { get; set; }
+    
+    public bool IsUser { get; set; }
 }
 ```
 
@@ -304,6 +330,7 @@ public interface IDataService
     // 消息管理
     Task<List<ChatMessage>> GetMessagesAsync(string conversationId);
     Task SaveMessageAsync(ChatMessage message);
+    Task DeleteMessageAsync(string messageId);
     Task DeleteMessagesAsync(string conversationId);
 
     // 设置管理
@@ -412,8 +439,6 @@ services.AddTransient<ModelSelectionViewModel>();
 
 ## 页面流程
 
-根据 `prototype/ui-prototype.md` 的设计：
-
 ```
 欢迎页 (WelcomeView)
     ↓ 开始使用 / 跳过引导
@@ -432,6 +457,90 @@ API 配置 (ApiKeyConfigView)
 
 ---
 
+## Material Design 3 UI 组件
+
+### 顶部应用栏 (Top App Bar)
+
+- **高度**: 64dp (Small Top App Bar)
+- **Logo**: 月亮 emoji 图标 (🌙)
+- **右侧**: 设置图标按钮
+
+```xml
+<Border Height="64">
+  <Grid ColumnDefinitions="Auto, *, Auto" Margin="16,0">
+    <!-- Logo -->
+    <Border Width="40" Height="40" CornerRadius="20"
+            Background="{DynamicResource PrimaryBrush}">
+      <TextBlock Text="&#x1F319;" FontSize="20"/>
+    </Border>
+    <!-- Settings Button -->
+    <Button Grid.Column="2" Classes="icon">
+      <PathIcon Data="..." Width="24" Height="24"/>
+    </Button>
+  </Grid>
+</Border>
+```
+
+### 底部导航栏 (Navigation Bar)
+
+- **高度**: 80dp
+- **活动项**: 药丸形指示器 + 主色调图标
+- **非活动项**: 灰色图标
+
+```xml
+<Border Height="80" Background="{DynamicResource AppSurfaceBrush}">
+  <Grid ColumnDefinitions="*, *">
+    <!-- Active Tab -->
+    <Button Grid.Column="0">
+      <StackPanel Spacing="4">
+        <!-- Pill Background -->
+        <Border Background="{DynamicResource PrimaryBrush}"
+                CornerRadius="16" Width="64" Height="32">
+          <PathIcon ... Foreground="White"/>
+        </Border>
+        <TextBlock Text="会话" Foreground="{DynamicResource PrimaryBrush}"/>
+      </StackPanel>
+    </Button>
+    <!-- Inactive Tab -->
+    <Button Grid.Column="1">
+      <StackPanel Spacing="4">
+        <PathIcon ... Foreground="{DynamicResource AppTextSecondaryBrush}"/>
+        <TextBlock Text="设置" Foreground="{DynamicResource AppTextSecondaryBrush}"/>
+      </StackPanel>
+    </Button>
+  </Grid>
+</Border>
+```
+
+### 会话列表项 (List Item)
+
+- **高度**: 72dp
+- **布局**: 三栏网格 (Avatar 56dp | 内容 | 时间/徽章)
+- **滑动**: 左滑显示置顶，右滑显示删除
+
+```xml
+<Grid Height="72" ColumnDefinitions="Auto, *, Auto">
+  <!-- Avatar -->
+  <Border Width="48" Height="48" CornerRadius="24">
+    <TextBlock Text="AI"/>
+  </Border>
+  <!-- Content -->
+  <StackPanel Grid.Column="1" Margin="16,0">
+    <TextBlock Text="{Binding Title}" FontSize="16" FontWeight="Medium"/>
+    <TextBlock Text="{Binding Preview}" FontSize="14" Opacity="0.6"/>
+  </StackPanel>
+  <!-- Trailing -->
+  <StackPanel Grid.Column="2">
+    <TextBlock Text="{Binding UpdatedAt, StringFormat='{}{0:HH:mm}'}"/>
+    <Border IsVisible="{Binding HasUnread}">
+      <TextBlock Text="{Binding UnreadCount}"/>
+    </Border>
+  </StackPanel>
+</Grid>
+```
+
+---
+
 ## 聊天界面功能
 
 ### 消息显示状态
@@ -440,18 +549,58 @@ ChatMessage 模型支持多种显示状态：
 
 | 状态 | 条件 | UI 表现 |
 |------|------|----------|
-| 加载中 | `IsLoading && !HasContent` | 三个点动画 |
+| 加载中 | `IsLoading && !HasContent` | 三个点动画 + "思考中" |
 | 流式输出 | `IsLoading && HasContent` | 内容 + 闪烁光标 |
 | 完成 | `!IsLoading && !IsError` | Markdown 渲染 + 时间戳 |
 | 错误 | `IsError` | 错误图标 + 错误信息 + 重试按钮 |
+| 编辑中 | `IsEditing` | 文本框 + 保存/取消按钮 |
 
 ### 交互功能
 
+- **消息复制**: 点击复制按钮将消息内容复制到剪贴板
 - **消息编辑**: 用户消息支持编辑和重新发送
 - **消息删除**: 支持删除单条消息
+- **重试发送**: 错误消息可重试
 - **停止生成**: 流式输出时可中断
 - **自动滚动**: 新消息自动滚动到底部
 - **键盘快捷键**: Enter 发送，Shift+Enter 换行
+
+### 更多菜单
+
+点击聊天页右上角更多按钮打开菜单：
+
+| 选项 | 命令 | 说明 |
+|------|------|------|
+| 重命名 | `RenameConversationCommand` | 修改会话标题 |
+| 清空会话 | `ClearCurrentConversationCommand` | 删除所有消息 |
+| 导出对话 | `ExportConversationCommand` | 导出为文本文件 |
+| 设置 | `NavigateToSettingsCommand` | 跳转到设置页 |
+
+### Toast 提示
+
+全局 Toast 提示系统，用于显示操作反馈：
+
+```csharp
+// 显示 Toast
+ShowToastMessage("已复制到剪贴板");
+
+// 自动隐藏 (2秒后)
+private async void ShowToastMessage(string message)
+{
+    ToastMessage = message;
+    ShowToast = true;
+    
+    _toastCts?.Cancel();
+    _toastCts = new CancellationTokenSource();
+    
+    try
+    {
+        await Task.Delay(2000, _toastCts.Token);
+        ShowToast = false;
+    }
+    catch (OperationCanceledException) { }
+}
+```
 
 ### 动画效果
 
@@ -470,10 +619,10 @@ ChatMessage 模型支持多种显示状态：
 <!-- 流式光标闪烁 -->
 <Style Selector="Border.streaming-cursor">
     <Style.Animations>
-        <Animation Duration="0:0:1" IterationCount="Infinite">
-            <KeyFrame Cue="0%"><Setter Property="Opacity" Value="1"/></KeyFrame>
-            <KeyFrame Cue="50%"><Setter Property="Opacity" Value="0"/></KeyFrame>
-            <KeyFrame Cue="100%"><Setter Property="Opacity" Value="1"/></KeyFrame>
+        <Animation Duration="0:0:0.6" IterationCount="Infinite">
+            <KeyFrame Cue="0%"><Setter Property="Opacity" Value="0.3"/></KeyFrame>
+            <KeyFrame Cue="50%"><Setter Property="Opacity" Value="1"/></KeyFrame>
+            <KeyFrame Cue="100%"><Setter Property="Opacity" Value="0.3"/></KeyFrame>
         </Animation>
     </Style.Animations>
 </Style>
@@ -481,9 +630,88 @@ ChatMessage 模型支持多种显示状态：
 
 ---
 
+## 滑动手势
+
+### 会话列表滑动操作
+
+实现左滑置顶、右滑删除功能：
+
+```csharp
+// ConversationListView.axaml.cs
+public partial class ConversationListView : UserControl
+{
+    private const double SwipeThreshold = 72;
+    private Control? _currentSwipeItem;
+    private double _startX;
+    private bool _isSwiping;
+
+    private void OnSwipePointerPressed(object? sender, PointerPressedEventArgs e)
+    {
+        if (sender is not Control control) return;
+        
+        // Close any previously swiped item
+        if (_currentSwipeItem != null && _currentSwipeItem != control)
+        {
+            ResetSwipe(_currentSwipeItem);
+        }
+        
+        _currentSwipeItem = control;
+        _startX = e.GetPosition(control).X;
+        _isSwiping = true;
+    }
+
+    private void OnSwipePointerMoved(object? sender, PointerEventArgs e)
+    {
+        if (!_isSwiping || _currentSwipeItem == null) return;
+        
+        var currentX = e.GetPosition(_currentSwipeItem).X;
+        var deltaX = currentX - _startX;
+        
+        // Limit swipe distance
+        if (deltaX > SwipeThreshold) deltaX = SwipeThreshold;
+        if (deltaX < -SwipeThreshold) deltaX = -SwipeThreshold;
+        
+        // Apply transform
+        var transform = TransformOperations.CreateBuilder(1);
+        transform.AppendTranslate(deltaX, 0);
+        _currentSwipeItem.RenderTransform = transform.Build();
+    }
+
+    private void OnSwipePointerReleased(object? sender, PointerReleasedEventArgs e)
+    {
+        if (!_isSwiping || _currentSwipeItem == null) return;
+        
+        var currentX = e.GetPosition(_currentSwipeItem).X;
+        var deltaX = currentX - _startX;
+        
+        // Snap to open or closed position
+        if (Math.Abs(deltaX) > SwipeThreshold / 2)
+        {
+            var snapX = deltaX > 0 ? SwipeThreshold : -SwipeThreshold;
+            var transform = TransformOperations.CreateBuilder(1);
+            transform.AppendTranslate(snapX, 0);
+            _currentSwipeItem.RenderTransform = transform.Build();
+        }
+        else
+        {
+            ResetSwipe(_currentSwipeItem);
+        }
+        
+        _isSwiping = false;
+    }
+
+    private static void ResetSwipe(Control item)
+    {
+        item.RenderTransform = TransformOperations.Identity;
+    }
+}
+```
+
+---
+
 ## 项目 Skills
 
-项目包含六个专属 Skill，位于 `Asakumo.Avalonia/skills/`:
+项目包含多个专属 Skill，位于 `Asakumo.Avalonia/skills/`:
 
 | Skill | 用途 |
 |-------|------|
@@ -493,6 +721,9 @@ ChatMessage 模型支持多种显示状态：
 | `ai-api-service` | AI API 服务层实现模式 |
 | `data-persistence` | 本地数据持久化实现 |
 | `multi-provider-adapter` | 多 AI 服务商适配器实现 |
+| `agent-loading-effects` | Agent 加载动画效果 |
+| `markdown-rendering-optimization` | Markdown 渲染优化 |
+| `linus-code-review` | 代码审查规范 |
 
 ---
 
@@ -647,3 +878,60 @@ public partial class ChatView : UserControl
     }
 }
 ```
+
+### Toast 提示冲突
+
+**问题**: Toast 提示显示时，之前设置的隐藏定时器仍在运行。
+
+**解决方案**: 使用 CancellationTokenSource 取消之前的定时器：
+
+```csharp
+private CancellationTokenSource? _toastCts;
+
+private async void ShowToastMessage(string message)
+{
+    ToastMessage = message;
+    ShowToast = true;
+    
+    // 取消之前的定时器
+    _toastCts?.Cancel();
+    _toastCts = new CancellationTokenSource();
+    
+    try
+    {
+        await Task.Delay(2000, _toastCts.Token);
+        ShowToast = false;
+    }
+    catch (OperationCanceledException) 
+    { 
+        // 被取消时忽略异常
+    }
+}
+```
+
+---
+
+## 最近更新
+
+### UI 优化 (2026-03)
+
+1. **Material Design 3 导航栏**
+   - 顶部应用栏: 64dp 高度，月亮 emoji Logo
+   - 底部导航栏: 80dp 高度，药丸形活动指示器
+
+2. **会话列表 MD3 重构**
+   - 三栏网格布局 (56dp Avatar + 内容 + 时间/徽章)
+   - 统一 72dp 高度
+   - 时间分组显示 (今天/昨天/更早)
+   - 左滑置顶 / 右滑删除手势
+
+3. **聊天界面增强**
+   - 消息复制功能
+   - 右上角更多菜单 (重命名/清空/导出/设置)
+   - Toast 提示系统
+   - 标题编辑功能
+
+4. **消息状态优化**
+   - 添加 `IsComplete` 持久化属性
+   - 支持消息编辑模式
+   - 流式光标动画
