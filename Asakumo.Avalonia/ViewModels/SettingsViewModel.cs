@@ -10,7 +10,6 @@ using Asakumo.Avalonia.Models;
 using Asakumo.Avalonia.Services;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
-using ModelDescriptor = Asakumo.Avalonia.Services.ModelDescriptor;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
@@ -59,16 +58,21 @@ public partial class SettingsViewModel : ViewModelBase
     private bool _isProviderConfigured;
 
     /// <summary>
-    /// Gets or sets the list of providers.
+    /// Gets or sets the count of configured providers.
     /// </summary>
     [ObservableProperty]
-    private ObservableCollection<SettingsProviderItemViewModel> _providers = new();
+    private int _configuredProviderCount;
 
     /// <summary>
-    /// Gets or sets the ID of the expanded provider.
+    /// Gets or sets the list of all available models from configured providers.
     /// </summary>
     [ObservableProperty]
-    private string? _expandedProviderId;
+    private ObservableCollection<SettingsModelItemViewModel> _allModels = new();
+
+    /// <summary>
+    /// Gets a value indicating whether there are any available models.
+    /// </summary>
+    public bool HasModels => AllModels.Count > 0;
 
     [ObservableProperty]
     private string? _toastMessage;
@@ -145,41 +149,12 @@ public partial class SettingsViewModel : ViewModelBase
     }
 
     /// <summary>
-    /// Command to expand/collapse provider models.
+    /// Command to navigate to provider management page.
     /// </summary>
     [RelayCommand]
-    private async Task ToggleExpandProviderAsync(SettingsProviderItemViewModel? provider)
+    private void ManageProviders()
     {
-        if (provider == null)
-            return;
-
-        if (ExpandedProviderId == provider.Id)
-        {
-            // Collapse
-            ExpandedProviderId = null;
-        }
-        else
-        {
-            // Expand and load models
-            ExpandedProviderId = provider.Id;
-            await LoadProviderModelsAsync(provider);
-        }
-    }
-
-    /// <summary>
-    /// Command to configure a provider.
-    /// </summary>
-    [RelayCommand]
-    private async Task ConfigureProviderAsync(SettingsProviderItemViewModel? provider)
-    {
-        if (provider == null)
-            return;
-
-        var settings = await _dataService.GetSettingsAsync();
-        settings.CurrentProviderId = provider.Id;
-        await _dataService.SaveSettingsAsync(settings);
-
-        _navigationService.NavigateTo<ApiKeyConfigViewModel>();
+        _navigationService.NavigateTo<ProviderManagementViewModel>();
     }
 
     /// <summary>
@@ -198,28 +173,10 @@ public partial class SettingsViewModel : ViewModelBase
         CurrentModelName = model.Name;
         IsProviderConfigured = true;
 
-        // Refresh providers list to update current model indicators
-        await LoadProvidersAsync();
+        // Refresh to update current model indicators
+        await LoadModelsAsync();
 
         ShowToastMessage($"已切换到 {model.Name}");
-    }
-
-    /// <summary>
-    /// Command to navigate to provider management page.
-    /// </summary>
-    [RelayCommand]
-    private void ManageProviders()
-    {
-        _navigationService.NavigateTo<ProviderManagementViewModel>();
-    }
-
-    /// <summary>
-    /// Command to add a new provider.
-    /// </summary>
-    [RelayCommand]
-    private void AddProvider()
-    {
-        _navigationService.NavigateTo<ProviderSelectionViewModel>();
     }
 
     /// <summary>
@@ -387,52 +344,25 @@ public partial class SettingsViewModel : ViewModelBase
             IsProviderConfigured = true;
         }
 
-        // Load providers list
-        await LoadProvidersAsync();
+        // Load providers and models
+        await LoadProvidersAndModelsAsync();
     }
 
-    private async Task LoadProvidersAsync()
+    private async Task LoadProvidersAndModelsAsync()
     {
         var providers = await _modelService.GetProvidersAsync();
         var currentModel = _modelService.CurrentModel;
 
-        Providers.Clear();
+        ConfiguredProviderCount = providers.Count(p => p.IsConfigured);
+        AllModels.Clear();
 
-        foreach (var provider in providers)
-        {
-            var models = provider.IsConfigured
-                ? await _modelService.GetModelsByProviderAsync(provider.Id)
-                : new List<ModelDescriptor>();
-
-            var vm = new SettingsProviderItemViewModel
-            {
-                Id = provider.Id,
-                Name = provider.Name,
-                IsConfigured = provider.IsConfigured,
-                IsValid = provider.IsConfigured,
-                EnabledModelCount = models.Count,
-                Icon = GetProviderIcon(provider.Id),
-                IsExpanded = provider.Id == ExpandedProviderId
-            };
-
-            Providers.Add(vm);
-        }
-    }
-
-    private async Task LoadProviderModelsAsync(SettingsProviderItemViewModel provider)
-    {
-        provider.IsLoadingModels = true;
-
-        try
+        foreach (var provider in providers.Where(p => p.IsConfigured))
         {
             var models = await _modelService.GetModelsByProviderAsync(provider.Id);
-            var currentModel = _modelService.CurrentModel;
-
-            provider.Models.Clear();
 
             foreach (var model in models)
             {
-                provider.Models.Add(new SettingsModelItemViewModel
+                AllModels.Add(new SettingsModelItemViewModel
                 {
                     Id = model.Id,
                     Name = model.Name,
@@ -443,10 +373,36 @@ public partial class SettingsViewModel : ViewModelBase
                 });
             }
         }
-        finally
+
+        OnPropertyChanged(nameof(HasModels));
+    }
+
+    private async Task LoadModelsAsync()
+    {
+        var providers = await _modelService.GetProvidersAsync();
+        var currentModel = _modelService.CurrentModel;
+
+        AllModels.Clear();
+
+        foreach (var provider in providers.Where(p => p.IsConfigured))
         {
-            provider.IsLoadingModels = false;
+            var models = await _modelService.GetModelsByProviderAsync(provider.Id);
+
+            foreach (var model in models)
+            {
+                AllModels.Add(new SettingsModelItemViewModel
+                {
+                    Id = model.Id,
+                    Name = model.Name,
+                    Description = model.Description,
+                    ProviderId = model.ProviderId,
+                    ProviderName = model.ProviderName,
+                    IsCurrent = currentModel?.ProviderId == model.ProviderId && currentModel?.Id == model.Id
+                });
+            }
         }
+
+        OnPropertyChanged(nameof(HasModels));
     }
 
     private async Task SaveSettingsAsync()
@@ -488,53 +444,7 @@ public partial class SettingsViewModel : ViewModelBase
         }
     }
 
-    private static string GetProviderIcon(string providerId)
-    {
-        return providerId.ToLower() switch
-        {
-            "openai" => "M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4A8,8 0 0,1 20,12A8,8 0 0,1 12,20A8,8 0 0,1 4,12A8,8 0 0,1 12,4M12,6A6,6 0 0,0 6,12A6,6 0 0,0 12,18A6,6 0 0,0 18,12A6,6 0 0,0 12,6Z",
-            "anthropic" => "M12,2L2,7L12,12L22,7L12,2M2,17L12,22L22,17L22,7L12,12L2,7V17Z",
-            "google" => "M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2M12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4Z",
-            "deepseek" => "M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2Z",
-            "ollama" => "M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2M12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4Z",
-            _ => "M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2Z"
-        };
-    }
-
     #endregion
-}
-
-/// <summary>
-/// View model for a provider item in settings.
-/// </summary>
-public partial class SettingsProviderItemViewModel : ObservableObject
-{
-    [ObservableProperty]
-    private string _id = string.Empty;
-
-    [ObservableProperty]
-    private string _name = string.Empty;
-
-    [ObservableProperty]
-    private bool _isConfigured;
-
-    [ObservableProperty]
-    private bool _isValid;
-
-    [ObservableProperty]
-    private int _enabledModelCount;
-
-    [ObservableProperty]
-    private string _icon = string.Empty;
-
-    [ObservableProperty]
-    private bool _isExpanded;
-
-    [ObservableProperty]
-    private bool _isLoadingModels;
-
-    [ObservableProperty]
-    private ObservableCollection<SettingsModelItemViewModel> _models = new();
 }
 
 /// <summary>
@@ -559,4 +469,9 @@ public partial class SettingsModelItemViewModel : ObservableObject
 
     [ObservableProperty]
     private bool _isCurrent;
+
+    /// <summary>
+    /// Gets the first character of the provider name for display.
+    /// </summary>
+    public string ProviderInitial => string.IsNullOrEmpty(ProviderName) ? "?" : ProviderName[0].ToString();
 }
