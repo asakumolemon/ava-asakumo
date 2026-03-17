@@ -98,6 +98,18 @@ public partial class ConversationListViewModel : ViewModelBase
     }
 
     /// <summary>
+    /// Command to pin/unpin a conversation.
+    /// </summary>
+    /// <param name="conversation">The conversation to pin/unpin.</param>
+    [RelayCommand]
+    private async Task PinConversationAsync(Conversation conversation)
+    {
+        conversation.IsPinned = !conversation.IsPinned;
+        await _dataService.SaveConversationAsync(conversation);
+        await LoadConversationsAsync();
+    }
+
+    /// <summary>
     /// Command to use a quick prompt.
     /// </summary>
     /// <param name="prompt">The quick prompt.</param>
@@ -113,8 +125,30 @@ public partial class ConversationListViewModel : ViewModelBase
         var conversations = await _dataService.GetConversationsAsync();
         IsEmpty = conversations.Count == 0;
 
+        // Sort: Pinned first, then by UpdatedAt descending
+        var sortedConversations = conversations
+            .OrderByDescending(c => c.IsPinned)
+            .ThenByDescending(c => c.UpdatedAt)
+            .ToList();
+
         GroupedConversations.Clear();
-        var groups = conversations
+
+        // Separate pinned conversations (always show at top, no date grouping)
+        var pinnedConversations = sortedConversations.Where(c => c.IsPinned).ToList();
+        var regularConversations = sortedConversations.Where(c => !c.IsPinned).ToList();
+
+        // Add pinned group if any
+        if (pinnedConversations.Any())
+        {
+            GroupedConversations.Add(new ConversationGroup
+            {
+                DateLabel = "置顶",
+                Conversations = new ObservableCollection<Conversation>(pinnedConversations)
+            });
+        }
+
+        // Group regular conversations by date
+        var regularGroups = regularConversations
             .GroupBy(c => GetDateGroup(c.UpdatedAt))
             .Select(g => new ConversationGroup
             {
@@ -122,7 +156,7 @@ public partial class ConversationListViewModel : ViewModelBase
                 Conversations = new ObservableCollection<Conversation>(g)
             });
 
-        foreach (var group in groups)
+        foreach (var group in regularGroups)
         {
             GroupedConversations.Add(group);
         }

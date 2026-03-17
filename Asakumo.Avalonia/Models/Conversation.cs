@@ -50,4 +50,19 @@ public class Conversation
     /// </summary>
     [MaxLength(50)]
     public string? ProviderId { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the conversation is pinned.
+    /// </summary>
+    public bool IsPinned { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the conversation has unread messages.
+    /// </summary>
+    public bool HasUnread { get; set; }
+
+    /// <summary>
+    /// Gets or sets the unread message count.
+    /// </summary>
+    public int UnreadCount { get; set; }
 }

@@ -29,51 +29,98 @@
     <ScrollViewer Grid.Row="1">
       <StackPanel Spacing="16" Margin="16">
         <!-- Empty State -->
-        <StackPanel IsVisible="{Binding IsEmpty}" 
+        <StackPanel IsVisible="{Binding IsEmpty}"
                     VerticalAlignment="Center"
-                    HorizontalAlignment="Center" 
-                    Spacing="24" 
-                    Margin="0,60,0,0">
-          <!-- 空状态插图 -->
-          <StackPanel HorizontalAlignment="Center" Spacing="16">
-            <TextBlock Text="&#x1F4DD;" FontSize="64" HorizontalAlignment="Center"
-                       Foreground="{DynamicResource AppTextSecondaryBrush}"/>
-            <TextBlock Text="还没有会话" FontSize="18" FontWeight="Medium"
+                    HorizontalAlignment="Center"
+                    Spacing="32"
+                    Margin="0,40,0,0">
+          <!-- 现代插图区域 -->
+          <Border Width="120" Height="120"
+                  CornerRadius="60"
+                  Background="{DynamicResource AppSurfaceBrush}"
+                  HorizontalAlignment="Center">
+            <Grid>
+              <!-- 聊天气泡图标 -->
+              <PathIcon Data="M20,2H4A2,2 0 0,0 2,4V22L6,18H20A2,2 0 0,0 22,16V4A2,2 0 0,0 20,2M20,16H6L4,18V4H20V16Z"
+                        Width="48" Height="48"
+                        Foreground="{DynamicResource PrimaryBrush}"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"/>
+              <!-- 装饰点 -->
+              <Border Width="16" Height="16"
+                      CornerRadius="8"
+                      Background="{DynamicResource SuccessBrush}"
+                      HorizontalAlignment="Right"
+                      VerticalAlignment="Top"
+                      Margin="0,20,20,0"/>
+            </Grid>
+          </Border>
+
+          <!-- 文字内容 -->
+          <StackPanel Spacing="8" HorizontalAlignment="Center">
+            <TextBlock Text="还没有会话"
+                       FontSize="20"
+                       FontWeight="SemiBold"
                        HorizontalAlignment="Center"
                        Foreground="{DynamicResource AppTextPrimaryBrush}"/>
-            <TextBlock Text="点击下方按钮开始新的对话"
+            <TextBlock Text="点击下方按钮开始与 AI 对话"
+                       FontSize="14"
                        HorizontalAlignment="Center"
-                       Classes="caption"/>
+                       Foreground="{DynamicResource AppTextSecondaryBrush}"
+                       Opacity="0.8"/>
           </StackPanel>
 
           <!-- 主按钮 -->
           <Button Command="{Binding NewConversationCommand}"
                   Classes="primary"
-                  HorizontalAlignment="Center">
-            <TextBlock Text="开始新对话" FontWeight="SemiBold"/>
+                  HorizontalAlignment="Center"
+                  MinWidth="160"
+                  Height="48"
+                  CornerRadius="24">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <PathIcon Data="M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z"
+                        Width="20" Height="20"
+                        Foreground="White"/>
+              <TextBlock Text="开始新对话"
+                         FontWeight="SemiBold"
+                         VerticalAlignment="Center"/>
+            </StackPanel>
           </Button>
 
           <!-- Quick Prompts -->
-          <StackPanel Spacing="12" Margin="0,16,0,0" HorizontalAlignment="Center">
-            <TextBlock Text="热门提示词:" 
-                       Classes="caption"
+          <StackPanel Spacing="16"
+                      Margin="0,24,0,0"
+                      HorizontalAlignment="Center"
+                      MaxWidth="320">
+            <TextBlock Text="试试这些提示词"
+                       FontSize="12"
+                       FontWeight="Medium"
                        HorizontalAlignment="Center"
-                       Margin="0,0,0,8"/>
+                       Foreground="{DynamicResource AppTextSecondaryBrush}"
+                       Opacity="0.7"/>
             <ItemsControl ItemsSource="{Binding QuickPrompts}">
               <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
-                  <WrapPanel Orientation="Horizontal" HorizontalAlignment="Center"/>
+                  <WrapPanel Orientation="Horizontal"
+                             HorizontalAlignment="Center"/>
                 </ItemsPanelTemplate>
               </ItemsControl.ItemsPanel>
               <ItemsControl.ItemTemplate>
                 <DataTemplate>
-                  <Border Classes="chip" Margin="4">
+                  <Border Background="{DynamicResource AppSurfaceBrush}"
+                          CornerRadius="16"
+                          BorderBrush="{DynamicResource AppBorderBrush}"
+                          BorderThickness="1"
+                          Margin="4"
+                          Padding="12,8">
                     <Button Command="{Binding $parent[ItemsControl].((vm:ConversationListViewModel)DataContext).UseQuickPromptCommand}"
                             CommandParameter="{Binding}"
-                            Background="Transparent" 
+                            Background="Transparent"
                             BorderThickness="0"
                             Padding="0">
-                      <TextBlock Text="{Binding}" FontSize="13"/>
+                      <TextBlock Text="{Binding}"
+                                 FontSize="13"
+                                 Foreground="{DynamicResource AppTextPrimaryBrush}"/>
                     </Button>
                   </Border>
                 </DataTemplate>
@@ -94,77 +141,144 @@
                            Margin="0,16,0,8"/>
                 
                 <!-- 会话列表 -->
-                <ItemsControl ItemsSource="{Binding Conversations}">
+                <ItemsControl ItemsSource="{Binding Conversations}"
+                              x:Name="ConversationsList">
+                  <ItemsControl.Styles>
+                    <!-- Swipe Action Button Style -->
+                    <Style Selector="Button.swipe-action">
+                      <Setter Property="Width" Value="72"/>
+                      <Setter Property="Height" Value="72"/>
+                      <Setter Property="Background" Value="Transparent"/>
+                      <Setter Property="BorderThickness" Value="0"/>
+                    </Style>
+                  </ItemsControl.Styles>
                   <ItemsControl.ItemTemplate>
                     <DataTemplate x:DataType="model:Conversation">
-                      <Border Classes="card" Margin="0,0,0,8">
-                        <Button Command="{Binding #ConversationListControl.((vm:ConversationListViewModel)DataContext).SelectConversationCommand}"
-                                CommandParameter="{Binding}"
-                                Background="Transparent" 
-                                BorderThickness="0"
-                                HorizontalAlignment="Stretch"
-                                HorizontalContentAlignment="Left"
-                                Padding="0">
-                          <Grid ColumnDefinitions="Auto, *, Auto" 
-                                RowDefinitions="Auto, Auto, Auto">
-                            <!-- 头像 (圆形 48x48) -->
-                            <Border Grid.Row="0" Grid.RowSpan="2" Grid.Column="0"
-                                    Width="48" Height="48" 
-                                    CornerRadius="24"
-                                    Background="{DynamicResource PrimaryBrush}"
-                                    Margin="0,0,12,0"
-                                    VerticalAlignment="Top">
-                              <TextBlock Text="&#x1F916;" 
-                                         HorizontalAlignment="Center" 
-                                         VerticalAlignment="Center"
-                                         FontSize="20"/>
-                            </Border>
-                            
-                            <!-- 标题 -->
-                            <TextBlock Grid.Row="0" Grid.Column="1" 
-                                       Text="{Binding Title}"
-                                       FontWeight="Medium" 
-                                       TextWrapping="NoWrap"
-                                       TextTrimming="CharacterEllipsis"
-                                       Foreground="{DynamicResource AppTextPrimaryBrush}"/>
-                            
-                            <!-- 预览 -->
-                            <TextBlock Grid.Row="1" Grid.Column="1" 
-                                       Text="{Binding Preview}"
-                                       Classes="caption"
-                                       TextWrapping="NoWrap"
-                                       TextTrimming="CharacterEllipsis"/>
-                            
-                            <!-- 模型标签 -->
-                            <Border Grid.Row="2" Grid.Column="1"
-                                    Classes="tag"
-                                    HorizontalAlignment="Left"
-                                    Margin="0,4,0,0">
-                              <TextBlock Text="{Binding ModelName}"
-                                         FontSize="10"
-                                         Foreground="{DynamicResource PrimaryBrush}"/>
-                            </Border>
-                            
-                            <!-- 时间和删除按钮 -->
-                            <StackPanel Grid.Row="0" Grid.Column="2" 
-                                        Orientation="Horizontal" 
-                                        Spacing="4"
-                                        VerticalAlignment="Top">
-                              <TextBlock Text="{Binding UpdatedAt, StringFormat='{}{0:HH:mm}'}"
-                                         Classes="timestamp"
-                                         Margin="0,0,4,0"/>
-                              <Button Width="28" Height="28"
-                                      CornerRadius="14"
-                                      Background="Transparent"
-                                      Foreground="{DynamicResource AppTextSecondaryBrush}"
-                                      Command="{Binding #ConversationListControl.((vm:ConversationListViewModel)DataContext).DeleteConversationCommand}"
-                                      CommandParameter="{Binding}">
-                                <TextBlock Text="&#x1F5D1;" FontSize="12"/>
-                              </Button>
-                            </StackPanel>
-                          </Grid>
-                        </Button>
-                      </Border>
+                      <!-- Swipe Container -->
+                      <Grid Height="72" Margin="0,0,0,1">
+                        <!-- Background Actions (revealed on swipe) -->
+                        <Grid ColumnDefinitions="Auto, *, Auto"
+                              x:Name="SwipeActionsBackground">
+                          <!-- Left Action: Pin -->
+                          <Border Grid.Column="0"
+                                  Background="{DynamicResource PrimaryBrush}"
+                                  Width="72"
+                                  HorizontalAlignment="Left">
+                            <Button Classes="swipe-action"
+                                    Command="{Binding #ConversationListControl.((vm:ConversationListViewModel)DataContext).PinConversationCommand}"
+                                    CommandParameter="{Binding}">
+                              <PathIcon Data="M16,12V4H17V2H7V4H8V12L6,14V16H11.2V22H12.8V16H18V14L16,12Z"
+                                        Width="20" Height="20"
+                                        Foreground="White"/>
+                            </Button>
+                          </Border>
+                          <!-- Right Action: Delete -->
+                          <Border Grid.Column="2"
+                                  Background="{DynamicResource ErrorBrush}"
+                                  Width="72"
+                                  HorizontalAlignment="Right">
+                            <Button Classes="swipe-action"
+                                    Command="{Binding #ConversationListControl.((vm:ConversationListViewModel)DataContext).DeleteConversationCommand}"
+                                    CommandParameter="{Binding}">
+                              <PathIcon Data="M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19M8,9H16V19H8V9M15.5,4L14.5,3H9.5L8.5,4H5V6H19V4H15.5Z"
+                                        Width="20" Height="20"
+                                        Foreground="White"/>
+                            </Button>
+                          </Border>
+                        </Grid>
+
+                        <!-- Foreground Content -->
+                        <Border x:Name="SwipeContent"
+                                Background="{DynamicResource AppCardBrush}"
+                                PointerPressed="OnSwipePointerPressed"
+                                PointerMoved="OnSwipePointerMoved"
+                                PointerReleased="OnSwipePointerReleased">
+                          <Button Command="{Binding #ConversationListControl.((vm:ConversationListViewModel)DataContext).SelectConversationCommand}"
+                                  CommandParameter="{Binding}"
+                                  Background="Transparent"
+                                  BorderThickness="0"
+                                  HorizontalAlignment="Stretch"
+                                  HorizontalContentAlignment="Stretch"
+                                  Padding="16,0">
+                            <!-- Material Design 3: Three-column layout -->
+                            <Grid ColumnDefinitions="Auto, *, Auto"
+                                  Height="72">
+                              <!-- Avatar Column (56dp according to Material Design) -->
+                              <Grid Grid.Column="0"
+                                    Width="56"
+                                    VerticalAlignment="Center">
+                                <Border Width="48" Height="48"
+                                        CornerRadius="24"
+                                        Background="{DynamicResource PrimaryBrush}">
+                                  <TextBlock Text="AI"
+                                             HorizontalAlignment="Center"
+                                             VerticalAlignment="Center"
+                                             FontSize="16"
+                                             FontWeight="SemiBold"
+                                             Foreground="White"/>
+                                </Border>
+                                <!-- Online/Pinned Indicator -->
+                                <Border Width="12" Height="12"
+                                        CornerRadius="6"
+                                        Background="{DynamicResource SuccessBrush}"
+                                        BorderBrush="{DynamicResource AppCardBrush}"
+                                        BorderThickness="2"
+                                        HorizontalAlignment="Right"
+                                        VerticalAlignment="Bottom"
+                                        Margin="0,0,2,2"
+                                        IsVisible="{Binding IsPinned}"/>
+                              </Grid>
+
+                              <!-- Content Column -->
+                              <StackPanel Grid.Column="1"
+                                          VerticalAlignment="Center"
+                                          Margin="16,0,16,0"
+                                          Spacing="4">
+                                <!-- Title -->
+                                <TextBlock Text="{Binding Title}"
+                                           FontSize="16"
+                                           FontWeight="Medium"
+                                           TextWrapping="NoWrap"
+                                           TextTrimming="CharacterEllipsis"
+                                           Foreground="{DynamicResource AppTextPrimaryBrush}"/>
+                                <!-- Preview -->
+                                <TextBlock Text="{Binding Preview}"
+                                           FontSize="14"
+                                           Opacity="0.6"
+                                           TextWrapping="NoWrap"
+                                           TextTrimming="CharacterEllipsis"
+                                           MaxHeight="20"
+                                           Foreground="{DynamicResource AppTextSecondaryBrush}"/>
+                              </StackPanel>
+
+                              <!-- Trailing Column: Time + Badge -->
+                              <StackPanel Grid.Column="2"
+                                          VerticalAlignment="Center"
+                                          HorizontalAlignment="Right"
+                                          Spacing="6">
+                                <!-- Time -->
+                                <TextBlock Text="{Binding UpdatedAt, StringFormat='{}{0:HH:mm}'}"
+                                           FontSize="12"
+                                           Opacity="0.5"
+                                           Foreground="{DynamicResource AppTextSecondaryBrush}"/>
+                                <!-- Unread Badge -->
+                                <Border Width="20" Height="20"
+                                        CornerRadius="10"
+                                        Background="{DynamicResource PrimaryBrush}"
+                                        HorizontalAlignment="Right"
+                                        IsVisible="{Binding HasUnread}">
+                                  <TextBlock Text="{Binding UnreadCount}"
+                                             FontSize="11"
+                                             FontWeight="SemiBold"
+                                             Foreground="White"
+                                             HorizontalAlignment="Center"
+                                             VerticalAlignment="Center"/>
+                                </Border>
+                              </StackPanel>
+                            </Grid>
+                          </Button>
+                        </Border>
+                      </Grid>
                     </DataTemplate>
                   </ItemsControl.ItemTemplate>
                 </ItemsControl>
