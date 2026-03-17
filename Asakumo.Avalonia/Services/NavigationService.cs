@@ -39,6 +39,7 @@ public class NavigationService : INavigationService
         {
             _navigationStack.Push(viewModel);
             NavigationChanged?.Invoke(viewModel);
+            viewModel.OnNavigatedTo();
         }
     }
 
@@ -50,7 +51,8 @@ public class NavigationService : INavigationService
         {
             _navigationStack.Push(viewModel);
             NavigationChanged?.Invoke(viewModel);
-            
+            viewModel.OnNavigatedTo();
+
             // Handle parameter for ChatViewModel - load async after navigation
             if (viewModel is ChatViewModel chatViewModel)
             {
@@ -67,6 +69,7 @@ public class NavigationService : INavigationService
             _navigationStack.Pop();
             var currentView = _navigationStack.Peek();
             NavigationChanged?.Invoke(currentView);
+            currentView.OnNavigatedTo();
         }
     }
 }

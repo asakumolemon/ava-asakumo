@@ -48,7 +48,13 @@ public partial class ConversationListViewModel : ViewModelBase
     {
         _dataService = dataService;
         _navigationService = navigationService;
-        LoadConversationsAsync().ConfigureAwait(false);
+    }
+
+    /// <inheritdoc/>
+    public override void OnNavigatedTo()
+    {
+        base.OnNavigatedTo();
+        _ = LoadConversationsAsync();
     }
 
     /// <summary>

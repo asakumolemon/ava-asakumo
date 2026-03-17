@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
@@ -22,50 +23,34 @@ public partial class ChatViewModel : ViewModelBase
     private CancellationTokenSource? _responseCts;
     private string _conversationId = Guid.NewGuid().ToString();
 
+    private const int MaxTitleLength = 30;
+    private const int MaxPreviewLength = 50;
+    private const int SuccessMessageDisplayMs = 3000;
+    private const string InterruptedMessage = "[已中断]";
+
     #region Observable Properties
 
-    /// <summary>
-    /// Gets or sets the conversation title.
-    /// </summary>
     [ObservableProperty]
     private string _title = "新会话";
 
-    /// <summary>
-    /// Gets or sets the input message text.
-    /// </summary>
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(CanSend))]
     [NotifyCanExecuteChangedFor(nameof(SendMessageCommand))]
     private string _inputMessage = string.Empty;
 
-    /// <summary>
-    /// Gets or sets the current model display name.
-    /// </summary>
     [ObservableProperty]
     private string? _currentModel;
 
-    /// <summary>
-    /// Gets or sets a value indicating whether the AI is currently responding.
-    /// </summary>
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(CanSend))]
     private bool _isAiResponding;
 
-    /// <summary>
-    /// Gets or sets a value indicating whether API is configured.
-    /// </summary>
     [ObservableProperty]
     private bool _isApiConfigured;
 
-    /// <summary>
-    /// Gets or sets a value indicating whether to show the error dialog.
-    /// </summary>
     [ObservableProperty]
     private bool _showErrorDialog;
 
-    /// <summary>
-    /// Gets or sets a value indicating whether to show the success message.
-    /// </summary>
     [ObservableProperty]
     private bool _showSuccessMessage;
 
@@ -73,45 +58,24 @@ public partial class ChatViewModel : ViewModelBase
 
     #region Computed Properties
 
-    /// <summary>
-    /// Gets the messages in the conversation.
-    /// </summary>
     public ObservableCollection<ChatMessage> Messages { get; }
 
-    /// <summary>
-    /// Gets a value indicating whether there are any messages.
-    /// </summary>
     public bool HasMessages => Messages.Count > 0;
 
-    /// <summary>
-    /// Gets a value indicating whether the user can send a message.
-    /// </summary>
     public bool CanSend => !IsAiResponding && !string.IsNullOrWhiteSpace(InputMessage);
 
-    /// <summary>
-    /// Gets the conversation ID.
-    /// </summary>
     public string ConversationId => _conversationId;
 
     #endregion
 
     #region Events
 
-    /// <summary>
-    /// Event raised when a new message is added (for auto-scroll).
-    /// </summary>
     public event EventHandler? MessageAdded;
 
     #endregion
 
     #region Constructor
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="ChatViewModel"/> class.
-    /// </summary>
-    /// <param name="dataService">The data service.</param>
-    /// <param name="navigationService">The navigation service.</param>
-    /// <param name="aiService">The AI service.</param>
     public ChatViewModel(
         IDataService dataService,
         INavigationService navigationService,
@@ -133,9 +97,16 @@ public partial class ChatViewModel : ViewModelBase
 
     private async Task InitializeAsync()
     {
-        var settings = await _dataService.GetSettingsAsync();
-        UpdateApiConfigStatus(settings);
-        UpdateCurrentModelDisplay(settings.CurrentModelId);
+        try
+        {
+            var settings = await _dataService.GetSettingsAsync();
+            UpdateApiConfigStatus(settings);
+            UpdateCurrentModelDisplay(settings.CurrentModelId);
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Failed to initialize: {ex.Message}");
+        }
     }
 
     private void UpdateApiConfigStatus(AppSettings settings)
@@ -162,48 +133,30 @@ public partial class ChatViewModel : ViewModelBase
 
     #region Public Methods
 
-    /// <summary>
-    /// Sets the conversation ID and loads existing messages if any.
-    /// </summary>
-    /// <param name="conversationId">The conversation ID.</param>
     public async Task SetConversationAsync(string conversationId)
     {
         ArgumentException.ThrowIfNullOrEmpty(conversationId);
         _conversationId = conversationId;
 
         var conversation = await _dataService.GetConversationAsync(conversationId);
-
-        if (conversation != null)
-        {
-            Title = conversation.Title;
-            CurrentModel = conversation.ModelName;
-
-            var messages = await _dataService.GetMessagesAsync(conversationId);
-
-            Messages.Clear();
-            foreach (var msg in messages)
-            {
-                // 恢复消息状态：从数据库加载的消息一定不是加载中
-                msg.IsLoading = false;
-                // 向后兼容：为旧数据自动设置 IsComplete
-                if (!msg.IsComplete && !msg.IsError)
-                {
-                    msg.IsComplete = true;
-                }
-                Messages.Add(msg);
-            }
-
-            _aiService.RestoreHistory(conversationId, messages);
-        }
-        else
+        if (conversation is null)
         {
             _aiService.ClearHistory(conversationId);
+            return;
         }
+
+        Title = conversation.Title;
+        CurrentModel = conversation.ModelName;
+
+                var messages = await _dataService.GetMessagesAsync(conversationId);
+
+                Messages.Clear();
+
+                RestoreAndAddMessages(messages);
+
+                _aiService.RestoreHistory(conversationId, messages);
     }
 
-    /// <summary>
-    /// Called when API configuration is completed.
-    /// </summary>
     public async Task OnConfigurationCompleteAsync()
     {
         var settings = await _dataService.GetSettingsAsync();
@@ -211,21 +164,26 @@ public partial class ChatViewModel : ViewModelBase
         ShowSuccessMessage = true;
         UpdateCurrentModelDisplay(settings.CurrentModelId);
 
-        // Auto-hide success message after 3 seconds
-        _ = Task.Run(async () =>
+        _ = HideSuccessMessageAsync();
+    }
+
+    private async Task HideSuccessMessageAsync()
+    {
+        try
         {
-            await Task.Delay(3000);
+            await Task.Delay(SuccessMessageDisplayMs);
             ShowSuccessMessage = false;
-        });
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Failed to hide success message: {ex.Message}");
+        }
     }
 
     #endregion
 
     #region Commands
 
-    /// <summary>
-    /// Command to go back to the previous view.
-    /// </summary>
     [RelayCommand]
     private async Task GoBackAsync()
     {
@@ -239,9 +197,6 @@ public partial class ChatViewModel : ViewModelBase
         _navigationService.GoBack();
     }
 
-    /// <summary>
-    /// Command to send the current input message.
-    /// </summary>
     [RelayCommand(CanExecute = nameof(CanSend))]
     private async Task SendMessageAsync()
     {
@@ -261,12 +216,9 @@ public partial class ChatViewModel : ViewModelBase
         UpdateTitleFromFirstMessage();
         InputMessage = string.Empty;
 
-        await SendToAiAsync(userMessage.Content);
+        await StreamAiResponseAsync(userMessage.Content);
     }
 
-    /// <summary>
-    /// Command to stop the current AI response.
-    /// </summary>
     [RelayCommand]
     private void StopResponse()
     {
@@ -274,9 +226,6 @@ public partial class ChatViewModel : ViewModelBase
         IsAiResponding = false;
     }
 
-    /// <summary>
-    /// Command to edit a message.
-    /// </summary>
     [RelayCommand]
     private void EditMessage(ChatMessage? message)
     {
@@ -286,9 +235,6 @@ public partial class ChatViewModel : ViewModelBase
         message.BeginEdit();
     }
 
-    /// <summary>
-    /// Command to save an edited message.
-    /// </summary>
     [RelayCommand]
     private async Task SaveEditedMessageAsync(ChatMessage? message)
     {
@@ -301,18 +247,12 @@ public partial class ChatViewModel : ViewModelBase
         await _dataService.SaveMessageAsync(message);
     }
 
-    /// <summary>
-    /// Command to cancel editing a message.
-    /// </summary>
     [RelayCommand]
     private void CancelEditMessage(ChatMessage? message)
     {
         message?.CancelEdit();
     }
 
-    /// <summary>
-    /// Command to delete a message.
-    /// </summary>
     [RelayCommand]
     private async Task DeleteMessageAsync(ChatMessage? message)
     {
@@ -328,9 +268,6 @@ public partial class ChatViewModel : ViewModelBase
         }
     }
 
-    /// <summary>
-    /// Command to retry a failed message.
-    /// </summary>
     [RelayCommand]
     private async Task RetryMessageAsync(ChatMessage? message)
     {
@@ -342,13 +279,10 @@ public partial class ChatViewModel : ViewModelBase
         var lastUserMessage = Messages.LastOrDefault(m => m.IsUser);
         if (lastUserMessage != null)
         {
-            await SendToAiAsync(lastUserMessage.Content);
+            await StreamAiResponseAsync(lastUserMessage.Content);
         }
     }
 
-    /// <summary>
-    /// Command to open provider configuration.
-    /// </summary>
     [RelayCommand]
     private void ConfigureProvider()
     {
@@ -356,9 +290,6 @@ public partial class ChatViewModel : ViewModelBase
         _navigationService.NavigateTo<ProviderSelectionViewModel>();
     }
 
-    /// <summary>
-    /// Command to close the error dialog.
-    /// </summary>
     [RelayCommand]
     private void CloseErrorDialog()
     {
@@ -379,6 +310,19 @@ public partial class ChatViewModel : ViewModelBase
         }
     }
 
+    private void RestoreAndAddMessages(List<ChatMessage> messages)
+    {
+        foreach (var msg in messages)
+        {
+            msg.IsLoading = false;
+            if (!msg.IsComplete && !msg.IsError)
+            {
+                msg.IsComplete = true;
+            }
+            Messages.Add(msg);
+        }
+    }
+
     private ChatMessage CreateUserMessage()
     {
         return new ChatMessage
@@ -395,20 +339,48 @@ public partial class ChatViewModel : ViewModelBase
         if (Messages.Count != 1 || InputMessage.Length <= 0)
             return;
 
-        Title = InputMessage.Length > 30
-            ? InputMessage[..30] + "..."
+        Title = InputMessage.Length > MaxTitleLength
+            ? InputMessage[..MaxTitleLength] + "..."
             : InputMessage;
     }
 
-    private async Task SendToAiAsync(string message)
+    private async Task StreamAiResponseAsync(string message)
     {
         IsAiResponding = true;
+        ResetCancellationToken();
 
+        var response = CreateAiResponse();
+        Messages.Add(response);
+
+        try
+        {
+            await StreamTokensAsync(response, message);
+            await CompleteResponseAsync(response);
+        }
+        catch (OperationCanceledException)
+        {
+            HandleCancellation(response);
+        }
+        catch (Exception ex)
+        {
+            HandleStreamError(response, ex);
+        }
+        finally
+        {
+            FinalizeResponse(response);
+        }
+    }
+
+    private void ResetCancellationToken()
+    {
         _responseCts?.Cancel();
         _responseCts?.Dispose();
         _responseCts = new CancellationTokenSource();
+    }
 
-        var response = new ChatMessage
+    private ChatMessage CreateAiResponse()
+    {
+        return new ChatMessage
         {
             ConversationId = _conversationId,
             Content = string.Empty,
@@ -416,38 +388,42 @@ public partial class ChatViewModel : ViewModelBase
             IsLoading = true,
             Timestamp = DateTime.Now
         };
+    }
 
-        Messages.Add(response);
+    private async Task StreamTokensAsync(ChatMessage response, string message)
+    {
+        await foreach (var token in _aiService.StreamChatAsync(_conversationId, message, _responseCts!.Token))
+        {
+            response.Content += token;
+        }
+    }
 
-        try
-        {
-            await foreach (var token in _aiService.StreamChatAsync(_conversationId, message, _responseCts.Token))
-            {
-                response.Content += token;
-            }
+    private async Task CompleteResponseAsync(ChatMessage response)
+    {
+        response.IsComplete = true;
+        await _dataService.SaveMessageAsync(response);
+        await SaveConversationAsync();
+    }
 
-            response.IsComplete = true;
-            await _dataService.SaveMessageAsync(response);
-            await SaveConversationAsync();
-        }
-        catch (OperationCanceledException)
+    private void HandleCancellation(ChatMessage response)
+    {
+        if (string.IsNullOrEmpty(response.Content))
         {
-            if (string.IsNullOrEmpty(response.Content))
-            {
-                response.Content = "[已中断]";
-            }
-            response.IsComplete = true;
+            response.Content = InterruptedMessage;
         }
-        catch (Exception ex)
-        {
-            response.IsError = true;
-            response.Content = ex.Message;
-        }
-        finally
-        {
-            response.IsLoading = false;
-            IsAiResponding = false;
-        }
+        response.IsComplete = true;
+    }
+
+    private void HandleStreamError(ChatMessage response, Exception ex)
+    {
+        response.IsError = true;
+        response.Content = ex.Message;
+    }
+
+    private void FinalizeResponse(ChatMessage response)
+    {
+        response.IsLoading = false;
+        IsAiResponding = false;
     }
 
     private async Task SaveConversationAsync()
@@ -472,8 +448,8 @@ public partial class ChatViewModel : ViewModelBase
         if (string.IsNullOrEmpty(content))
             return "空会话";
 
-        return content.Length > 50
-            ? content[..50] + "..."
+        return content.Length > MaxPreviewLength
+            ? content[..MaxPreviewLength] + "..."
             : content;
     }
 
