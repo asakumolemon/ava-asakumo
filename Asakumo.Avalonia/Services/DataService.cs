@@ -275,15 +275,6 @@ public class DataService : IDataService
         {
             new AIProvider
             {
-                Id = "quickstart",
-                Name = "无需配置，立即体验",
-                Category = ProviderCategory.QuickStart,
-                Description = "使用内置免费模型",
-                RequiresApiKey = false,
-                Icon = "🌟"
-            },
-            new AIProvider
-            {
                 Id = "openai",
                 Name = "OpenAI (GPT)",
                 Category = ProviderCategory.Popular,

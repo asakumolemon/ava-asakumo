@@ -88,20 +88,6 @@ public partial class ProviderManagementViewModel : ViewModelBase
     }
 
     /// <summary>
-    /// Command to toggle provider enabled state.
-    /// </summary>
-    [RelayCommand]
-    private async Task ToggleProviderAsync(ProviderItemViewModel? provider)
-    {
-        if (provider == null)
-            return;
-
-        var newState = !provider.IsEnabled;
-        await _modelService.SetProviderEnabledAsync(provider.Id, newState);
-        provider.IsEnabled = newState;
-    }
-
-    /// <summary>
     /// Command to configure a provider.
     /// </summary>
     [RelayCommand]
@@ -236,7 +222,6 @@ public partial class ProviderManagementViewModel : ViewModelBase
                 Name = provider.Name,
                 DisplayName = provider.Name,
                 Category = ProviderCategory.Popular,
-                IsEnabled = provider.IsEnabled,
                 IsConfigured = provider.IsConfigured,
                 IsValid = provider.IsConfigured,
                 EnabledModelCount = models.Count,
@@ -279,9 +264,6 @@ public partial class ProviderItemViewModel : ObservableObject
     private ProviderCategory _category;
 
     [ObservableProperty]
-    private bool _isEnabled;
-
-    [ObservableProperty]
     private bool _isConfigured;
 
     [ObservableProperty]
@@ -299,10 +281,5 @@ public partial class ProviderItemViewModel : ObservableObject
     /// <summary>
     /// Gets a value indicating whether this provider can be tested.
     /// </summary>
-    public bool CanTest => IsConfigured && IsEnabled;
-
-    /// <summary>
-    /// Gets a value indicating whether this provider can be configured.
-    /// </summary>
-    public bool CanConfigure => !IsConfigured || !IsValid;
+    public bool CanTest => IsConfigured;
 }

@@ -61,11 +61,6 @@ public interface IModelService
     Task<bool> RefreshProviderModelsAsync(string providerId);
 
     /// <summary>
-    /// Sets whether a provider is enabled.
-    /// </summary>
-    Task SetProviderEnabledAsync(string providerId, bool enabled);
-
-    /// <summary>
     /// Sets the display name for a provider.
     /// </summary>
     Task SetProviderDisplayNameAsync(string providerId, string? displayName);
@@ -90,11 +85,6 @@ public class ProviderInfo
     /// Gets or sets the provider icon path.
     /// </summary>
     public string Icon { get; set; } = string.Empty;
-
-    /// <summary>
-    /// Gets or sets a value indicating whether this provider is enabled.
-    /// </summary>
-    public bool IsEnabled { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether this provider is properly configured.
@@ -141,11 +131,6 @@ public class ModelDescriptor
     /// Gets or sets the model description.
     /// </summary>
     public string? Description { get; set; }
-
-    /// <summary>
-    /// Gets or sets a value indicating whether this model is enabled.
-    /// </summary>
-    public bool IsEnabled { get; set; } = true;
 
     /// <summary>
     /// Gets or sets the model capabilities.

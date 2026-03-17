@@ -1,8 +1,10 @@
 using System;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using Asakumo.Avalonia.Models;
 using Asakumo.Avalonia.Services;
+using Asakumo.Avalonia.Services.Providers;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
@@ -15,7 +17,7 @@ public partial class ApiKeyConfigViewModel : ViewModelBase
 {
     private readonly IDataService _dataService;
     private readonly INavigationService _navigationService;
-    private readonly IAIService _aiService;
+    private readonly AIProviderFactory _providerFactory;
 
     /// <summary>
     /// Gets or sets the provider name.
@@ -48,28 +50,45 @@ public partial class ApiKeyConfigViewModel : ViewModelBase
     private bool _showAdvancedSettings;
 
     /// <summary>
-    /// Gets or sets a value indicating whether validation is in progress.
+    /// Gets or sets a value indicating whether models are being loaded.
     /// </summary>
     [ObservableProperty]
-    private bool _isValidating;
+    private bool _isLoadingModels;
 
     /// <summary>
-    /// Gets or sets a value indicating whether validation failed.
+    /// Gets or sets a value indicating whether models have been loaded.
     /// </summary>
     [ObservableProperty]
-    private bool _validationFailed;
+    private bool _hasLoadedModels;
 
     /// <summary>
-    /// Gets or sets the validation error message.
+    /// Gets or sets a value indicating whether an error occurred.
     /// </summary>
     [ObservableProperty]
-    private string _validationError = string.Empty;
+    private bool _hasError;
+
+    /// <summary>
+    /// Gets or sets the error message.
+    /// </summary>
+    [ObservableProperty]
+    private string _errorMessage = string.Empty;
 
     /// <summary>
     /// Gets or sets the provider icon.
     /// </summary>
     [ObservableProperty]
     private string _providerIcon = string.Empty;
+
+    /// <summary>
+    /// Gets the collection of available models.
+    /// </summary>
+    public ObservableCollection<ModelSelectionItemViewModel> Models { get; } = new();
+
+    /// <summary>
+    /// Gets or sets the select all state.
+    /// </summary>
+    [ObservableProperty]
+    private bool _selectAll = true;
 
     /// <summary>
     /// Gets the current provider ID.
@@ -79,17 +98,14 @@ public partial class ApiKeyConfigViewModel : ViewModelBase
     /// <summary>
     /// Initializes a new instance of the <see cref="ApiKeyConfigViewModel"/> class.
     /// </summary>
-    /// <param name="dataService">The data service.</param>
-    /// <param name="navigationService">The navigation service.</param>
-    /// <param name="aiService">The AI service.</param>
     public ApiKeyConfigViewModel(
         IDataService dataService,
         INavigationService navigationService,
-        IAIService aiService)
+        AIProviderFactory providerFactory)
     {
         _dataService = dataService;
         _navigationService = navigationService;
-        _aiService = aiService;
+        _providerFactory = providerFactory;
         _ = LoadProviderInfoAsync();
     }
 
@@ -121,69 +137,158 @@ public partial class ApiKeyConfigViewModel : ViewModelBase
     }
 
     /// <summary>
-    /// Command to validate and save the API key.
+    /// Command to fetch model list from API.
     /// </summary>
     [RelayCommand]
-    private async Task ValidateAndSaveAsync()
+    private async Task FetchModelsAsync()
     {
         if (string.IsNullOrWhiteSpace(ApiKey))
+        {
+            HasError = true;
+            ErrorMessage = "请输入 API Key";
+            return;
+        }
+
+        if (string.IsNullOrEmpty(_currentProviderId))
             return;
 
-        IsValidating = true;
-        ValidationFailed = false;
-        ValidationError = string.Empty;
+        IsLoadingModels = true;
+        HasError = false;
+        ErrorMessage = string.Empty;
+        Models.Clear();
 
         try
         {
-            // Real API validation
-            var isValid = await _aiService.ValidateProviderAsync(
-                _currentProviderId ?? string.Empty,
+            // Create a temporary provider to fetch models
+            // Use a placeholder model ID - we only need to fetch the model list
+            var provider = _providerFactory.CreateProvider(
+                _currentProviderId,
                 ApiKey,
-                BaseUrl);
+                BaseUrl,
+                "placeholder");
 
-            if (!isValid)
+            // Fetch models directly - this will fail if API key is invalid
+            var models = await provider.GetModelsAsync();
+
+            var modelList = models.ToList();
+            if (modelList.Count == 0)
             {
-                ValidationFailed = true;
-                ValidationError = "API Key 验证失败，请检查您的配置";
+                HasError = true;
+                ErrorMessage = "未找到可用模型，请检查 API Key 和 Base URL 是否正确";
                 return;
             }
 
-            // Save configuration
-            var settings = await _dataService.GetSettingsAsync();
-            var config = new ProviderConfig
+            foreach (var model in modelList.OrderBy(m => m.Name))
             {
-                ApiKey = ApiKey,
-                BaseUrl = BaseUrl,
-                IsValid = true
-            };
-
-            if (!string.IsNullOrEmpty(settings.CurrentProviderId))
-            {
-                settings.ProviderConfigs[settings.CurrentProviderId] = config;
+                Models.Add(new ModelSelectionItemViewModel
+                {
+                    Id = model.Id,
+                    Name = model.Name,
+                    Description = model.Description,
+                    ProviderId = _currentProviderId,
+                    IsSelected = true
+                });
             }
 
-            await _dataService.SaveSettingsAsync(settings);
-            _navigationService.NavigateTo<ModelSelectionViewModel>();
+            HasLoadedModels = true;
         }
         catch (Exception ex)
         {
-            ValidationFailed = true;
-            ValidationError = $"验证出错: {ex.Message}";
+            HasError = true;
+            ErrorMessage = $"获取模型列表失败: {ex.Message}";
         }
         finally
         {
-            IsValidating = false;
+            IsLoadingModels = false;
         }
     }
 
     /// <summary>
-    /// Command to dismiss validation error.
+    /// Command to toggle select all models.
+    /// </summary>
+    partial void OnSelectAllChanged(bool value)
+    {
+        foreach (var model in Models)
+        {
+            model.IsSelected = value;
+        }
+    }
+
+    /// <summary>
+    /// Command to save selected models.
+    /// </summary>
+    [RelayCommand]
+    private async Task SaveModelsAsync()
+    {
+        if (string.IsNullOrEmpty(_currentProviderId))
+            return;
+
+        var selectedModels = Models.Where(m => m.IsSelected).ToList();
+        if (selectedModels.Count == 0)
+        {
+            HasError = true;
+            ErrorMessage = "请至少选择一个模型";
+            return;
+        }
+
+        try
+        {
+            var settings = await _dataService.GetSettingsAsync();
+
+            // Get or create config
+            if (!settings.ProviderConfigs.TryGetValue(_currentProviderId, out var config))
+            {
+                config = new ProviderConfig();
+                settings.ProviderConfigs[_currentProviderId] = config;
+            }
+
+            // Update config
+            config.ApiKey = ApiKey;
+            config.BaseUrl = string.IsNullOrWhiteSpace(BaseUrl) ? null : BaseUrl;
+            config.IsValid = true;
+            config.AvailableModels = selectedModels.Select(m => new ModelInfo
+            {
+                Id = m.Id,
+                Name = m.Name,
+                Description = m.Description,
+                ProviderId = m.ProviderId,
+                IsSelected = true
+            }).ToList();
+            config.ModelsLastUpdated = DateTime.Now;
+
+            // Set as current provider if not set
+            if (string.IsNullOrEmpty(settings.CurrentProviderId))
+            {
+                settings.CurrentProviderId = _currentProviderId;
+            }
+
+            // Set default model if not set
+            if (string.IsNullOrEmpty(settings.CurrentModelId) && config.AvailableModels.Count > 0)
+            {
+                settings.CurrentModelId = config.AvailableModels[0].Id;
+                config.LastUsedModelId = config.AvailableModels[0].Id;
+            }
+
+            await _dataService.SaveSettingsAsync(settings);
+
+            // Navigate back to settings
+            _navigationService.GoBack();
+        }
+        catch (Exception ex)
+        {
+            HasError = true;
+            ErrorMessage = $"保存失败: {ex.Message}";
+        }
+    }
+
+    /// <summary>
+    /// Command to dismiss error.
     /// </summary>
     [RelayCommand]
     private void DismissError()
     {
-        ValidationFailed = false;
-        ValidationError = string.Empty;
+        HasError = false;
+        ErrorMessage = string.Empty;
     }
 
     private async Task LoadProviderInfoAsync()
@@ -201,14 +306,52 @@ public partial class ApiKeyConfigViewModel : ViewModelBase
         {
             ProviderName = provider.Name;
             ProviderIcon = provider.Icon;
-            BaseUrl = provider.DefaultBaseUrl;
+            BaseUrl = provider.DefaultBaseUrl ?? string.Empty;
 
             // Load existing config if available
             if (settings.ProviderConfigs.TryGetValue(provider.Id, out var config))
             {
                 ApiKey = config.ApiKey ?? string.Empty;
-                BaseUrl = config.BaseUrl ?? provider.DefaultBaseUrl;
+                BaseUrl = config.BaseUrl ?? provider.DefaultBaseUrl ?? string.Empty;
+
+                // Load existing models if available
+                if (config.AvailableModels.Count > 0)
+                {
+                    foreach (var model in config.AvailableModels.OrderBy(m => m.Name))
+                    {
+                        Models.Add(new ModelSelectionItemViewModel
+                        {
+                            Id = model.Id,
+                            Name = model.Name,
+                            Description = model.Description,
+                            ProviderId = model.ProviderId,
+                            IsSelected = model.IsSelected
+                        });
+                    }
+                    HasLoadedModels = true;
+                }
             }
         }
     }
+}
+
+/// <summary>
+/// View model for a model selection item.
+/// </summary>
+public partial class ModelSelectionItemViewModel : ObservableObject
+{
+    [ObservableProperty]
+    private string _id = string.Empty;
+
+    [ObservableProperty]
+    private string _name = string.Empty;
+
+    [ObservableProperty]
+    private string? _description;
+
+    [ObservableProperty]
+    private string _providerId = string.Empty;
+
+    [ObservableProperty]
+    private bool _isSelected = true;
 }

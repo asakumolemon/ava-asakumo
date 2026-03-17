@@ -65,11 +65,6 @@ public class ProviderConfig
     public bool IsValid { get; set; }
 
     /// <summary>
-    /// Gets or sets a value indicating whether this provider is enabled.
-    /// </summary>
-    public bool IsEnabled { get; set; } = true;
-
-    /// <summary>
     /// Gets or sets the custom display name for this provider.
     /// </summary>
     public string? DisplayName { get; set; }
@@ -137,12 +132,32 @@ public class ModelInfo
     public string? Description { get; set; }
 
     /// <summary>
-    /// Gets or sets a value indicating whether this model is enabled.
-    /// </summary>
-    public bool IsEnabled { get; set; } = true;
-
-    /// <summary>
     /// Gets or sets the provider ID this model belongs to.
     /// </summary>
     public string ProviderId { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the owner of the model (from API response).
+    /// </summary>
+    public string? OwnedBy { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether this model is selected by user.
+    /// </summary>
+    public bool IsSelected { get; set; } = true;
+
+    /// <summary>
+    /// Gets or sets a value indicating whether this model supports vision/image input.
+    /// </summary>
+    public bool SupportsVision { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether this model supports function calling.
+    /// </summary>
+    public bool SupportsFunctionCalling { get; set; }
+
+    /// <summary>
+    /// Gets or sets the context window size (in tokens).
+    /// </summary>
+    public int? ContextWindow { get; set; }
 }

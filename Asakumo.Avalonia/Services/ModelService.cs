@@ -74,7 +74,6 @@ public class ModelService : IModelService
                 Id = p.Id,
                 Name = config?.DisplayName ?? p.Name,
                 Icon = p.Icon,
-                IsEnabled = config?.IsEnabled ?? false,
                 IsConfigured = config?.IsValid ?? false,
                 Color = GetProviderColor(p.Id)
             };
@@ -90,11 +89,11 @@ public class ModelService : IModelService
 
         foreach (var provider in providers)
         {
-            if (!IsProviderEnabled(provider.Id, settings))
+            if (!IsProviderConfigured(provider.Id, settings))
                 continue;
 
             var providerModels = await GetModelsForProviderAsync(provider, settings);
-            models.AddRange(providerModels.Where(m => m.IsEnabled));
+            models.AddRange(providerModels);
         }
 
         return models.OrderBy(m => m.ProviderName).ThenBy(m => m.Name).ToList();
@@ -107,11 +106,11 @@ public class ModelService : IModelService
         var providers = _dataService.GetProviders();
         var provider = providers.FirstOrDefault(p => p.Id == providerId);
 
-        if (provider is null || !IsProviderEnabled(providerId, settings))
+        if (provider is null || !IsProviderConfigured(providerId, settings))
             return Array.Empty<ModelDescriptor>();
 
         var models = await GetModelsForProviderAsync(provider, settings);
-        return models.Where(m => m.IsEnabled).ToList();
+        return models.ToList();
     }
 
     /// <inheritdoc />
@@ -220,8 +219,7 @@ public class ModelService : IModelService
             Name = settings.CurrentModelId,
             ProviderId = provider.Id,
             ProviderName = provider.Name,
-            ProviderIcon = provider.Icon,
-            IsEnabled = true
+            ProviderIcon = provider.Icon
         };
     }
 
@@ -229,10 +227,13 @@ public class ModelService : IModelService
     {
         var models = new List<ModelDescriptor>();
 
-        // Get enabled models from config, or use static list
+        // Get selected models from config, or use static list
         if (settings.ProviderConfigs.TryGetValue(provider.Id, out var config) && config.AvailableModels.Any())
         {
-            models.AddRange(config.AvailableModels.Select(m => CreateModelDescriptor(m, provider, settings)));
+            // Only return models that are selected by user
+            models.AddRange(config.AvailableModels
+                .Where(m => m.IsSelected)
+                .Select(m => CreateModelDescriptor(m, provider, settings)));
         }
         else
         {
@@ -252,7 +253,6 @@ public class ModelService : IModelService
             ProviderName = provider.Name,
             ProviderIcon = provider.Icon,
             Description = model.Description,
-            IsEnabled = true,
             Capabilities = new ModelCapabilities
             {
                 Streaming = true,
@@ -274,8 +274,7 @@ public class ModelService : IModelService
             ProviderId = provider.Id,
             ProviderName = provider.Name,
             ProviderIcon = provider.Icon,
-            Description = model.Description,
-            IsEnabled = model.IsEnabled
+            Description = model.Description
         };
     }
 
@@ -298,12 +297,12 @@ public class ModelService : IModelService
         };
     }
 
-    private static bool IsProviderEnabled(string providerId, AppSettings settings)
+    private static bool IsProviderConfigured(string providerId, AppSettings settings)
     {
         if (!settings.ProviderConfigs.TryGetValue(providerId, out var config))
             return false;
 
-        return config.IsEnabled && config.IsValid;
+        return config.IsValid;
     }
 
     private static void AddToRecentModels(AppSettings settings, string providerId, string modelId)
@@ -342,7 +341,7 @@ public class ModelService : IModelService
 
             var providers = _dataService.GetProviders();
             var provider = providers.FirstOrDefault(p => p.Id == providerId);
-            var testModel = config.AvailableModels.FirstOrDefault(m => m.IsEnabled)?.Id
+            var testModel = config.AvailableModels.FirstOrDefault()?.Id
                 ?? provider?.Models.FirstOrDefault()?.Id
                 ?? DefaultTestModel;
 
@@ -392,7 +391,6 @@ public class ModelService : IModelService
                 Id = m.Id,
                 Name = m.Name,
                 Description = m.Description,
-                IsEnabled = true,
                 ProviderId = providerId
             }).ToList();
 
@@ -409,23 +407,6 @@ public class ModelService : IModelService
             _logger?.LogError(ex, "Failed to refresh models for provider {ProviderId}", providerId);
             return false;
         }
-    }
-
-    /// <inheritdoc />
-    public async Task SetProviderEnabledAsync(string providerId, bool enabled)
-    {
-        var settings = await _dataService.GetSettingsAsync();
-
-        if (!settings.ProviderConfigs.TryGetValue(providerId, out var config))
-        {
-            config = new ProviderConfig();
-            settings.ProviderConfigs[providerId] = config;
-        }
-
-        config.IsEnabled = enabled;
-        await _dataService.SaveSettingsAsync(settings);
-
-        _logger?.LogInformation("Provider {ProviderId} enabled state changed to {Enabled}", providerId, enabled);
     }
 
     /// <inheritdoc />

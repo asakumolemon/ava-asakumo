@@ -145,22 +145,6 @@ public partial class SettingsViewModel : ViewModelBase
     }
 
     /// <summary>
-    /// Command to toggle provider enabled state.
-    /// </summary>
-    [RelayCommand]
-    private async Task ToggleProviderAsync(SettingsProviderItemViewModel? provider)
-    {
-        if (provider == null)
-            return;
-
-        var newState = !provider.IsEnabled;
-        await _modelService.SetProviderEnabledAsync(provider.Id, newState);
-        provider.IsEnabled = newState;
-
-        ShowToastMessage($"{provider.Name} {(newState ? "已启用" : "已禁用")}");
-    }
-
-    /// <summary>
     /// Command to expand/collapse provider models.
     /// </summary>
     [RelayCommand]
@@ -424,7 +408,6 @@ public partial class SettingsViewModel : ViewModelBase
             {
                 Id = provider.Id,
                 Name = provider.Name,
-                IsEnabled = provider.IsEnabled,
                 IsConfigured = provider.IsConfigured,
                 IsValid = provider.IsConfigured,
                 EnabledModelCount = models.Count,
@@ -456,7 +439,6 @@ public partial class SettingsViewModel : ViewModelBase
                     Description = model.Description,
                     ProviderId = model.ProviderId,
                     ProviderName = model.ProviderName,
-                    IsEnabled = model.IsEnabled,
                     IsCurrent = currentModel?.ProviderId == model.ProviderId && currentModel?.Id == model.Id
                 });
             }
@@ -534,9 +516,6 @@ public partial class SettingsProviderItemViewModel : ObservableObject
     private string _name = string.Empty;
 
     [ObservableProperty]
-    private bool _isEnabled;
-
-    [ObservableProperty]
     private bool _isConfigured;
 
     [ObservableProperty]
@@ -556,11 +535,6 @@ public partial class SettingsProviderItemViewModel : ObservableObject
 
     [ObservableProperty]
     private ObservableCollection<SettingsModelItemViewModel> _models = new();
-
-    /// <summary>
-    /// Gets a value indicating whether this provider can be configured.
-    /// </summary>
-    public bool CanConfigure => !IsConfigured || !IsValid;
 }
 
 /// <summary>
@@ -582,9 +556,6 @@ public partial class SettingsModelItemViewModel : ObservableObject
 
     [ObservableProperty]
     private string _providerName = string.Empty;
-
-    [ObservableProperty]
-    private bool _isEnabled;
 
     [ObservableProperty]
     private bool _isCurrent;
