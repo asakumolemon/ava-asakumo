@@ -551,6 +551,112 @@ public class DataService : IDataService
     /// </summary>
     public string GetDatabasePath() => _dbPath;
 
+    private const string TempFileExtension = ".tmp";
+
+    /// <summary>
+    /// Clears all application data including settings and database.
+    /// This will delete the database file and settings file.
+    /// </summary>
+    /// <returns>Detailed result of the clear operation.</returns>
+    public async Task<ClearDataResult> ClearAllDataAsync()
+    {
+        var result = new ClearDataResult();
+
+        try
+        {
+            if (_database != null)
+            {
+                await _database.CloseAsync();
+                _database = null;
+                _isInitialized = false;
+            }
+
+            _cachedSettings = null;
+
+            if (File.Exists(_dbPath))
+            {
+                try
+                {
+                    File.Delete(_dbPath);
+                    result.DatabaseDeleted = true;
+                    _logger.LogInformation("Deleted database file: {Path}", _dbPath);
+                }
+                catch (Exception ex)
+                {
+                    result.Errors.Add($"Failed to delete database: {ex.Message}");
+                    _logger.LogError(ex, "Failed to delete database file: {Path}", _dbPath);
+                }
+            }
+            else
+            {
+                result.DatabaseDeleted = true;
+            }
+
+            if (File.Exists(_settingsPath))
+            {
+                try
+                {
+                    File.Delete(_settingsPath);
+                    result.SettingsDeleted = true;
+                    _logger.LogInformation("Deleted settings file: {Path}", _settingsPath);
+                }
+                catch (Exception ex)
+                {
+                    result.Errors.Add($"Failed to delete settings: {ex.Message}");
+                    _logger.LogError(ex, "Failed to delete settings file: {Path}", _settingsPath);
+                }
+            }
+            else
+            {
+                result.SettingsDeleted = true;
+            }
+
+            DeleteTempFiles();
+
+            if (result.AllCleared)
+            {
+                _logger.LogInformation("All application data has been cleared");
+            }
+            else
+            {
+                _logger.LogWarning("Partially cleared application data. Errors: {Errors}", result.Errors);
+            }
+
+            return result;
+        }
+        catch (Exception ex)
+        {
+            result.Errors.Add($"Unexpected error: {ex.Message}");
+            _logger.LogError(ex, "Failed to clear all application data");
+            return result;
+        }
+    }
+
+    private void DeleteTempFiles()
+    {
+        var tempDbPath = _dbPath + TempFileExtension;
+        var tempSettingsPath = _settingsPath + TempFileExtension;
+
+        TryDeleteFile(tempDbPath);
+        TryDeleteFile(tempSettingsPath);
+    }
+
+    private void TryDeleteFile(string path)
+    {
+        try
+        {
+            if (File.Exists(path))
+            {
+                File.Delete(path);
+                _logger.LogDebug("Deleted temp file: {Path}", path);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to delete temp file: {Path}", path);
+        }
+    }
+
     #endregion
 }
 

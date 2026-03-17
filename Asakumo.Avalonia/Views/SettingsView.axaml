@@ -25,6 +25,60 @@
                  FontSize="14"/>
     </Border>
 
+    <!-- Clear All Data Confirmation Dialog -->
+    <Border Grid.Row="0" Grid.RowSpan="2"
+            Background="#80000000"
+            IsVisible="{Binding ShowClearDataConfirmDialog}"
+            ZIndex="300">
+      <Grid HorizontalAlignment="Center" VerticalAlignment="Center">
+        <Border Background="{DynamicResource AppCardBrush}"
+                CornerRadius="16"
+                Padding="24"
+                Width="320"
+                BoxShadow="0 4 16 0 #40000000">
+          <StackPanel Spacing="16">
+            <!-- Icon -->
+            <PathIcon Data="M13,9H11V7H13M13,17H11V11H13M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4A8,8 0 0,0 4,12C4,16.42 7.58,20 12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4M13,7H11V13H13V7M13,15H11V17H13V15Z"
+                        Width="48" Height="48"
+                        HorizontalAlignment="Center"
+                        Foreground="{DynamicResource ErrorBrush}"/>
+
+            <!-- Title -->
+            <TextBlock Text="清除所有数据？"
+                       FontSize="18"
+                       FontWeight="SemiBold"
+                       HorizontalAlignment="Center"
+                       Foreground="{DynamicResource AppTextPrimaryBrush}"/>
+
+            <!-- Message -->
+            <TextBlock Text="此操作将永久删除所有会话、消息、API 密钥和设置。此操作无法撤销，应用将自动重启。"
+                       FontSize="14"
+                       TextWrapping="Wrap"
+                       TextAlignment="Center"
+                       Foreground="{DynamicResource AppTextSecondaryBrush}"/>
+
+            <!-- Buttons -->
+            <StackPanel Orientation="Horizontal"
+                        HorizontalAlignment="Center"
+                        Spacing="12">
+              <Button Content="取消"
+                      Command="{Binding CancelClearAllDataCommand}"
+                      Width="100"
+                      Height="40"
+                      CornerRadius="20"/>
+              <Button Content="确认清除"
+                      Command="{Binding ConfirmClearAllDataCommand}"
+                      Background="{DynamicResource ErrorBrush}"
+                      Foreground="White"
+                      Width="100"
+                      Height="40"
+                      CornerRadius="20"/>
+            </StackPanel>
+          </StackPanel>
+        </Border>
+      </Grid>
+    </Border>
+
     <!-- Header -->
     <Border Grid.Row="0"
             Background="{DynamicResource AppBackgroundBrush}"
@@ -394,6 +448,38 @@
                               Data="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z"
                               Width="20" Height="20"
                               Foreground="{DynamicResource AppTextSecondaryBrush}"/>
+                  </Grid>
+                </Border>
+              </Button>
+
+              <Separator Margin="52,0,0,0"
+                         Background="{DynamicResource AppDividerBrush}"/>
+
+              <!-- Clear All Data -->
+              <Button Command="{Binding OpenClearDataDialogCommand}"
+                      Background="Transparent"
+                      BorderThickness="0"
+                      HorizontalAlignment="Stretch"
+                      HorizontalContentAlignment="Left">
+                <Border Padding="12">
+                  <Grid ColumnDefinitions="Auto, *, Auto">
+                    <PathIcon Grid.Column="0"
+                              Data="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19M12,9A4,4 0 0,1 16,13V17H14V13A2,2 0 0,0 12,11A2,2 0 0,0 10,13V17H8V13A4,4 0 0,1 12,9Z"
+                              Width="20" Height="20"
+                              Margin="0,0,12,0"
+                              Foreground="{DynamicResource ErrorBrush}"/>
+                    <StackPanel Grid.Column="1" Spacing="2">
+                      <TextBlock Text="清除所有数据"
+                                 VerticalAlignment="Center"
+                                 Foreground="{DynamicResource ErrorBrush}"/>
+                      <TextBlock Text="包括会话和设置，应用将重启"
+                                 FontSize="11"
+                                 Foreground="{DynamicResource AppTextSecondaryBrush}"/>
+                    </StackPanel>
+                    <PathIcon Grid.Column="2"
+                              Data="M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2M12,4A8,8 0 0,0 4,12C4,16.42 7.58,20 12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4M13,7H11V13H13V7M13,15H11V17H13V15Z"
+                              Width="20" Height="20"
+                              Foreground="{DynamicResource ErrorBrush}"/>
                   </Grid>
                 </Border>
               </Button>

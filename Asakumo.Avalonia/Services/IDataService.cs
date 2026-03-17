@@ -130,5 +130,38 @@ public interface IDataService
     /// <returns>The database file path.</returns>
     string GetDatabasePath();
 
+    /// <summary>
+    /// Clears all application data including settings and database.
+    /// This will delete the database file and settings file.
+    /// </summary>
+    /// <returns>Detailed result of the clear operation.</returns>
+    Task<ClearDataResult> ClearAllDataAsync();
+
     #endregion
+}
+
+/// <summary>
+/// Represents the result of clearing application data.
+/// </summary>
+public class ClearDataResult
+{
+    /// <summary>
+    /// Gets or sets a value indicating whether the database file was deleted.
+    /// </summary>
+    public bool DatabaseDeleted { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the settings file was deleted.
+    /// </summary>
+    public bool SettingsDeleted { get; set; }
+
+    /// <summary>
+    /// Gets or sets the list of errors that occurred during cleanup.
+    /// </summary>
+    public List<string> Errors { get; set; } = new();
+
+    /// <summary>
+    /// Gets a value indicating whether all data was cleared successfully.
+    /// </summary>
+    public bool AllCleared => DatabaseDeleted && SettingsDeleted && Errors.Count == 0;
 }

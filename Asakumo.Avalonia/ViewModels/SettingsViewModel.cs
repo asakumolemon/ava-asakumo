@@ -1,12 +1,15 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Asakumo.Avalonia.Models;
 using Asakumo.Avalonia.Services;
+using Avalonia;
+using Avalonia.Controls.ApplicationLifetimes;
 using ModelDescriptor = Asakumo.Avalonia.Services.ModelDescriptor;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -72,6 +75,12 @@ public partial class SettingsViewModel : ViewModelBase
 
     [ObservableProperty]
     private bool _showToast;
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the clear data confirmation dialog is visible.
+    /// </summary>
+    [ObservableProperty]
+    private bool _showClearDataConfirmDialog;
 
     #endregion
 
@@ -275,6 +284,96 @@ public partial class SettingsViewModel : ViewModelBase
         catch (Exception ex)
         {
             ShowToastMessage($"清除失败: {ex.Message}");
+        }
+    }
+
+    [RelayCommand]
+    private void OpenClearDataDialog()
+    {
+        ShowClearDataConfirmDialog = true;
+    }
+
+    /// <summary>
+    /// Command to confirm and clear all application data including settings.
+    /// </summary>
+    [RelayCommand]
+    private async Task ConfirmClearAllDataAsync()
+    {
+        ShowClearDataConfirmDialog = false;
+
+        var result = await _dataService.ClearAllDataAsync();
+
+        if (result.AllCleared)
+        {
+            await ClearDataSucceededAsync();
+        }
+        else
+        {
+            ShowClearDataErrors(result);
+        }
+    }
+
+    private async Task ClearDataSucceededAsync()
+    {
+        ShowToastMessage("所有数据已清除，应用将重启");
+        await Task.Delay(2000);
+        RestartApplication();
+    }
+
+    private void ShowClearDataErrors(ClearDataResult result)
+    {
+        var errorMessage = result.Errors.Count > 0
+            ? $"部分数据未清除: {string.Join(", ", result.Errors)}"
+            : "清除数据失败，请重试";
+        ShowToastMessage(errorMessage);
+    }
+
+    /// <summary>
+    /// Command to cancel clear all data operation.
+    /// </summary>
+    [RelayCommand]
+    private void CancelClearAllData()
+    {
+        ShowClearDataConfirmDialog = false;
+    }
+
+    private void RestartApplication()
+    {
+        var executablePath = Environment.ProcessPath;
+        if (!string.IsNullOrEmpty(executablePath))
+        {
+            StartNewProcess(executablePath);
+        }
+
+        ShutdownApplication();
+    }
+
+    private static void StartNewProcess(string executablePath)
+    {
+        try
+        {
+            var startInfo = new ProcessStartInfo
+            {
+                FileName = executablePath,
+                UseShellExecute = true
+            };
+            Process.Start(startInfo);
+        }
+        catch (Exception)
+        {
+            // Best effort - if we can't start new process, just shut down
+        }
+    }
+
+    private static void ShutdownApplication()
+    {
+        if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime lifetime)
+        {
+            lifetime.Shutdown();
+        }
+        else
+        {
+            Environment.Exit(0);
         }
     }
 
