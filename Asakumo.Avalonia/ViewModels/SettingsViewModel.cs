@@ -1,6 +1,8 @@
+using System;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Asakumo.Avalonia.Models;
 using Asakumo.Avalonia.Services;
@@ -57,6 +59,14 @@ public partial class SettingsViewModel : ViewModelBase
         "English",
         "日本語"
     };
+
+    [ObservableProperty]
+    private string? _toastMessage;
+
+    [ObservableProperty]
+    private bool _showToast;
+
+    private CancellationTokenSource? _toastCts;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SettingsViewModel"/> class.
@@ -128,19 +138,19 @@ public partial class SettingsViewModel : ViewModelBase
         {
             var timestamp = System.DateTime.Now.ToString("yyyyMMdd_HHmmss");
             var backupFileName = $"asakumo_backup_{timestamp}.json";
-            
+
             // Use Documents folder for backup
             var documentsPath = System.Environment.GetFolderPath(
                 System.Environment.SpecialFolder.MyDocuments);
             var backupPath = Path.Combine(documentsPath, backupFileName);
-            
+
             await _dataService.BackupDataAsync(backupPath);
-            
-            // TODO: Show success message to user
+
+            ShowToastMessage($"备份已保存至: {backupFileName}");
         }
-        catch
+        catch (Exception ex)
         {
-            // TODO: Show error message to user
+            ShowToastMessage($"备份失败: {ex.Message}");
         }
     }
 
@@ -153,12 +163,11 @@ public partial class SettingsViewModel : ViewModelBase
         try
         {
             await _dataService.ClearAllConversationsAsync();
-            
-            // TODO: Show success message to user
+            ShowToastMessage("所有会话已清除");
         }
-        catch
+        catch (Exception ex)
         {
-            // TODO: Show error message to user
+            ShowToastMessage($"清除失败: {ex.Message}");
         }
     }
 
@@ -202,5 +211,30 @@ public partial class SettingsViewModel : ViewModelBase
             _ => "zh-CN"
         };
         await _dataService.SaveSettingsAsync(settings);
+    }
+
+    private void ShowToastMessage(string message)
+    {
+        _toastCts?.Cancel();
+        _toastCts?.Dispose();
+        _toastCts = new CancellationTokenSource();
+
+        ToastMessage = message;
+        ShowToast = true;
+
+        _ = HideToastAsync(_toastCts.Token);
+    }
+
+    private async Task HideToastAsync(CancellationToken ct)
+    {
+        try
+        {
+            await Task.Delay(3000, ct);
+            ShowToast = false;
+        }
+        catch (OperationCanceledException)
+        {
+            // Ignore cancellation
+        }
     }
 }

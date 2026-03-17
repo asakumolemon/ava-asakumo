@@ -26,12 +26,33 @@
         </Button>
 
         <StackPanel Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="2">
+          <!-- Normal Title Display -->
           <TextBlock Text="{Binding Title}"
                      FontWeight="SemiBold" FontSize="16"
                      HorizontalAlignment="Center"
                      TextTrimming="CharacterEllipsis"
                      MaxWidth="200"
-                     Foreground="{DynamicResource AppTextPrimaryBrush}"/>
+                     Foreground="{DynamicResource AppTextPrimaryBrush}"
+                     IsVisible="{Binding !IsEditingTitle}"/>
+
+          <!-- Title Edit Mode -->
+          <StackPanel IsVisible="{Binding IsEditingTitle}"
+                      Orientation="Horizontal" Spacing="8">
+            <TextBox Text="{Binding EditableTitle}"
+                     Width="150"
+                     FontSize="14"/>
+            <Button Classes="icon" Width="28" Height="28"
+                    Command="{Binding SaveTitleCommand}">
+              <PathIcon Data="M9,16.17L4.83,12L3.41,13.41L9,19L21,7L19.59,5.59L9,16.17Z"
+                        Width="16" Height="16"/>
+            </Button>
+            <Button Classes="icon" Width="28" Height="28"
+                    Command="{Binding CancelRenameTitleCommand}">
+              <PathIcon Data="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"
+                        Width="16" Height="16"/>
+            </Button>
+          </StackPanel>
+
           <Border Background="{DynamicResource AppSurfaceBrush}"
                   CornerRadius="8"
                   Padding="8,2"
@@ -43,7 +64,10 @@
           </Border>
         </StackPanel>
 
-        <Button Grid.Column="2" Classes="icon" ToolTip.Tip="更多选项">
+        <Button Grid.Column="2"
+                Classes="icon"
+                ToolTip.Tip="更多选项"
+                Command="{Binding OpenMoreMenuCommand}">
           <PathIcon Data="M12,16A2,2 0 0,1 14,18A2,2 0 0,1 12,20A2,2 0 0,1 10,18A2,2 0 0,1 12,16M12,10A2,2 0 0,1 14,12A2,2 0 0,1 12,14A2,2 0 0,1 10,12A2,2 0 0,1 12,10M12,4A2,2 0 0,1 14,6A2,2 0 0,1 12,8A2,2 0 0,1 10,6A2,2 0 0,1 12,4Z"
                     Width="20" Height="20"/>
         </Button>
@@ -61,6 +85,54 @@
         <PathIcon Data="M9,16.17L4.83,12L3.41,13.41L9,19L21,7L19.59,5.59L9,16.17Z"
                   Width="16" Height="16" Foreground="White"/>
         <TextBlock Text="配置成功，可以开始聊天了" Foreground="White" FontWeight="Medium"/>
+      </StackPanel>
+    </Border>
+
+    <!-- More Menu Popup -->
+    <Border Grid.Row="1"
+            Background="{DynamicResource AppCardBrush}"
+            CornerRadius="12"
+            Padding="8"
+            Margin="0,56,12,0"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Top"
+            IsVisible="{Binding IsMoreMenuOpen}"
+            ZIndex="100"
+            BoxShadow="0 4 16 0 #40000000">
+      <StackPanel Width="180" Spacing="4">
+        <Button Classes="menu-item"
+                Command="{Binding RenameConversationCommand}">
+          <StackPanel Orientation="Horizontal" Spacing="12">
+            <PathIcon Data="M3,17.25V21H6.75L17.81,9.94L14.06,6.19L3,17.25M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.13,5.12L18.88,8.87L20.71,7.04Z"
+                      Width="18" Height="18"/>
+            <TextBlock Text="重命名" Classes="body"/>
+          </StackPanel>
+        </Button>
+        <Button Classes="menu-item"
+                Command="{Binding ClearCurrentConversationCommand}">
+          <StackPanel Orientation="Horizontal" Spacing="12">
+            <PathIcon Data="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19V4M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"
+                      Width="18" Height="18"/>
+            <TextBlock Text="清空会话" Classes="body"/>
+          </StackPanel>
+        </Button>
+        <Button Classes="menu-item"
+                Command="{Binding ExportConversationCommand}">
+          <StackPanel Orientation="Horizontal" Spacing="12">
+            <PathIcon Data="M19,9H15V3H9V9H5L12,16L19,9M5,18V20H19V18H5Z"
+                      Width="18" Height="18"/>
+            <TextBlock Text="导出对话" Classes="body"/>
+          </StackPanel>
+        </Button>
+        <Separator Margin="0,4"/>
+        <Button Classes="menu-item"
+                Command="{Binding NavigateToSettingsCommand}">
+          <StackPanel Orientation="Horizontal" Spacing="12">
+            <PathIcon Data="M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.21,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.34 4.5,11.67 4.5,12C4.5,12.33 4.53,12.65 4.57,12.97L2.46,14.63C2.27,14.78 2.21,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.03 4.95,18.95L7.44,17.94C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.68 16.04,18.34 16.56,17.94L19.05,18.95C19.27,19.03 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z"
+                      Width="18" Height="18"/>
+            <TextBlock Text="设置" Classes="body"/>
+          </StackPanel>
+        </Button>
       </StackPanel>
     </Border>
 
@@ -108,6 +180,16 @@
           </Style>
           <Style Selector="ListBoxItem:pointerover">
             <Setter Property="Background" Value="Transparent"/>
+          </Style>
+          <!-- Menu Item Button Style -->
+          <Style Selector="Button.menu-item">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Padding" Value="12,8"/>
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+          </Style>
+          <Style Selector="Button.menu-item:pointerover">
+            <Setter Property="Background" Value="{DynamicResource AppSurfaceBrush}"/>
           </Style>
         </ListBox.Styles>
         <ListBox.ItemsPanel>
@@ -162,7 +244,13 @@
                                 <TextBlock Text="{Binding Timestamp, StringFormat='{}{0:HH:mm}'}"
                                            FontSize="10" Foreground="#CCFFFFFF"/>
                                 <StackPanel Orientation="Horizontal" Spacing="4" Opacity="0.7">
-                                  <Button Classes="icon" Width="24" Height="24" Padding="4"
+                                                                                          <Button Classes="icon" Width="24" Height="24" Padding="4"
+                                                                                                  Command="{Binding $parent[ListBox].((vm:ChatViewModel)DataContext).CopyMessageCommand}"
+                                                                                                  CommandParameter="{Binding}"
+                                                                                                  ToolTip.Tip="复制">
+                                                                                            <PathIcon Data="M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M19,21H8V7H19V21Z"
+                                                                                                      Width="12" Height="12" Foreground="White"/>
+                                                                                          </Button>                                  <Button Classes="icon" Width="24" Height="24" Padding="4"
                                           Command="{Binding $parent[ListBox].((vm:ChatViewModel)DataContext).EditMessageCommand}"
                                           CommandParameter="{Binding}"
                                           ToolTip.Tip="编辑">
@@ -278,10 +366,31 @@
                         <TextBlock Text="{Binding Content, Mode=OneWay}"
                                    TextWrapping="Wrap" FontSize="14"
                                    Foreground="{DynamicResource AppTextPrimaryBrush}"/>
-                        <TextBlock Text="{Binding Timestamp, StringFormat='{}{0:HH:mm}'}"
-                                   FontSize="10"
-                                   Foreground="{DynamicResource AppTextSecondaryBrush}"
-                                   HorizontalAlignment="Right"/>
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                          <StackPanel Orientation="Horizontal" Spacing="4" Opacity="0.7">
+                            <Button Classes="icon" Width="24" Height="24" Padding="4"
+                                    Command="{Binding $parent[ListBox].((vm:ChatViewModel)DataContext).CopyMessageCommand}"
+                                    CommandParameter="{Binding}"
+                                    ToolTip.Tip="复制">
+                              <PathIcon Data="M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M19,21H8V7H19V21Z"
+                                        Width="12" Height="12"
+                                        Foreground="{DynamicResource AppTextSecondaryBrush}"/>
+                            </Button>
+                            <Button Classes="icon" Width="24" Height="24" Padding="4"
+                                    Command="{Binding $parent[ListBox].((vm:ChatViewModel)DataContext).DeleteMessageCommand}"
+                                    CommandParameter="{Binding}"
+                                    ToolTip.Tip="删除">
+                              <PathIcon Data="M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19V4Z"
+                                        Width="12" Height="12"
+                                        Foreground="{DynamicResource AppTextSecondaryBrush}"/>
+                            </Button>
+                          </StackPanel>
+                          <TextBlock Text="{Binding Timestamp, StringFormat='{}{0:HH:mm}'}"
+                                     FontSize="10"
+                                     Foreground="{DynamicResource AppTextSecondaryBrush}"
+                                     HorizontalAlignment="Right"
+                                     VerticalAlignment="Center"/>
+                        </StackPanel>
                       </StackPanel>
                     </StackPanel>
                   </Border>
@@ -291,6 +400,22 @@
           </ListBox.ItemTemplate>
         </ListBox>
       </Grid>
+
+    <!-- Toast Notification -->
+    <Border Grid.Row="0" Grid.RowSpan="3"
+            Background="#333333"
+            CornerRadius="8"
+            Padding="16,10"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Bottom"
+            Margin="0,0,0,100"
+            IsVisible="{Binding ShowToast}"
+            ZIndex="200"
+            Opacity="0.9">
+      <TextBlock Text="{Binding ToastMessage}"
+                 Foreground="White"
+                 FontSize="14"/>
+    </Border>
 
     <!-- Bottom Area -->
     <Border Grid.Row="2"

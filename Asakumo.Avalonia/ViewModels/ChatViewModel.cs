@@ -54,6 +54,23 @@ public partial class ChatViewModel : ViewModelBase
     [ObservableProperty]
     private bool _showSuccessMessage;
 
+    [ObservableProperty]
+    private bool _isMoreMenuOpen;
+
+    [ObservableProperty]
+    private bool _isEditingTitle;
+
+    [ObservableProperty]
+    private string _editableTitle = string.Empty;
+
+    [ObservableProperty]
+    private string? _toastMessage;
+
+    [ObservableProperty]
+    private bool _showToast;
+
+    private CancellationTokenSource? _toastCts;
+
     #endregion
 
     #region Computed Properties
@@ -296,6 +313,90 @@ public partial class ChatViewModel : ViewModelBase
         ShowErrorDialog = false;
     }
 
+    [RelayCommand]
+    private async Task CopyMessageAsync(ChatMessage? message)
+    {
+        if (message == null || string.IsNullOrEmpty(message.Content))
+            return;
+
+        var topLevel = global::Avalonia.Controls.TopLevel.GetTopLevel(
+            global::Avalonia.Application.Current?.ApplicationLifetime
+                is global::Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop
+                ? desktop.MainWindow
+                : null);
+
+        if (topLevel?.Clipboard != null)
+        {
+            await topLevel.Clipboard.SetTextAsync(message.Content);
+            ShowToastMessage("已复制到剪贴板");
+        }
+    }
+
+    [RelayCommand]
+    private void OpenMoreMenu()
+    {
+        IsMoreMenuOpen = true;
+    }
+
+    [RelayCommand]
+    private void CloseMoreMenu()
+    {
+        IsMoreMenuOpen = false;
+    }
+
+    [RelayCommand]
+    private async Task ClearCurrentConversationAsync()
+    {
+        if (Messages.Count == 0)
+            return;
+
+        Messages.Clear();
+        await _dataService.DeleteMessagesAsync(_conversationId);
+        _aiService.ClearHistory(_conversationId);
+        ShowToastMessage("会话已清空");
+        IsMoreMenuOpen = false;
+    }
+
+    [RelayCommand]
+    private void RenameConversation()
+    {
+        IsEditingTitle = true;
+        IsMoreMenuOpen = false;
+    }
+
+    [RelayCommand]
+    private void CancelRenameTitle()
+    {
+        IsEditingTitle = false;
+        EditableTitle = Title;
+    }
+
+    [RelayCommand]
+    private async Task SaveTitleAsync()
+    {
+        if (!string.IsNullOrWhiteSpace(EditableTitle))
+        {
+            Title = EditableTitle;
+            await SaveConversationAsync();
+        }
+        IsEditingTitle = false;
+    }
+
+    [RelayCommand]
+    private void ExportConversation()
+    {
+        // TODO: 实现导出功能
+        ShowToastMessage("导出功能开发中...");
+        IsMoreMenuOpen = false;
+    }
+
+    [RelayCommand]
+    private void NavigateToSettings()
+    {
+        _navigationService.NavigateTo<SettingsViewModel>();
+        IsMoreMenuOpen = false;
+    }
+
     #endregion
 
     #region Private Helper Methods
@@ -451,6 +552,31 @@ public partial class ChatViewModel : ViewModelBase
         return content.Length > MaxPreviewLength
             ? content[..MaxPreviewLength] + "..."
             : content;
+    }
+
+    private void ShowToastMessage(string message)
+    {
+        _toastCts?.Cancel();
+        _toastCts?.Dispose();
+        _toastCts = new CancellationTokenSource();
+
+        ToastMessage = message;
+        ShowToast = true;
+
+        _ = HideToastAsync(_toastCts.Token);
+    }
+
+    private async Task HideToastAsync(CancellationToken ct)
+    {
+        try
+        {
+            await Task.Delay(2000, ct);
+            ShowToast = false;
+        }
+        catch (OperationCanceledException)
+        {
+            // Ignore cancellation
+        }
     }
 
     #endregion

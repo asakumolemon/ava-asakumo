@@ -9,6 +9,22 @@
              Background="{DynamicResource AppBackgroundBrush}">
 
   <Grid RowDefinitions="Auto, *">
+    <!-- Toast Notification -->
+    <Border Grid.Row="0" Grid.RowSpan="2"
+            Background="#333333"
+            CornerRadius="8"
+            Padding="16,10"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Bottom"
+            Margin="0,0,0,40"
+            IsVisible="{Binding ShowToast}"
+            ZIndex="200"
+            Opacity="0.9">
+      <TextBlock Text="{Binding ToastMessage}"
+                 Foreground="White"
+                 FontSize="14"/>
+    </Border>
+
     <!-- Header -->
     <Border Grid.Row="0" 
             Background="{DynamicResource AppBackgroundBrush}"
