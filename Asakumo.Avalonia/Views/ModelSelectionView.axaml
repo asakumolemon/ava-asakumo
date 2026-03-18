@@ -19,8 +19,11 @@
         <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center"
                     VerticalAlignment="Center" Spacing="8">
           <TextBlock Text="{Binding ProviderIcon}" FontSize="18"/>
-          <TextBlock Text="选择模型" FontSize="18" FontWeight="SemiBold"/>
+          <TextBlock Text="{Binding ProviderName}" FontSize="18" FontWeight="SemiBold"/>
         </StackPanel>
+        <TextBlock Grid.Column="2" Text="{Binding SelectedCount, StringFormat='已选 {0}'}"
+                   VerticalAlignment="Center" FontSize="14"
+                   Foreground="{DynamicResource PrimaryBrush}"/>
       </Grid>
     </Border>
 
@@ -28,71 +31,78 @@
     <ScrollViewer Grid.Row="1">
       <StackPanel Spacing="12" Margin="16">
         <!-- Instructions -->
-        <TextBlock Text="选择您要使用的模型："
+        <TextBlock Text="点击 + 添加模型，点击 ✓ 移除模型："
                    Foreground="{DynamicResource AppTextSecondaryBrush}"
                    TextWrapping="Wrap" Margin="0,8,0,16"/>
 
         <!-- Model Cards -->
-        <ListBox ItemsSource="{Binding Models}"
-                 SelectedItem="{Binding SelectedModel}"
-                 Background="Transparent"
-                 BorderThickness="0"
-                 Padding="0">
-          <ListBox.Styles>
-            <Style Selector="ListBoxItem">
-              <Setter Property="Padding" Value="0"/>
-              <Setter Property="Margin" Value="0,0,0,8"/>
+        <ItemsControl ItemsSource="{Binding Models}">
+          <ItemsControl.Styles>
+            <Style Selector="Border.model-card">
               <Setter Property="Background" Value="{DynamicResource AppCardBrush}"/>
               <Setter Property="BorderThickness" Value="2"/>
               <Setter Property="BorderBrush" Value="Transparent"/>
               <Setter Property="CornerRadius" Value="12"/>
+              <Setter Property="Padding" Value="12"/>
+              <Setter Property="Margin" Value="0,0,0,8"/>
             </Style>
-            <Style Selector="ListBoxItem:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-              <Setter Property="Background" Value="{DynamicResource AppSurfaceBrush}"/>
-            </Style>
-            <Style Selector="ListBoxItem:selected /template/ ContentPresenter#PART_ContentPresenter">
-              <Setter Property="Background" Value="#0D10A37F"/>
+            <Style Selector="Border.model-card.selected">
               <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
+              <Setter Property="Background" Value="#0D10A37F"/>
             </Style>
-          </ListBox.Styles>
-          <ListBox.ItemTemplate>
-            <DataTemplate>
-              <Grid ColumnDefinitions="Auto, *" MinHeight="72">
-                <!-- Selection Indicator -->
-                <Border Grid.Column="0" Width="24" Height="24" CornerRadius="12"
-                        Margin="16,0,8,0"
-                        BorderThickness="2"
-                        BorderBrush="{DynamicResource AppBorderBrush}">
-                  <Ellipse Width="12" Height="12" Fill="{DynamicResource PrimaryBrush}"
-                           IsVisible="{Binding $parent[ListBoxItem].IsSelected}"/>
-                </Border>
-
-                <!-- Info -->
-                <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="8,12">
-                  <TextBlock Text="{Binding Name}" FontSize="16" FontWeight="Medium"/>
-                  <TextBlock Text="{Binding Description}" FontSize="12"
-                             Foreground="{DynamicResource AppTextSecondaryBrush}"
-                             TextWrapping="Wrap" MaxLines="2"/>
-                  <!-- Capabilities -->
-                  <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,4,0,0">
-                    <Border Background="#1A10A37F" CornerRadius="4" Padding="6,2"
-                            IsVisible="{Binding SupportsVision}">
-                      <TextBlock Text="视觉" FontSize="10" Foreground="#10A37F"/>
-                    </Border>
-                    <Border Background="#1A10A37F" CornerRadius="4" Padding="6,2"
-                            IsVisible="{Binding SupportsFunctionCalling}">
-                      <TextBlock Text="工具调用" FontSize="10" Foreground="#10A37F"/>
-                    </Border>
-                    <Border Background="#1A10A37F" CornerRadius="4" Padding="6,2">
-                      <TextBlock Text="{Binding MaxTokens, StringFormat='{}{0:N0} tokens'}"
-                                 FontSize="10" Foreground="#10A37F"/>
-                    </Border>
+          </ItemsControl.Styles>
+          <ItemsControl.ItemTemplate>
+            <DataTemplate DataType="vm:ModelSelectionItem">
+              <Border Classes="model-card">
+                <Grid ColumnDefinitions="*, Auto">
+                  <!-- Info -->
+                  <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                    <TextBlock Text="{Binding Model.Name}" FontSize="16" FontWeight="Medium"/>
+                    <TextBlock Text="{Binding Model.Description}" FontSize="12"
+                               Foreground="{DynamicResource AppTextSecondaryBrush}"
+                               TextWrapping="Wrap" MaxLines="2"/>
+                    <!-- Capabilities -->
+                    <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,4,0,0">
+                      <Border Background="#1A10A37F" CornerRadius="4" Padding="6,2"
+                              IsVisible="{Binding Model.SupportsVision}">
+                        <TextBlock Text="视觉" FontSize="10" Foreground="#10A37F"/>
+                      </Border>
+                      <Border Background="#1A10A37F" CornerRadius="4" Padding="6,2"
+                              IsVisible="{Binding Model.SupportsFunctionCalling}">
+                        <TextBlock Text="工具调用" FontSize="10" Foreground="#10A37F"/>
+                      </Border>
+                      <Border Background="#1A10A37F" CornerRadius="4" Padding="6,2">
+                        <TextBlock Text="{Binding Model.MaxTokens, StringFormat='{}{0:N0} tokens'}"
+                                   FontSize="10" Foreground="#10A37F"/>
+                      </Border>
+                    </StackPanel>
                   </StackPanel>
-                </StackPanel>
-              </Grid>
+
+                  <!-- Add/Remove Button -->
+                  <Button Grid.Column="1" Width="36" Height="36" CornerRadius="18"
+                          Background="{DynamicResource PrimaryBrush}"
+                          Command="{Binding $parent[ItemsControl].((vm:ModelSelectionViewModel)DataContext).ToggleModelCommand}"
+                          CommandParameter="{Binding}"
+                          VerticalAlignment="Center"
+                          Margin="8,0,0,0">
+                    <Panel>
+                      <!-- Plus Icon (Not Selected) -->
+                      <PathIcon Data="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z"
+                                Width="20" Height="20"
+                                Foreground="White"
+                                IsVisible="{Binding !IsSelected}"/>
+                      <!-- Check Icon (Selected) -->
+                      <PathIcon Data="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z"
+                                Width="20" Height="20"
+                                Foreground="White"
+                                IsVisible="{Binding IsSelected}"/>
+                    </Panel>
+                  </Button>
+                </Grid>
+              </Border>
             </DataTemplate>
-          </ListBox.ItemTemplate>
-        </ListBox>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
 
         <!-- Error Message -->
         <TextBlock Text="{Binding ErrorMessage}"
@@ -110,12 +120,13 @@
 
     <!-- Footer -->
     <Border Grid.Row="2" Padding="16" Background="{DynamicResource AppSurfaceBrush}">
-      <Button Command="{Binding ConfirmCommand}"
+      <Button Command="{Binding SaveCommand}"
               Classes="primary"
               HorizontalAlignment="Stretch"
               HorizontalContentAlignment="Center"
-              IsEnabled="{Binding HasSelection}">
-        <TextBlock Text="确认选择" FontWeight="SemiBold" FontSize="16"/>
+              IsEnabled="{Binding CanSave}">
+        <TextBlock Text="{Binding SelectedCount, StringFormat='保存 ({0})'}"
+                   FontWeight="SemiBold" FontSize="16"/>
       </Button>
     </Border>
   </Grid>

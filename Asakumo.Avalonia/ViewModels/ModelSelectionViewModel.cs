@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
@@ -9,16 +10,34 @@ using CommunityToolkit.Mvvm.Input;
 namespace Asakumo.Avalonia.ViewModels;
 
 /// <summary>
-/// ViewModel for model selection page.
+/// Represents a model item in the selection list.
+/// </summary>
+public partial class ModelSelectionItem : ObservableObject
+{
+    [ObservableProperty]
+    private AIModel _model;
+
+    [ObservableProperty]
+    private bool _isSelected;
+
+    public ModelSelectionItem(AIModel model, bool isSelected)
+    {
+        _model = model;
+        _isSelected = isSelected;
+    }
+}
+
+/// <summary>
+/// ViewModel for model selection page (multi-select mode).
 /// </summary>
 public partial class ModelSelectionViewModel : ViewModelBase, INavigationAware
 {
     private readonly IDataService _dataService;
     private readonly INavigationService _navigationService;
-    private readonly IAIService _aiService;
 
     private string _providerId = string.Empty;
     private AIProvider? _provider;
+    private List<string> _selectedModelIds = new();
 
     #region Observable Properties
 
@@ -29,14 +48,15 @@ public partial class ModelSelectionViewModel : ViewModelBase, INavigationAware
     private string _providerIcon = string.Empty;
 
     [ObservableProperty]
-    private ObservableCollection<AIModel> _models = new();
+    private ObservableCollection<ModelSelectionItem> _models = new();
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasSelection))]
-    private AIModel? _selectedModel;
+    private int _selectedCount;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasSelection))]
+    [NotifyPropertyChangedFor(nameof(CanSave))]
     private bool _isLoading;
 
     [ObservableProperty]
@@ -52,9 +72,9 @@ public partial class ModelSelectionViewModel : ViewModelBase, INavigationAware
     #region Computed Properties
 
     /// <summary>
-    /// Gets a value indicating whether a model is selected.
+    /// Gets a value indicating whether any model is selected.
     /// </summary>
-    public bool HasSelection => SelectedModel != null;
+    public bool HasSelection => SelectedCount > 0;
 
     /// <summary>
     /// Gets a value indicating whether there is an error message.
@@ -66,6 +86,11 @@ public partial class ModelSelectionViewModel : ViewModelBase, INavigationAware
     /// </summary>
     public bool HasSuccess => !string.IsNullOrEmpty(SuccessMessage);
 
+    /// <summary>
+    /// Gets a value indicating whether the save button can be clicked.
+    /// </summary>
+    public bool CanSave => !IsLoading;
+
     #endregion
 
     /// <summary>
@@ -73,15 +98,12 @@ public partial class ModelSelectionViewModel : ViewModelBase, INavigationAware
     /// </summary>
     /// <param name="dataService">The data service.</param>
     /// <param name="navigationService">The navigation service.</param>
-    /// <param name="aiService">The AI service.</param>
     public ModelSelectionViewModel(
         IDataService dataService,
-        INavigationService navigationService,
-        IAIService aiService)
+        INavigationService navigationService)
     {
         _dataService = dataService;
         _navigationService = navigationService;
-        _aiService = aiService;
     }
 
     /// <inheritdoc/>
@@ -111,63 +133,98 @@ public partial class ModelSelectionViewModel : ViewModelBase, INavigationAware
         ProviderName = _provider.Name;
         ProviderIcon = _provider.Icon;
 
-        // Load models from provider definition
-        Models = new ObservableCollection<AIModel>(_provider.Models);
+        // Load existing configuration
+        var config = await _dataService.GetProviderConfigAsync(providerId);
+        _selectedModelIds = config?.AvailableModelIds ?? new List<string>();
 
-        // Load existing configuration to pre-select model
-        var existingConfig = await _dataService.GetProviderConfigAsync(providerId);
-        if (existingConfig?.SelectedModelId != null)
-        {
-            SelectedModel = Models.FirstOrDefault(m => m.Id == existingConfig.SelectedModelId);
-        }
+        // Create selection items
+        var items = _provider.Models.Select(m => new ModelSelectionItem(
+            m,
+            _selectedModelIds.Contains(m.Id)
+        )).ToList();
 
-        // Default to first model if none selected
-        SelectedModel ??= Models.FirstOrDefault();
+        Models = new ObservableCollection<ModelSelectionItem>(items);
+        UpdateSelectedCount();
+    }
+
+    private void UpdateSelectedCount()
+    {
+        SelectedCount = Models.Count(m => m.IsSelected);
     }
 
     #region Commands
 
     [RelayCommand]
-    private void SelectModel(AIModel model)
+    private void ToggleModel(ModelSelectionItem item)
     {
-        SelectedModel = model;
+        if (item == null) return;
+
+        item.IsSelected = !item.IsSelected;
+        UpdateSelectedCount();
+
+        // Update tracking list
+        if (item.IsSelected)
+        {
+            if (!_selectedModelIds.Contains(item.Model.Id))
+                _selectedModelIds.Add(item.Model.Id);
+        }
+        else
+        {
+            _selectedModelIds.Remove(item.Model.Id);
+        }
     }
 
     [RelayCommand]
-    private async Task ConfirmAsync()
+    private void AddModel(AIModel model)
     {
-        if (SelectedModel == null)
+        var item = Models.FirstOrDefault(m => m.Model.Id == model.Id);
+        if (item != null && !item.IsSelected)
         {
-            ErrorMessage = "请选择一个模型";
-            return;
+            ToggleModel(item);
         }
+    }
 
+    [RelayCommand]
+    private void RemoveModel(AIModel model)
+    {
+        var item = Models.FirstOrDefault(m => m.Model.Id == model.Id);
+        if (item != null && item.IsSelected)
+        {
+            ToggleModel(item);
+        }
+    }
+
+    [RelayCommand]
+    private async Task SaveAsync()
+    {
         IsLoading = true;
         ErrorMessage = null;
 
         try
         {
-            // Update provider config with selected model
+            // Get or create provider config
             var config = await _dataService.GetProviderConfigAsync(_providerId);
-            if (config != null)
+            if (config == null)
             {
-                config.SelectedModelId = SelectedModel.Id;
-                await _dataService.SaveProviderConfigAsync(config);
+                config = new ProviderConfig
+                {
+                    ProviderId = _providerId,
+                    ApiKey = string.Empty
+                };
             }
 
-            // Update app settings
-            var settings = await _dataService.GetSettingsAsync();
-            settings.SelectedProviderId = _providerId;
-            settings.SelectedModelId = SelectedModel.Id;
-            await _dataService.SaveSettingsAsync(settings);
+            // Update available models
+            config.AvailableModelIds = _selectedModelIds.ToList();
+            config.UpdatedAt = System.DateTime.UtcNow;
 
-            // Reload AI service configuration
-            await _aiService.ReloadConfigurationAsync();
+            // Save provider config only (don't change AppSettings)
+            await _dataService.SaveProviderConfigAsync(config);
 
-            SuccessMessage = $"已选择 {SelectedModel.Name}";
+            SuccessMessage = $"已保存 {SelectedCount} 个模型";
 
-            // Navigate back to chat or main page
-            _navigationService.NavigateTo<ChatViewModel>();
+            // Navigate back to provider selection after a short delay
+            await Task.Delay(1000);
+            _navigationService.NavigateTo<ProviderSelectionViewModel>();
         }
         catch (System.Exception ex)
         {

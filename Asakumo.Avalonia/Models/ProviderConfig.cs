@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Text.Json;
 using SQLite;
 
 namespace Asakumo.Avalonia.Models;
@@ -34,6 +36,12 @@ public class ProviderConfig
     public string? SelectedModelId { get; set; }
 
     /// <summary>
+    /// Gets or sets the list of available model IDs for this provider (stored as JSON array).
+    /// </summary>
+    [MaxLength(2000)]
+    public string? AvailableModelIdsJson { get; set; }
+
+    /// <summary>
     /// Gets or sets a value indicating whether this provider is enabled.
     /// </summary>
     public bool IsEnabled { get; set; }
@@ -60,6 +68,39 @@ public class ProviderConfig
     public bool HasValidCredentials => !string.IsNullOrWhiteSpace(ApiKey);
 
     /// <summary>
+    /// Gets the list of available model IDs for this provider.
+    /// This is a runtime property not stored directly in the database.
+    /// </summary>
+    [Ignore]
+    public List<string> AvailableModelIds
+    {
+        get
+        {
+            if (string.IsNullOrEmpty(AvailableModelIdsJson))
+                return new List<string>();
+            try
+            {
+                return JsonSerializer.Deserialize<List<string>>(AvailableModelIdsJson) ?? new List<string>();
+            }
+            catch
+            {
+                return new List<string>();
+            }
+        }
+        set
+        {
+            AvailableModelIdsJson = value != null && value.Count > 0
+                ? JsonSerializer.Serialize(value)
+                : null;
+        }
+    }
+
+    /// <summary>
+    /// Gets a value indicating whether this provider has any available models configured.
+    /// </summary>
+    public bool HasAvailableModels => AvailableModelIds.Count > 0;
+
+    /// <summary>
     /// Creates a deep copy of this configuration.
     /// </summary>
     public ProviderConfig Clone()
@@ -70,6 +111,7 @@ public class ProviderConfig
             ApiKey = ApiKey,
             BaseUrl = BaseUrl,
             SelectedModelId = SelectedModelId,
+            AvailableModelIdsJson = AvailableModelIdsJson,
             IsEnabled = IsEnabled,
             CreatedAt = CreatedAt,
             UpdatedAt = UpdatedAt,

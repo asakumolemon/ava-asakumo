@@ -42,6 +42,7 @@ public partial class App : Application
         services.AddTransient<ProviderSelectionViewModel>();
         services.AddTransient<ApiKeyConfigViewModel>();
         services.AddTransient<ModelSelectionViewModel>();
+        services.AddTransient<DefaultModelSelectionViewModel>();
 
         _serviceProvider = services.BuildServiceProvider();
     }

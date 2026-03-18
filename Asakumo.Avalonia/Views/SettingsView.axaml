@@ -113,54 +113,90 @@
 
         <!-- AI Configuration Section -->
         <StackPanel Spacing="8">
-          <TextBlock Text="AI 模型"
+          <TextBlock Text="AI 配置"
                      FontSize="14"
                      FontWeight="SemiBold"
                      Foreground="{DynamicResource AppTextSecondaryBrush}"/>
           <Border Background="{DynamicResource AppCardBrush}"
                   CornerRadius="12">
-            <Button Command="{Binding NavigateToProviderConfigCommand}"
-                    Background="Transparent"
-                    BorderThickness="0"
-                    HorizontalAlignment="Stretch"
-                    HorizontalContentAlignment="Left">
-              <Border Padding="12">
-                <Grid ColumnDefinitions="Auto, *, Auto">
-                  <!-- AI Icon -->
-                  <Border Grid.Column="0"
-                          Width="40" Height="40"
-                          CornerRadius="20"
-                          Background="{DynamicResource PrimaryBrush}"
-                          Margin="0,0,12,0">
-                    <Panel>
-                      <TextBlock Text="{Binding CurrentProviderIcon}"
+            <StackPanel>
+              <!-- Provider Configuration -->
+              <Button Command="{Binding NavigateToProviderConfigCommand}"
+                      Background="Transparent"
+                      BorderThickness="0"
+                      HorizontalAlignment="Stretch"
+                      HorizontalContentAlignment="Left">
+                <Border Padding="12">
+                  <Grid ColumnDefinitions="Auto, *, Auto">
+                    <!-- Icon -->
+                    <Border Grid.Column="0"
+                            Width="40" Height="40"
+                            CornerRadius="20"
+                            Background="{DynamicResource PrimaryBrush}"
+                            Margin="0,0,12,0">
+                      <TextBlock Text="⚙️"
                                  FontSize="20"
                                  HorizontalAlignment="Center"
-                                 VerticalAlignment="Center"
-                                 IsVisible="{Binding HasAiConfiguration}"/>
-                      <PathIcon Data="M12,2A2,2 0 0,1 2,4A2,2 0 0,1 4,2A2,2 0 0,1 2,2A2,2 0 0,1 2,4V2A2,2 0 0,0 4,0A2,2 0 0,0 2,2V0A2,2 0 0,1 0,4A2,2 0 0,1 2,2A2,2 0 0,1 4,2V4H3A2,2 0 0,1 2,4A2,2 0 0,1 4,2V2H3A2,2 0 0,1 2,4M12,2M12,4A2,2 0 0,1 4,6H3A2,2 0 0,1 2,4A2,2 0 0,1 2,4M12,4Z"
-                                  Width="20"
-                                  Height="20"
-                                  IsVisible="{Binding !HasAiConfiguration}"/>
-                    </Panel>
-                  </Border>
+                                 VerticalAlignment="Center"/>
+                    </Border>
 
-                  <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                    <TextBlock Text="{Binding CurrentProviderName, FallbackValue='点击配置 AI 模型'}"
-                               FontWeight="Medium"
-                               Foreground="{DynamicResource AppTextPrimaryBrush}"/>
-                    <TextBlock Text="{Binding AiConfigurationStatus}"
-                               FontSize="12"
-                               Foreground="{DynamicResource AppTextSecondaryBrush}"/>
-                  </StackPanel>
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                      <TextBlock Text="供应商配置"
+                                 FontWeight="Medium"
+                                 Foreground="{DynamicResource AppTextPrimaryBrush}"/>
+                      <TextBlock Text="{Binding AiConfigurationStatus}"
+                                 FontSize="12"
+                                 Foreground="{DynamicResource AppTextSecondaryBrush}"/>
+                    </StackPanel>
 
-                  <PathIcon Grid.Column="2"
-                            Data="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z"
-                            Width="20" Height="20"
-                            Foreground="{DynamicResource AppTextSecondaryBrush}"/>
-                </Grid>
-              </Border>
-            </Button>
+                    <PathIcon Grid.Column="2"
+                              Data="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z"
+                              Width="20" Height="20"
+                              Foreground="{DynamicResource AppTextSecondaryBrush}"/>
+                  </Grid>
+                </Border>
+              </Button>
+
+              <Separator Margin="52,0,0,0"
+                         Background="{DynamicResource AppDividerBrush}"/>
+
+              <!-- Default Model Configuration -->
+              <Button Command="{Binding NavigateToDefaultModelConfigCommand}"
+                      Background="Transparent"
+                      BorderThickness="0"
+                      HorizontalAlignment="Stretch"
+                      HorizontalContentAlignment="Left">
+                <Border Padding="12">
+                  <Grid ColumnDefinitions="Auto, *, Auto">
+                    <!-- Icon -->
+                    <Border Grid.Column="0"
+                            Width="40" Height="40"
+                            CornerRadius="20"
+                            Background="{DynamicResource AppSurfaceBrush}"
+                            Margin="0,0,12,0">
+                      <TextBlock Text="🤖"
+                                 FontSize="20"
+                                 HorizontalAlignment="Center"
+                                 VerticalAlignment="Center"/>
+                    </Border>
+
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                      <TextBlock Text="默认模型"
+                                 FontWeight="Medium"
+                                 Foreground="{DynamicResource AppTextPrimaryBrush}"/>
+                      <TextBlock Text="{Binding DefaultModelStatus}"
+                                 FontSize="12"
+                                 Foreground="{DynamicResource AppTextSecondaryBrush}"/>
+                    </StackPanel>
+
+                    <PathIcon Grid.Column="2"
+                              Data="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z"
+                              Width="20" Height="20"
+                              Foreground="{DynamicResource AppTextSecondaryBrush}"/>
+                  </Grid>
+                </Border>
+              </Button>
+            </StackPanel>
           </Border>
         </StackPanel>
 

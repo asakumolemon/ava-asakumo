@@ -52,6 +52,12 @@ public partial class SettingsViewModel : ViewModelBase
     [ObservableProperty]
     private bool _hasAiConfiguration;
 
+    [ObservableProperty]
+    private string _defaultModelStatus = "未设置";
+
+    [ObservableProperty]
+    private int _configuredProviderCount;
+
     #endregion
 
     public ObservableCollection<string> Languages { get; } = new()
@@ -100,6 +106,12 @@ public partial class SettingsViewModel : ViewModelBase
     private void NavigateToProviderConfig()
     {
         _navigationService.NavigateTo<ProviderSelectionViewModel>();
+    }
+
+    [RelayCommand]
+    private void NavigateToDefaultModelConfig()
+    {
+        _navigationService.NavigateTo<DefaultModelSelectionViewModel>();
     }
 
     [RelayCommand]
@@ -254,44 +266,41 @@ public partial class SettingsViewModel : ViewModelBase
         LoadAiConfigurationStatus(settings);
     }
 
-    private void LoadAiConfigurationStatus(AppSettings settings)
+    private async void LoadAiConfigurationStatus(AppSettings settings)
     {
-        var providerId = settings.SelectedProviderId;
-        var modelId = settings.SelectedModelId;
+        // Load provider configs
+        var configs = await _dataService.GetAllProviderConfigsAsync();
+        ConfiguredProviderCount = configs.Count(c => c.HasAvailableModels);
 
-        if (string.IsNullOrEmpty(providerId))
+        if (ConfiguredProviderCount == 0)
         {
             HasAiConfiguration = false;
-            CurrentProviderName = "点击配置 AI 模型";
+            CurrentProviderName = "点击配置供应商";
             AiConfigurationStatus = "未配置";
+            DefaultModelStatus = "未设置";
             CurrentProviderIcon = "🤖";
             return;
         }
 
         HasAiConfiguration = true;
+        CurrentProviderName = $"已配置 {ConfiguredProviderCount} 个供应商";
+        CurrentProviderIcon = "⚙️";
+        AiConfigurationStatus = $"{ConfiguredProviderCount} 个供应商已启用";
 
-        // Get provider info
-        var providers = _dataService.GetProviders();
-        var provider = providers.FirstOrDefault(p => p.Id == providerId);
-        if (provider != null)
+        // Load default model info
+        var providerId = settings.SelectedProviderId;
+        var modelId = settings.SelectedModelId;
+
+        if (!string.IsNullOrEmpty(providerId) && !string.IsNullOrEmpty(modelId))
         {
-            CurrentProviderName = provider.Name;
-            CurrentProviderIcon = provider.Icon;
+            var providers = _dataService.GetProviders();
+            var provider = providers.FirstOrDefault(p => p.Id == providerId);
+            var model = provider?.Models.FirstOrDefault(m => m.Id == modelId);
+            DefaultModelStatus = model?.Name ?? $"{provider?.Name ?? providerId} / {modelId}";
         }
         else
         {
-            CurrentProviderName = providerId;
-            CurrentProviderIcon = "🤖";
-        }
-
-        // Get model info
-        if (!string.IsNullOrEmpty(modelId))
-        {
-            AiConfigurationStatus = $"模型: {modelId}";
-        }
-        else
-        {
-            AiConfigurationStatus = "已配置";
+            DefaultModelStatus = "未设置";
         }
     }
 
