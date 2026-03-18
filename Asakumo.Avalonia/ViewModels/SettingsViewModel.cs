@@ -263,10 +263,10 @@ public partial class SettingsViewModel : ViewModelBase
         };
 
         // Load AI configuration status
-        LoadAiConfigurationStatus(settings);
+        await LoadAiConfigurationStatusAsync(settings);
     }
 
-    private async void LoadAiConfigurationStatus(AppSettings settings)
+    private async Task LoadAiConfigurationStatusAsync(AppSettings settings)
     {
         // Load provider configs
         var configs = await _dataService.GetAllProviderConfigsAsync();

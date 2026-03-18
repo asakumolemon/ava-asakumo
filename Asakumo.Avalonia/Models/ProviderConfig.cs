@@ -82,8 +82,9 @@ public class ProviderConfig
             {
                 return JsonSerializer.Deserialize<List<string>>(AvailableModelIdsJson) ?? new List<string>();
             }
-            catch
+            catch (Exception ex)
             {
+                System.Diagnostics.Debug.WriteLine($"Failed to deserialize AvailableModelIds for provider {ProviderId}: {ex.Message}");
                 return new List<string>();
             }
         }

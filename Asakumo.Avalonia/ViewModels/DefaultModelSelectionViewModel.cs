@@ -98,8 +98,6 @@ public partial class DefaultModelSelectionViewModel : ViewModelBase
         _dataService = dataService;
         _navigationService = navigationService;
         _aiService = aiService;
-
-        _ = InitializeAsync();
     }
 
     /// <inheritdoc/>
@@ -116,45 +114,17 @@ public partial class DefaultModelSelectionViewModel : ViewModelBase
 
         try
         {
-            // Load current settings
             var settings = await _dataService.GetSettingsAsync();
             SelectedProviderId = settings.SelectedProviderId;
             SelectedModelId = settings.SelectedModelId;
 
-            // Load all provider configs
             var configs = await _dataService.GetAllProviderConfigsAsync();
             var allProviders = _dataService.GetProviders();
 
-            var groups = new ObservableCollection<ProviderModelGroup>();
+            // Use dictionary for O(1) lookup instead of O(n) in loop
+            var providerMap = allProviders.ToDictionary(p => p.Id);
 
-            foreach (var config in configs.Where(c => c.HasAvailableModels))
-            {
-                var provider = allProviders.FirstOrDefault(p => p.Id == config.ProviderId);
-                if (provider == null) continue;
-
-                // Get available models for this provider
-                var availableModels = provider.Models
-                    .Where(m => config.AvailableModelIds.Contains(m.Id))
-                    .ToList();
-
-                if (availableModels.Count == 0) continue;
-
-                var group = new ProviderModelGroup
-                {
-                    ProviderId = provider.Id,
-                    ProviderName = provider.Name,
-                    ProviderIcon = provider.Icon,
-                    Models = new ObservableCollection<AIModel>(availableModels)
-                };
-
-                groups.Add(group);
-
-                // Pre-select current default model
-                if (provider.Id == SelectedProviderId && SelectedModelId != null)
-                {
-                    SelectedModel = availableModels.FirstOrDefault(m => m.Id == SelectedModelId);
-                }
-            }
+            var groups = BuildProviderGroups(configs, providerMap);
 
             ProviderGroups = groups;
 
@@ -167,6 +137,43 @@ public partial class DefaultModelSelectionViewModel : ViewModelBase
         {
             IsLoading = false;
         }
+    }
+
+    private ObservableCollection<ProviderModelGroup> BuildProviderGroups(
+        IReadOnlyList<ProviderConfig> configs,
+        Dictionary<string, AIProvider> providerMap)
+    {
+        var groups = new ObservableCollection<ProviderModelGroup>();
+
+        foreach (var config in configs.Where(c => c.HasAvailableModels))
+        {
+            if (!providerMap.TryGetValue(config.ProviderId, out var provider))
+                continue;
+
+            var availableModels = provider.Models
+                .Where(m => config.AvailableModelIds.Contains(m.Id))
+                .ToList();
+
+            if (availableModels.Count == 0) continue;
+
+            var group = new ProviderModelGroup
+            {
+                ProviderId = provider.Id,
+                ProviderName = provider.Name,
+                ProviderIcon = provider.Icon,
+                Models = new ObservableCollection<AIModel>(availableModels)
+            };
+
+            groups.Add(group);
+
+            // Pre-select current default model
+            if (provider.Id == SelectedProviderId && SelectedModelId != null)
+            {
+                SelectedModel = availableModels.FirstOrDefault(m => m.Id == SelectedModelId);
+            }
+        }
+
+        return groups;
     }
 
     #region Commands

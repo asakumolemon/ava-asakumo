@@ -133,11 +133,9 @@ public partial class ModelSelectionViewModel : ViewModelBase, INavigationAware
         ProviderName = _provider.Name;
         ProviderIcon = _provider.Icon;
 
-        // Load existing configuration
         var config = await _dataService.GetProviderConfigAsync(providerId);
         _selectedModelIds = config?.AvailableModelIds ?? new List<string>();
 
-        // Create selection items
         var items = _provider.Models.Select(m => new ModelSelectionItem(
             m,
             _selectedModelIds.Contains(m.Id)
@@ -155,22 +153,22 @@ public partial class ModelSelectionViewModel : ViewModelBase, INavigationAware
     #region Commands
 
     [RelayCommand]
-    private void ToggleModel(ModelSelectionItem item)
+    private void ToggleModel(ModelSelectionItem? item)
     {
-        if (item == null) return;
+        if (item?.Model == null) return;
 
         item.IsSelected = !item.IsSelected;
         UpdateSelectedCount();
 
-        // Update tracking list
+        var modelId = item.Model.Id;
         if (item.IsSelected)
         {
-            if (!_selectedModelIds.Contains(item.Model.Id))
-                _selectedModelIds.Add(item.Model.Id);
+            if (!_selectedModelIds.Contains(modelId))
+                _selectedModelIds.Add(modelId);
         }
         else
         {
-            _selectedModelIds.Remove(item.Model.Id);
+            _selectedModelIds.Remove(modelId);
         }
     }
 
@@ -202,7 +200,6 @@ public partial class ModelSelectionViewModel : ViewModelBase, INavigationAware
 
         try
         {
-            // Get or create provider config
             var config = await _dataService.GetProviderConfigAsync(_providerId);
             if (config == null)
             {
@@ -213,16 +210,13 @@ public partial class ModelSelectionViewModel : ViewModelBase, INavigationAware
                 };
             }
 
-            // Update available models
             config.AvailableModelIds = _selectedModelIds.ToList();
             config.UpdatedAt = System.DateTime.UtcNow;
 
-            // Save provider config only (don't change AppSettings)
             await _dataService.SaveProviderConfigAsync(config);
 
             SuccessMessage = $"已保存 {SelectedCount} 个模型";
 
-            // Navigate back to provider selection after a short delay
             await Task.Delay(1000);
             _navigationService.NavigateTo<ProviderSelectionViewModel>();
         }
