@@ -57,6 +57,20 @@ public class AIService : IAIService
     public string? CurrentModelId => _currentModelId;
 
     /// <inheritdoc/>
+    public string? CurrentModelName
+    {
+        get
+        {
+            if (_currentProvider == null || string.IsNullOrWhiteSpace(_currentModelId))
+                return null;
+
+            var models = _currentProvider.Models;
+            var model = models.FirstOrDefault(m => m.Id == _currentModelId);
+            return model?.Name ?? _currentModelId;
+        }
+    }
+
+    /// <inheritdoc/>
     public async IAsyncEnumerable<string> StreamChatAsync(
         string conversationId,
         string message,

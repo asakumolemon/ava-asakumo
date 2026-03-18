@@ -89,6 +89,11 @@ public interface IAIService
     string? CurrentModelId { get; }
 
     /// <summary>
+    /// Gets the current model display name.
+    /// </summary>
+    string? CurrentModelName { get; }
+
+    /// <summary>
     /// Reloads the provider configuration from settings.
     /// </summary>
     Task ReloadConfigurationAsync();

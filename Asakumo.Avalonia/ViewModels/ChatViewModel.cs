@@ -113,7 +113,7 @@ public partial class ChatViewModel : ViewModelBase, INavigationAware
         Messages.CollectionChanged += OnMessagesCollectionChanged;
 
         // Initialize current model and provider names
-        _currentModelName = _aiService.CurrentModelId ?? string.Empty;
+        _currentModelName = _aiService.CurrentModelName ?? _aiService.CurrentModelId ?? string.Empty;
         _currentProviderName = _aiService.CurrentProviderId ?? string.Empty;
     }
 

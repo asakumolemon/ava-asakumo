@@ -21,6 +21,11 @@ public interface IAIProvider
     string ProviderId { get; }
 
     /// <summary>
+    /// Gets the available models for this provider.
+    /// </summary>
+    IReadOnlyList<AIModel> Models { get; }
+
+    /// <summary>
     /// Streams chat completion tokens.
     /// </summary>
     /// <param name="messages">The conversation messages.</param>

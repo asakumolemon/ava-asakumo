@@ -66,6 +66,16 @@ public class OpenAICompatibleProvider : IAIProvider
     public string ProviderId => _providerId;
 
     /// <inheritdoc/>
+    public IReadOnlyList<AIModel> Models
+    {
+        get
+        {
+            var provider = AIProviderFactory.GetProviderDefinition(_providerId);
+            return provider?.Models ?? new List<AIModel>();
+        }
+    }
+
+    /// <inheritdoc/>
     public async IAsyncEnumerable<string> StreamChatAsync(
         IEnumerable<ProviderMessage> messages,
         string modelId,

@@ -17,34 +17,19 @@
 
     <!-- Header -->
     <Border Grid.Row="0" Background="{DynamicResource AppBackgroundBrush}" Padding="12,8">
-      <Grid ColumnDefinitions="Auto, Auto, *, Auto">
-        <Button Grid.Column="0"
+      <Grid RowDefinitions="Auto, Auto" ColumnDefinitions="Auto, *, Auto">
+        <!-- Row 0: Back Button, Title, More Button -->
+        <Button Grid.Row="0" Grid.Column="0"
                 Command="{Binding GoBackCommand}"
                 Classes="icon"
-                ToolTip.Tip="返回">
+                ToolTip.Tip="返回"
+                VerticalAlignment="Center">
           <PathIcon Data="M20,11H7.83L13.42,5.41L12,4L4,12L12,20L13.41,18.59L7.83,13H20V11Z"
                     Width="20" Height="20"/>
         </Button>
 
-        <!-- Model Switcher Button -->
-        <Button Grid.Column="1"
-                Command="{Binding OpenModelSwitcherCommand}"
-                Classes="model-switcher-button"
-                Margin="8,0,0,0"
-                ToolTip.Tip="切换模型">
-          <StackPanel Orientation="Horizontal" Spacing="4">
-            <TextBlock Text="{Binding CurrentModelName}"
-                       FontSize="13" FontWeight="Medium"
-                       Foreground="{DynamicResource AppTextPrimaryBrush}"
-                       MaxWidth="100"
-                       TextTrimming="CharacterEllipsis"/>
-            <PathIcon Data="M7,10L12,15L17,10H7Z"
-                      Width="12" Height="12"
-                      Foreground="{DynamicResource AppTextSecondaryBrush}"/>
-          </StackPanel>
-        </Button>
-
-        <StackPanel Grid.Column="2" HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="2">
+        <!-- Title (Center) -->
+        <StackPanel Grid.Row="0" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="2">
           <!-- Normal Title Display -->
           <TextBlock Text="{Binding Title}"
                      FontWeight="SemiBold" FontSize="16"
@@ -73,12 +58,28 @@
           </StackPanel>
         </StackPanel>
 
-        <Button Grid.Column="2"
+        <!-- More Options Button -->
+        <Button Grid.Row="0" Grid.Column="2"
                 Classes="icon"
                 ToolTip.Tip="更多选项"
-                Command="{Binding OpenMoreMenuCommand}">
+                Command="{Binding OpenMoreMenuCommand}"
+                VerticalAlignment="Center">
           <PathIcon Data="M12,16A2,2 0 0,1 14,18A2,2 0 0,1 12,20A2,2 0 0,1 10,18A2,2 0 0,1 12,16M12,10A2,2 0 0,1 14,12A2,2 0 0,1 12,14A2,2 0 0,1 10,12A2,2 0 0,1 12,10M12,4A2,2 0 0,1 14,6A2,2 0 0,1 12,8A2,2 0 0,1 10,6A2,2 0 0,1 12,4Z"
                     Width="20" Height="20"/>
+        </Button>
+
+        <!-- Row 1: Model Switcher Button (Center) -->
+        <Button Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3"
+                Command="{Binding OpenModelSwitcherCommand}"
+                Classes="model-switcher-button"
+                HorizontalAlignment="Center"
+                Margin="0,4,0,0"
+                ToolTip.Tip="切换模型">
+          <TextBlock Text="{Binding CurrentModelName}"
+                     FontSize="13" FontWeight="Medium"
+                     Foreground="{DynamicResource AppTextPrimaryBrush}"
+                     MaxWidth="200"
+                     TextTrimming="CharacterEllipsis"/>
         </Button>
       </Grid>
     </Border>
@@ -165,7 +166,7 @@
                     <ItemsControl.ItemTemplate>
                       <DataTemplate x:DataType="vm:ModelItem">
                         <Button Classes="model-item-button"
-                                Command="{Binding $parent[ItemsControl].((vm:ChatViewModel)DataContext).SwitchModelCommand}"
+                                Command="{Binding $parent[UserControl].((vm:ChatViewModel)DataContext).SwitchModelCommand}"
                                 CommandParameter="{Binding}">
                           <Grid ColumnDefinitions="*, Auto">
                             <TextBlock Grid.Column="0"

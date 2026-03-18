@@ -43,6 +43,16 @@ public class GeminiProvider : IAIProvider
     /// <inheritdoc/>
     public string ProviderId => _providerId;
 
+    /// <inheritdoc/>
+    public IReadOnlyList<AIModel> Models
+    {
+        get
+        {
+            var provider = AIProviderFactory.GetProviderDefinition(_providerId);
+            return provider?.Models ?? new List<AIModel>();
+        }
+    }
+
     private Client Client => _client ??= new Client(apiKey: _apiKey);
 
     /// <inheritdoc/>
