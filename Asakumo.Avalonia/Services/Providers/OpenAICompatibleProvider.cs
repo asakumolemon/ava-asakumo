@@ -85,10 +85,20 @@ public class OpenAICompatibleProvider : IAIProvider
         var json = JsonSerializer.Serialize(request, _jsonOptions);
         var content = new StringContent(json, Encoding.UTF8, "application/json");
 
+        // Use HttpCompletionOption.ResponseHeadersRead to get the stream immediately
+        // without waiting for the entire response to be buffered
+        using var httpRequest = new HttpRequestMessage(HttpMethod.Post, "/chat/completions")
+        {
+            Content = content
+        };
+
         HttpResponseMessage response;
         try
         {
-            response = await _httpClient.PostAsync("/chat/completions", content, ct);
+            response = await _httpClient.SendAsync(
+                httpRequest,
+                HttpCompletionOption.ResponseHeadersRead,
+                ct);
             response.EnsureSuccessStatusCode();
         }
         catch (OperationCanceledException)
@@ -102,33 +112,36 @@ public class OpenAICompatibleProvider : IAIProvider
             throw;
         }
 
-        using var stream = await response.Content.ReadAsStreamAsync(ct);
-        using var reader = new System.IO.StreamReader(stream);
-
-        while (!reader.EndOfStream && !ct.IsCancellationRequested)
+        using (response)
         {
-            var line = await reader.ReadLineAsync(ct);
-            if (string.IsNullOrEmpty(line)) continue;
-            if (!line.StartsWith("data: ")) continue;
+            using var stream = await response.Content.ReadAsStreamAsync(ct);
+            using var reader = new System.IO.StreamReader(stream);
 
-            var data = line.Substring(6);
-            if (data == "[DONE]") break;
+            while (!reader.EndOfStream && !ct.IsCancellationRequested)
+            {
+                var line = await reader.ReadLineAsync(ct);
+                if (string.IsNullOrEmpty(line)) continue;
+                if (!line.StartsWith("data: ")) continue;
 
-            OpenAIStreamResponse? streamResponse;
-            try
-            {
-                streamResponse = JsonSerializer.Deserialize<OpenAIStreamResponse>(data, _jsonOptions);
-            }
-            catch (JsonException ex)
-            {
-                _logger.LogWarning(ex, "Failed to parse stream event: {Data}", data);
-                continue;
-            }
+                var data = line.Substring(6);
+                if (data == "[DONE]") break;
 
-            var delta = streamResponse?.Choices?.FirstOrDefault()?.Delta?.Content;
-            if (!string.IsNullOrEmpty(delta))
-            {
-                yield return delta;
+                OpenAIStreamResponse? streamResponse;
+                try
+                {
+                    streamResponse = JsonSerializer.Deserialize<OpenAIStreamResponse>(data, _jsonOptions);
+                }
+                catch (JsonException ex)
+                {
+                    _logger.LogWarning(ex, "Failed to parse stream event: {Data}", data);
+                    continue;
+                }
+
+                var delta = streamResponse?.Choices?.FirstOrDefault()?.Delta?.Content;
+                if (!string.IsNullOrEmpty(delta))
+                {
+                    yield return delta;
+                }
             }
         }
     }

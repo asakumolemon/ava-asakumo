@@ -273,6 +273,36 @@ public partial class ChatViewModel : ViewModelBase, INavigationAware
         }
     }
 
+    [RelayCommand]
+    private async Task RetryMessageAsync(ChatMessage? errorMessage)
+    {
+        if (errorMessage == null || errorMessage.IsUser)
+            return;
+
+        // Check if AI is configured
+        if (!_aiService.IsConfigured)
+        {
+            ShowConfigPrompt = true;
+            return;
+        }
+
+        // Find the user message that triggered this AI response
+        var index = Messages.IndexOf(errorMessage);
+        if (index <= 0)
+            return;
+
+        var userMessage = Messages[index - 1];
+        if (!userMessage.IsUser)
+            return;
+
+        // Remove the error message
+        Messages.Remove(errorMessage);
+        await _dataService.DeleteMessageAsync(errorMessage.Id);
+
+        // Resend to AI
+        await SendToAiAsync(userMessage.Content);
+    }
+
     private async Task SendToAiAsync(string userMessage)
     {
         var aiMessage = new ChatMessage
@@ -295,27 +325,40 @@ public partial class ChatViewModel : ViewModelBase, INavigationAware
                 userMessage,
                 _responseCts.Token))
             {
-                aiMessage.Content += token;
+                // Ensure UI update happens on UI thread
+                await global::Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    aiMessage.Content += token;
+                });
             }
 
-            aiMessage.IsLoading = false;
-            aiMessage.IsComplete = true;
+            await global::Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                aiMessage.IsLoading = false;
+                aiMessage.IsComplete = true;
+            });
 
             await _dataService.SaveMessageAsync(aiMessage);
             await SaveConversationAsync();
         }
         catch (OperationCanceledException)
         {
-            aiMessage.IsLoading = false;
-            aiMessage.Content += "\n[已中断]";
-            aiMessage.IsComplete = true;
+            await global::Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                aiMessage.IsLoading = false;
+                aiMessage.Content += "\n[已中断]";
+                aiMessage.IsComplete = true;
+            });
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "AI streaming failed for conversation {ConversationId}", _conversationId);
-            aiMessage.IsLoading = false;
-            aiMessage.IsError = true;
-            aiMessage.Content = $"[错误] {ex.Message}";
+            await global::Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                aiMessage.IsLoading = false;
+                aiMessage.IsError = true;
+                aiMessage.Content = $"[错误] {ex.Message}";
+            });
         }
         finally
         {

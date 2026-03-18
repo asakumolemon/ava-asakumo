@@ -63,7 +63,6 @@ public partial class ChatView : UserControl
 
     private void OnMessageAdded(object? sender, EventArgs e)
     {
-        // Use Dispatcher to ensure scroll happens after UI update
         Dispatcher.UIThread.Post(ScrollToBottom, DispatcherPriority.Background);
     }
 

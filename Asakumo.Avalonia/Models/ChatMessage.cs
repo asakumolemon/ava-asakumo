@@ -23,14 +23,26 @@ public partial class ChatMessage : ObservableObject
     [Indexed]
     public string ConversationId { get; set; } = string.Empty;
 
+    private string _content = string.Empty;
+
     /// <summary>
     /// Gets or sets the content of the message.
-    /// Uses ObservableProperty to notify UI of changes during streaming.
+    /// Manually triggers notifications for computed properties during streaming.
     /// </summary>
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(HasContent))]
-    [NotifyPropertyChangedFor(nameof(IsStreaming))]
-    private string _content = string.Empty;
+    public string Content
+    {
+        get => _content;
+        set
+        {
+            if (SetProperty(ref _content, value))
+            {
+                // Notify computed properties when content changes
+                OnPropertyChanged(nameof(HasContent));
+                OnPropertyChanged(nameof(IsThinking));
+                OnPropertyChanged(nameof(IsStreaming));
+            }
+        }
+    }
 
     /// <summary>
     /// Gets or sets the editable content (used during edit mode).
@@ -50,6 +62,7 @@ public partial class ChatMessage : ObservableObject
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsStreaming))]
     [NotifyPropertyChangedFor(nameof(HasContent))]
+    [NotifyPropertyChangedFor(nameof(IsThinking))]
     private bool _isLoading;
 
     /// <summary>
@@ -70,6 +83,11 @@ public partial class ChatMessage : ObservableObject
     /// Gets a value indicating whether the message has content.
     /// </summary>
     public bool HasContent => !string.IsNullOrEmpty(Content);
+
+    /// <summary>
+    /// Gets a value indicating whether the message is thinking (loading without content).
+    /// </summary>
+    public bool IsThinking => IsLoading && !HasContent;
 
     /// <summary>
     /// Gets a value indicating whether the message is streaming (loading with content).
