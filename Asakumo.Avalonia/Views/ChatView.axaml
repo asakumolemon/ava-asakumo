@@ -369,14 +369,16 @@
                       </StackPanel>
                     </StackPanel>
 
-                    <!-- Streaming State: Content + Cursor -->
-                    <StackPanel IsVisible="{Binding IsStreaming}" Spacing="2">
-                      <TextBlock Text="{Binding Content, Mode=OneWay}"
-                                 TextWrapping="Wrap" FontSize="14"
-                                 Foreground="{DynamicResource AppTextPrimaryBrush}"/>
-                      <Border Classes="streaming-cursor" Width="2" Height="16"
-                              HorizontalAlignment="Left" Margin="0,2,0,0"/>
-                    </StackPanel>
+                    <!-- Streaming State: Content + Cursor inline -->
+                    <TextBlock IsVisible="{Binding IsStreaming}"
+                               TextWrapping="Wrap" FontSize="14"
+                               Foreground="{DynamicResource AppTextPrimaryBrush}">
+                      <Run Text="{Binding Content, Mode=OneWay}"/>
+                      <InlineUIContainer BaselineAlignment="Bottom">
+                        <Border Classes="streaming-cursor" Width="2" Height="16"
+                                Margin="1,0,0,0"/>
+                      </InlineUIContainer>
+                    </TextBlock>
 
                     <!-- Complete/Error State: Content + Actions -->
                     <StackPanel IsVisible="{Binding IsComplete}" Spacing="4">

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Asakumo.Avalonia.Models;
@@ -318,6 +319,9 @@ public partial class ChatViewModel : ViewModelBase, INavigationAware
 
         _responseCts = new CancellationTokenSource();
 
+        // Use StringBuilder for efficient string concatenation
+        var contentBuilder = new StringBuilder();
+
         try
         {
             await foreach (var token in _aiService.StreamChatAsync(
@@ -325,15 +329,21 @@ public partial class ChatViewModel : ViewModelBase, INavigationAware
                 userMessage,
                 _responseCts.Token))
             {
-                // Ensure UI update happens on UI thread
-                await global::Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
+                contentBuilder.Append(token);
+                var currentContent = contentBuilder.ToString();
+                
+                // Direct update without throttling for smooth streaming
+                global::Avalonia.Threading.Dispatcher.UIThread.Post(() =>
                 {
-                    aiMessage.Content += token;
+                    aiMessage.Content = currentContent;
                 });
             }
 
-            await global::Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
+            // Final update with complete content
+            var finalContent = contentBuilder.ToString();
+            global::Avalonia.Threading.Dispatcher.UIThread.Post(() =>
             {
+                aiMessage.Content = finalContent;
                 aiMessage.IsLoading = false;
                 aiMessage.IsComplete = true;
             });
@@ -343,21 +353,22 @@ public partial class ChatViewModel : ViewModelBase, INavigationAware
         }
         catch (OperationCanceledException)
         {
-            await global::Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
+            var content = contentBuilder.ToString() + "\n[已中断]";
+            global::Avalonia.Threading.Dispatcher.UIThread.Post(() =>
             {
+                aiMessage.Content = content;
                 aiMessage.IsLoading = false;
-                aiMessage.Content += "\n[已中断]";
                 aiMessage.IsComplete = true;
             });
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "AI streaming failed for conversation {ConversationId}", _conversationId);
-            await global::Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
+            global::Avalonia.Threading.Dispatcher.UIThread.Post(() =>
             {
+                aiMessage.Content = $"[错误] {ex.Message}";
                 aiMessage.IsLoading = false;
                 aiMessage.IsError = true;
-                aiMessage.Content = $"[错误] {ex.Message}";
             });
         }
         finally
