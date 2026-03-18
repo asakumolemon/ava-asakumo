@@ -335,7 +335,41 @@
             <Setter Property="ScaleTransform.ScaleX" Value="0.9"/>
             <Setter Property="ScaleTransform.ScaleY" Value="0.9"/>
         </Style>
-        
+
+        <!-- 模型切换按钮样式 -->
+        <Style Selector="Button.model-switcher-button">
+            <Setter Property="Background" Value="{DynamicResource AppSurfaceBrush}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="12,6"/>
+            <Setter Property="CornerRadius" Value="16"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="Transitions">
+                <Transitions>
+                    <DoubleTransition Property="ScaleTransform.ScaleX" Duration="0:0:0.1"/>
+                    <DoubleTransition Property="ScaleTransform.ScaleY" Duration="0:0:0.1"/>
+                </Transitions>
+            </Setter>
+            <Setter Property="RenderTransform">
+                <ScaleTransform ScaleX="1" ScaleY="1"/>
+            </Setter>
+            <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
+        </Style>
+        <Style Selector="Button.model-switcher-button:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="#E5E7EB"/>
+        </Style>
+
+        <!-- 模型项按钮样式 -->
+        <Style Selector="Button.model-item-button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="12,8"/>
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+        </Style>
+        <Style Selector="Button.model-item-button:pointerover">
+            <Setter Property="Background" Value="{DynamicResource AppSurfaceBrush}"/>
+        </Style>
+
         <!-- 输入框样式 -->
         <Style Selector="TextBox.chat-input">
             <Setter Property="Background" Value="Transparent"/>

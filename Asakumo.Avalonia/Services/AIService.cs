@@ -221,6 +221,47 @@ public class AIService : IAIService
         await InitializeAsync();
     }
 
+    /// <inheritdoc/>
+    public async Task<bool> SetCurrentModelAsync(string modelId, string providerId)
+    {
+        try
+        {
+            // If provider changed, recreate the provider instance
+            if (providerId != _currentProvider?.ProviderId)
+            {
+                var config = await _dataService.GetProviderConfigAsync(providerId);
+                if (config == null || string.IsNullOrWhiteSpace(config.ApiKey) || !config.HasValidCredentials)
+                {
+                    _logger.LogWarning("Provider {ProviderId} has no valid configuration", providerId);
+                    return false;
+                }
+
+                var provider = _dataService.GetProvider(providerId);
+                if (provider == null)
+                {
+                    _logger.LogWarning("Provider {ProviderId} not found in definitions", providerId);
+                    return false;
+                }
+
+                _currentProvider = _providerFactory.CreateProvider(
+                    provider.Id,
+                    config.ApiKey,
+                    config.BaseUrl);
+            }
+
+            _currentModelId = modelId;
+            _logger.LogInformation("Switched to model {ModelId} on provider {ProviderId}",
+                modelId, _currentProvider?.ProviderId);
+
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to set current model {ModelId}", modelId);
+            return false;
+        }
+    }
+
     private async Task InitializeAsync()
     {
         try

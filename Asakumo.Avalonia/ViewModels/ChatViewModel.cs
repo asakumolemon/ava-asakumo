@@ -35,12 +35,21 @@ public partial class ChatViewModel : ViewModelBase, INavigationAware
     private string _title = "新会话";
 
     [ObservableProperty]
+    private string _currentModelName = string.Empty;
+
+    [ObservableProperty]
+    private string _currentProviderName = string.Empty;
+
+    [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(CanSend))]
     [NotifyCanExecuteChangedFor(nameof(SendMessageCommand))]
     private string _inputMessage = string.Empty;
 
     [ObservableProperty]
     private bool _isMoreMenuOpen;
+
+    [ObservableProperty]
+    private bool _isModelSwitcherOpen;
 
     [ObservableProperty]
     private bool _isEditingTitle;
@@ -62,6 +71,9 @@ public partial class ChatViewModel : ViewModelBase, INavigationAware
     [ObservableProperty]
     private bool _showConfigPrompt;
 
+    [ObservableProperty]
+    private ObservableCollection<ModelGroupItem> _availableModels = new();
+
     private System.Threading.CancellationTokenSource? _toastCts;
 
     #endregion
@@ -75,10 +87,6 @@ public partial class ChatViewModel : ViewModelBase, INavigationAware
     public bool CanSend => !string.IsNullOrWhiteSpace(InputMessage) && !IsAiResponding;
 
     public string ConversationId => _conversationId;
-
-    public string? CurrentModelName => _aiService.CurrentModelId;
-
-    public string? CurrentProviderName => _aiService.CurrentProviderId;
 
     #endregion
 
@@ -103,6 +111,10 @@ public partial class ChatViewModel : ViewModelBase, INavigationAware
 
         Messages = new ObservableCollection<ChatMessage>();
         Messages.CollectionChanged += OnMessagesCollectionChanged;
+
+        // Initialize current model and provider names
+        _currentModelName = _aiService.CurrentModelId ?? string.Empty;
+        _currentProviderName = _aiService.CurrentProviderId ?? string.Empty;
     }
 
     #endregion
@@ -483,4 +495,109 @@ public partial class ChatViewModel : ViewModelBase, INavigationAware
     }
 
     #endregion
+
+    #region Model Switcher Commands
+
+    [RelayCommand]
+    private async Task OpenModelSwitcherAsync()
+    {
+        await LoadAvailableModelsAsync();
+        IsModelSwitcherOpen = true;
+    }
+
+    [RelayCommand]
+    private void CloseModelSwitcher()
+    {
+        IsModelSwitcherOpen = false;
+    }
+
+    [RelayCommand]
+    private async Task SwitchModelAsync(ModelItem? model)
+    {
+        if (model == null)
+            return;
+
+        var success = await _aiService.SetCurrentModelAsync(model.ModelId, model.ProviderId);
+        if (success)
+        {
+            CurrentModelName = model.ModelName;
+            CurrentProviderName = model.ProviderId;
+            ShowToastMessage($"已切换到 {model.ModelName}");
+        }
+        else
+        {
+            ShowToastMessage("切换模型失败");
+        }
+
+        IsModelSwitcherOpen = false;
+    }
+
+    private async Task LoadAvailableModelsAsync()
+    {
+        AvailableModels.Clear();
+
+        var configs = await _dataService.GetAllProviderConfigsAsync();
+        var providers = _dataService.GetProviders();
+        var providerMap = providers.ToDictionary(p => p.Id);
+
+        foreach (var config in configs.Where(c => c.HasAvailableModels && c.HasValidCredentials))
+        {
+            if (!providerMap.TryGetValue(config.ProviderId, out var provider))
+                continue;
+
+            var group = new ModelGroupItem
+            {
+                ProviderName = provider.Name,
+                ProviderId = config.ProviderId
+            };
+
+            foreach (var modelId in config.AvailableModelIds)
+            {
+                var model = provider.Models.FirstOrDefault(m => m.Id == modelId);
+                if (model != null)
+                {
+                    group.Models.Add(new ModelItem
+                    {
+                        ModelId = model.Id,
+                        ModelName = model.Name,
+                        ProviderId = config.ProviderId,
+                        IsSelected = model.Id == _aiService.CurrentModelId && config.ProviderId == _aiService.CurrentProviderId
+                    });
+                }
+            }
+
+            if (group.Models.Count > 0)
+            {
+                AvailableModels.Add(group);
+            }
+        }
+    }
+
+    #endregion
+}
+
+public partial class ModelGroupItem : ObservableObject
+{
+    [ObservableProperty]
+    private string _providerName = string.Empty;
+
+    [ObservableProperty]
+    private string _providerId = string.Empty;
+
+    public ObservableCollection<ModelItem> Models { get; } = new();
+}
+
+public partial class ModelItem : ObservableObject
+{
+    [ObservableProperty]
+    private string _modelId = string.Empty;
+
+    [ObservableProperty]
+    private string _modelName = string.Empty;
+
+    [ObservableProperty]
+    private string _providerId = string.Empty;
+
+    [ObservableProperty]
+    private bool _isSelected;
 }

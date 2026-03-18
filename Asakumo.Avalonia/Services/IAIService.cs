@@ -92,4 +92,12 @@ public interface IAIService
     /// Reloads the provider configuration from settings.
     /// </summary>
     Task ReloadConfigurationAsync();
+
+    /// <summary>
+    /// Sets the current model for AI chat.
+    /// </summary>
+    /// <param name="modelId">The model ID to use.</param>
+    /// <param name="providerId">The provider ID.</param>
+    /// <returns>True if successful.</returns>
+    Task<bool> SetCurrentModelAsync(string modelId, string providerId);
 }

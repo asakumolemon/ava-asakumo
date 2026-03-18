@@ -17,7 +17,7 @@
 
     <!-- Header -->
     <Border Grid.Row="0" Background="{DynamicResource AppBackgroundBrush}" Padding="12,8">
-      <Grid ColumnDefinitions="Auto, *, Auto">
+      <Grid ColumnDefinitions="Auto, Auto, *, Auto">
         <Button Grid.Column="0"
                 Command="{Binding GoBackCommand}"
                 Classes="icon"
@@ -26,7 +26,25 @@
                     Width="20" Height="20"/>
         </Button>
 
-        <StackPanel Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="2">
+        <!-- Model Switcher Button -->
+        <Button Grid.Column="1"
+                Command="{Binding OpenModelSwitcherCommand}"
+                Classes="model-switcher-button"
+                Margin="8,0,0,0"
+                ToolTip.Tip="切换模型">
+          <StackPanel Orientation="Horizontal" Spacing="4">
+            <TextBlock Text="{Binding CurrentModelName}"
+                       FontSize="13" FontWeight="Medium"
+                       Foreground="{DynamicResource AppTextPrimaryBrush}"
+                       MaxWidth="100"
+                       TextTrimming="CharacterEllipsis"/>
+            <PathIcon Data="M7,10L12,15L17,10H7Z"
+                      Width="12" Height="12"
+                      Foreground="{DynamicResource AppTextSecondaryBrush}"/>
+          </StackPanel>
+        </Button>
+
+        <StackPanel Grid.Column="2" HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="2">
           <!-- Normal Title Display -->
           <TextBlock Text="{Binding Title}"
                      FontWeight="SemiBold" FontSize="16"
@@ -111,6 +129,73 @@
           </StackPanel>
         </Button>
       </StackPanel>
+    </Border>
+
+    <!-- Model Switcher Popup -->
+    <Border Grid.Row="1"
+            Background="{DynamicResource AppCardBrush}"
+            CornerRadius="12"
+            Padding="8"
+            Margin="12,56,12,0"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Top"
+            IsVisible="{Binding IsModelSwitcherOpen}"
+            ZIndex="100"
+            BoxShadow="0 4 16 0 #40000000"
+            MaxHeight="400">
+      <ScrollViewer>
+        <StackPanel Width="240" Spacing="8">
+          <TextBlock Text="选择模型"
+                     FontSize="14" FontWeight="SemiBold"
+                     Margin="8,4,8,8"
+                     Foreground="{DynamicResource AppTextPrimaryBrush}"/>
+
+          <ItemsControl ItemsSource="{Binding AvailableModels}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="vm:ModelGroupItem">
+                <StackPanel Spacing="4">
+                  <!-- Provider Header -->
+                  <TextBlock Text="{Binding ProviderName}"
+                             FontSize="12" FontWeight="Medium"
+                             Margin="8,4,8,2"
+                             Foreground="{DynamicResource AppTextSecondaryBrush}"/>
+
+                  <!-- Models List -->
+                  <ItemsControl ItemsSource="{Binding Models}">
+                    <ItemsControl.ItemTemplate>
+                      <DataTemplate x:DataType="vm:ModelItem">
+                        <Button Classes="model-item-button"
+                                Command="{Binding $parent[ItemsControl].((vm:ChatViewModel)DataContext).SwitchModelCommand}"
+                                CommandParameter="{Binding}">
+                          <Grid ColumnDefinitions="*, Auto">
+                            <TextBlock Grid.Column="0"
+                                       Text="{Binding ModelName}"
+                                       FontSize="14"
+                                       VerticalAlignment="Center"
+                                       Foreground="{DynamicResource AppTextPrimaryBrush}"/>
+                            <PathIcon Grid.Column="1"
+                                      Data="M9,16.17L4.83,12L3.41,13.41L9,19L21,7L19.59,5.59L9,16.17Z"
+                                      Width="16" Height="16"
+                                      Foreground="{DynamicResource PrimaryBrush}"
+                                      IsVisible="{Binding IsSelected}"/>
+                          </Grid>
+                        </Button>
+                      </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </StackPanel>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+
+          <Button Classes="menu-item"
+                  Command="{Binding CloseModelSwitcherCommand}"
+                  HorizontalAlignment="Stretch"
+                  Margin="0,4,0,0">
+            <TextBlock Text="取消" HorizontalAlignment="Center"/>
+          </Button>
+        </StackPanel>
+      </ScrollViewer>
     </Border>
 
     <!-- Chat Area -->
