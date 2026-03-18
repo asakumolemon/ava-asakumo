@@ -3,22 +3,27 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Asakumo.Avalonia.Models;
 using Asakumo.Avalonia.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.Extensions.Logging;
 
 namespace Asakumo.Avalonia.ViewModels;
 
 /// <summary>
 /// View model for the chat view, managing conversation state.
 /// </summary>
-public partial class ChatViewModel : ViewModelBase
+public partial class ChatViewModel : ViewModelBase, INavigationAware
 {
     private readonly IDataService _dataService;
     private readonly INavigationService _navigationService;
+    private readonly IAIService _aiService;
+    private readonly ILogger<ChatViewModel> _logger;
     private string _conversationId = Guid.NewGuid().ToString();
+    private CancellationTokenSource? _responseCts;
 
     private const int MaxTitleLength = 30;
     private const int MaxPreviewLength = 50;
@@ -49,6 +54,14 @@ public partial class ChatViewModel : ViewModelBase
     [ObservableProperty]
     private bool _showToast;
 
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CanSend))]
+    [NotifyCanExecuteChangedFor(nameof(SendMessageCommand))]
+    private bool _isAiResponding;
+
+    [ObservableProperty]
+    private bool _showConfigPrompt;
+
     private System.Threading.CancellationTokenSource? _toastCts;
 
     #endregion
@@ -59,9 +72,13 @@ public partial class ChatViewModel : ViewModelBase
 
     public bool HasMessages => Messages.Count > 0;
 
-    public bool CanSend => !string.IsNullOrWhiteSpace(InputMessage);
+    public bool CanSend => !string.IsNullOrWhiteSpace(InputMessage) && !IsAiResponding;
 
     public string ConversationId => _conversationId;
+
+    public string? CurrentModelName => _aiService.CurrentModelId;
+
+    public string? CurrentProviderName => _aiService.CurrentProviderId;
 
     #endregion
 
@@ -75,10 +92,14 @@ public partial class ChatViewModel : ViewModelBase
 
     public ChatViewModel(
         IDataService dataService,
-        INavigationService navigationService)
+        INavigationService navigationService,
+        IAIService aiService,
+        ILogger<ChatViewModel> logger)
     {
         _dataService = dataService ?? throw new ArgumentNullException(nameof(dataService));
         _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
+        _aiService = aiService ?? throw new ArgumentNullException(nameof(aiService));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
         Messages = new ObservableCollection<ChatMessage>();
         Messages.CollectionChanged += OnMessagesCollectionChanged;
@@ -88,7 +109,16 @@ public partial class ChatViewModel : ViewModelBase
 
     #region Public Methods
 
-    public async Task SetConversationAsync(string conversationId)
+    /// <inheritdoc/>
+    public void OnNavigatedTo(string? conversationId)
+    {
+        if (!string.IsNullOrEmpty(conversationId))
+        {
+            _ = SetConversationAsync(conversationId);
+        }
+    }
+
+    private async Task SetConversationAsync(string conversationId)
     {
         ArgumentException.ThrowIfNullOrEmpty(conversationId);
         _conversationId = conversationId;
@@ -114,6 +144,9 @@ public partial class ChatViewModel : ViewModelBase
             }
             Messages.Add(msg);
         }
+
+        // Restore conversation history for AI service
+        _aiService.RestoreHistory(conversationId, Messages);
     }
 
     #endregion
@@ -137,14 +170,53 @@ public partial class ChatViewModel : ViewModelBase
         if (string.IsNullOrWhiteSpace(InputMessage))
             return;
 
+        // Check if AI is configured
+        if (!_aiService.IsConfigured)
+        {
+            ShowConfigPrompt = true;
+            return;
+        }
+
+        // Cancel any existing response before starting a new one
+        if (_responseCts != null)
+        {
+            _responseCts.Cancel();
+            _responseCts.Dispose();
+            _responseCts = null;
+        }
+
         var userMessage = CreateUserMessage();
         Messages.Add(userMessage);
         await _dataService.SaveMessageAsync(userMessage);
 
         UpdateTitleFromFirstMessage();
         InputMessage = string.Empty;
+        ShowConfigPrompt = false;
 
-        ShowToastMessage("AI 服务已移除，消息已保存");
+        // Send to AI and stream response
+        await SendToAiAsync(userMessage.Content);
+    }
+
+    [RelayCommand]
+    private void StopGeneration()
+    {
+        _responseCts?.Cancel();
+        _responseCts?.Dispose();
+        _responseCts = null;
+        IsAiResponding = false;
+    }
+
+    [RelayCommand]
+    private void OpenProviderConfig()
+    {
+        _navigationService.NavigateTo<ProviderSelectionViewModel>();
+        ShowConfigPrompt = false;
+    }
+
+    [RelayCommand]
+    private void DismissConfigPrompt()
+    {
+        ShowConfigPrompt = false;
     }
 
     [RelayCommand]
@@ -186,6 +258,58 @@ public partial class ChatViewModel : ViewModelBase
         if (Messages.Count > 0)
         {
             await SaveConversationAsync();
+        }
+    }
+
+    private async Task SendToAiAsync(string userMessage)
+    {
+        var aiMessage = new ChatMessage
+        {
+            ConversationId = _conversationId,
+            Content = string.Empty,
+            IsUser = false,
+            IsLoading = true
+        };
+
+        Messages.Add(aiMessage);
+        IsAiResponding = true;
+
+        _responseCts = new CancellationTokenSource();
+
+        try
+        {
+            await foreach (var token in _aiService.StreamChatAsync(
+                _conversationId,
+                userMessage,
+                _responseCts.Token))
+            {
+                aiMessage.Content += token;
+            }
+
+            aiMessage.IsLoading = false;
+            aiMessage.IsComplete = true;
+
+            await _dataService.SaveMessageAsync(aiMessage);
+            await SaveConversationAsync();
+        }
+        catch (OperationCanceledException)
+        {
+            aiMessage.IsLoading = false;
+            aiMessage.Content += "\n[已中断]";
+            aiMessage.IsComplete = true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "AI streaming failed for conversation {ConversationId}", _conversationId);
+            aiMessage.IsLoading = false;
+            aiMessage.IsError = true;
+            aiMessage.Content = $"[错误] {ex.Message}";
+        }
+        finally
+        {
+            IsAiResponding = false;
+            _responseCts?.Dispose();
+            _responseCts = null;
         }
     }
 

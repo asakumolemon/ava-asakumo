@@ -9,13 +9,58 @@ namespace Asakumo.Avalonia.Services;
 /// </summary>
 public interface IDataService
 {
+    #region Providers
+
+    /// <summary>
+    /// Gets all statically defined AI providers with their models.
+    /// </summary>
+    /// <returns>A read-only list of AI providers.</returns>
+    IReadOnlyList<AIProvider> GetProviders();
+
+    /// <summary>
+    /// Gets an AI provider by ID.
+    /// </summary>
+    /// <param name="providerId">The provider ID.</param>
+    /// <returns>The provider, or null if not found.</returns>
+    AIProvider? GetProvider(string providerId);
+
+    /// <summary>
+    /// Gets the configuration for a specific provider.
+    /// </summary>
+    /// <param name="providerId">The provider ID.</param>
+    /// <returns>
+    /// The provider configuration if it exists in the database;
+    /// null if the provider has never been configured.
+    /// </returns>
+    Task<ProviderConfig?> GetProviderConfigAsync(string providerId);
+
+    /// <summary>
+    /// Saves the configuration for a provider.
+    /// </summary>
+    /// <param name="config">The provider configuration to save.</param>
+    Task SaveProviderConfigAsync(ProviderConfig config);
+
+    /// <summary>
+    /// Deletes the configuration for a provider.
+    /// </summary>
+    /// <param name="providerId">The provider ID.</param>
+    Task DeleteProviderConfigAsync(string providerId);
+
+    /// <summary>
+    /// Gets all configured providers.
+    /// </summary>
+    /// <returns>A read-only list of provider configurations.</returns>
+    Task<IReadOnlyList<ProviderConfig>> GetAllProviderConfigsAsync();
+
+    #endregion
+
     #region Conversations
 
     /// <summary>
     /// Gets all conversations ordered by last updated time.
     /// </summary>
-    /// <returns>A list of conversations.</returns>
-    Task<List<Conversation>> GetConversationsAsync();
+    /// <returns>A read-only list of conversations.</returns>
+    Task<IReadOnlyList<Conversation>> GetConversationsAsync();
 
     /// <summary>
     /// Gets a conversation by ID.
@@ -44,8 +89,8 @@ public interface IDataService
     /// Gets all messages for a conversation.
     /// </summary>
     /// <param name="conversationId">The conversation ID.</param>
-    /// <returns>A list of messages.</returns>
-    Task<List<ChatMessage>> GetMessagesAsync(string conversationId);
+    /// <returns>A read-only list of messages.</returns>
+    Task<IReadOnlyList<ChatMessage>> GetMessagesAsync(string conversationId);
 
     /// <summary>
     /// Saves a message.

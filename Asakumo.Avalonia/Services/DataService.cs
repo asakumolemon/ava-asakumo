@@ -65,6 +65,7 @@ public class DataService : IDataService
             // Create tables
             await _database.CreateTableAsync<Conversation>();
             await _database.CreateTableAsync<ChatMessage>();
+            await _database.CreateTableAsync<ProviderConfig>();
 
             _isInitialized = true;
             _logger.LogInformation("Database initialized at {Path}", _dbPath);
@@ -78,10 +79,78 @@ public class DataService : IDataService
 
     #endregion
 
+    #region Providers
+
+    /// <inheritdoc/>
+    public IReadOnlyList<AIProvider> GetProviders()
+    {
+        return AIProvider.GetAllProviders();
+    }
+
+    /// <inheritdoc/>
+    public AIProvider? GetProvider(string providerId)
+    {
+        return AIProvider.GetAllProviders().FirstOrDefault(p => p.Id == providerId);
+    }
+
+    /// <inheritdoc/>
+    public async Task<ProviderConfig?> GetProviderConfigAsync(string providerId)
+    {
+        await EnsureInitializedAsync();
+
+        var config = await _database!.Table<ProviderConfig>()
+            .Where(c => c.ProviderId == providerId)
+            .FirstOrDefaultAsync();
+
+        return config;
+    }
+
+    /// <inheritdoc/>
+    public async Task SaveProviderConfigAsync(ProviderConfig config)
+    {
+        await EnsureInitializedAsync();
+
+        config.UpdatedAt = DateTime.UtcNow;
+
+        if (config.CreatedAt == default)
+        {
+            config.CreatedAt = DateTime.UtcNow;
+        }
+
+        await _database!.InsertOrReplaceAsync(config);
+
+        _logger.LogDebug("Saved provider config for {ProviderId}", config.ProviderId);
+    }
+
+    /// <inheritdoc/>
+    public async Task DeleteProviderConfigAsync(string providerId)
+    {
+        await EnsureInitializedAsync();
+
+        await _database!.ExecuteAsync(
+            "DELETE FROM provider_configs WHERE ProviderId = ?",
+            providerId);
+
+        _logger.LogDebug("Deleted provider config for {ProviderId}", providerId);
+    }
+
+    /// <inheritdoc/>
+    public async Task<IReadOnlyList<ProviderConfig>> GetAllProviderConfigsAsync()
+    {
+        await EnsureInitializedAsync();
+
+        var configs = await _database!.Table<ProviderConfig>()
+            .ToListAsync();
+
+        return configs;
+    }
+
+    #endregion
+
     #region Conversations
 
     /// <inheritdoc/>
-    public async Task<List<Conversation>> GetConversationsAsync()
+    public async Task<IReadOnlyList<Conversation>> GetConversationsAsync()
     {
         await EnsureInitializedAsync();
 
@@ -133,7 +202,7 @@ public class DataService : IDataService
     #region Messages
 
     /// <inheritdoc/>
-    public async Task<List<ChatMessage>> GetMessagesAsync(string conversationId)
+    public async Task<IReadOnlyList<ChatMessage>> GetMessagesAsync(string conversationId)
     {
         await EnsureInitializedAsync();
 
@@ -276,7 +345,7 @@ public class DataService : IDataService
             {
                 ExportedAt = DateTime.Now,
                 Settings = await GetSettingsAsync(),
-                Conversations = await GetConversationsAsync()
+                Conversations = (await GetConversationsAsync()).ToList()
             };
 
             // Get all messages for each conversation

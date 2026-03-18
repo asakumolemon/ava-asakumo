@@ -2,6 +2,7 @@ using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Asakumo.Avalonia.Models;
@@ -24,15 +25,9 @@ public partial class SettingsViewModel : ViewModelBase
 
     #region Observable Properties
 
-    /// <summary>
-    /// Gets or sets a value indicating whether dark mode is enabled.
-    /// </summary>
     [ObservableProperty]
     private bool _isDarkMode;
 
-    /// <summary>
-    /// Gets or sets the selected language.
-    /// </summary>
     [ObservableProperty]
     private string _selectedLanguage = "简体中文";
 
@@ -42,17 +37,23 @@ public partial class SettingsViewModel : ViewModelBase
     [ObservableProperty]
     private bool _showToast;
 
-    /// <summary>
-    /// Gets or sets a value indicating whether the clear data confirmation dialog is visible.
-    /// </summary>
     [ObservableProperty]
     private bool _showClearDataConfirmDialog;
 
+    [ObservableProperty]
+    private string _currentProviderName = "点击配置 AI 模型";
+
+    [ObservableProperty]
+    private string _currentProviderIcon = "🤖";
+
+    [ObservableProperty]
+    private string _aiConfigurationStatus = "未配置";
+
+    [ObservableProperty]
+    private bool _hasAiConfiguration;
+
     #endregion
 
-    /// <summary>
-    /// Gets the available languages.
-    /// </summary>
     public ObservableCollection<string> Languages { get; } = new()
     {
         "简体中文",
@@ -62,9 +63,6 @@ public partial class SettingsViewModel : ViewModelBase
 
     private CancellationTokenSource? _toastCts;
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="SettingsViewModel"/> class.
-    /// </summary>
     public SettingsViewModel(
         IDataService dataService,
         INavigationService navigationService,
@@ -98,9 +96,12 @@ public partial class SettingsViewModel : ViewModelBase
 
     #region Commands
 
-    /// <summary>
-    /// Command to go back.
-    /// </summary>
+    [RelayCommand]
+    private void NavigateToProviderConfig()
+    {
+        _navigationService.NavigateTo<ProviderSelectionViewModel>();
+    }
+
     [RelayCommand]
     private async Task GoBackAsync()
     {
@@ -108,18 +109,12 @@ public partial class SettingsViewModel : ViewModelBase
         _navigationService.GoBack();
     }
 
-    /// <summary>
-    /// Command to open language settings.
-    /// </summary>
     [RelayCommand]
     private void OpenLanguageSettings()
     {
         // Could open a language selection dialog
     }
 
-    /// <summary>
-    /// Command to backup data.
-    /// </summary>
     [RelayCommand]
     private async Task BackupAsync()
     {
@@ -140,9 +135,6 @@ public partial class SettingsViewModel : ViewModelBase
         }
     }
 
-    /// <summary>
-    /// Command to clear all conversations.
-    /// </summary>
     [RelayCommand]
     private async Task ClearConversationsAsync()
     {
@@ -163,9 +155,6 @@ public partial class SettingsViewModel : ViewModelBase
         ShowClearDataConfirmDialog = true;
     }
 
-    /// <summary>
-    /// Command to confirm and clear all application data including settings.
-    /// </summary>
     [RelayCommand]
     private async Task ConfirmClearAllDataAsync()
     {
@@ -198,9 +187,6 @@ public partial class SettingsViewModel : ViewModelBase
         ShowToastMessage(errorMessage);
     }
 
-    /// <summary>
-    /// Command to cancel clear all data operation.
-    /// </summary>
     [RelayCommand]
     private void CancelClearAllData()
     {
@@ -263,6 +249,50 @@ public partial class SettingsViewModel : ViewModelBase
             "ja-JP" => "日本語",
             _ => "简体中文"
         };
+
+        // Load AI configuration status
+        LoadAiConfigurationStatus(settings);
+    }
+
+    private void LoadAiConfigurationStatus(AppSettings settings)
+    {
+        var providerId = settings.SelectedProviderId;
+        var modelId = settings.SelectedModelId;
+
+        if (string.IsNullOrEmpty(providerId))
+        {
+            HasAiConfiguration = false;
+            CurrentProviderName = "点击配置 AI 模型";
+            AiConfigurationStatus = "未配置";
+            CurrentProviderIcon = "🤖";
+            return;
+        }
+
+        HasAiConfiguration = true;
+
+        // Get provider info
+        var providers = _dataService.GetProviders();
+        var provider = providers.FirstOrDefault(p => p.Id == providerId);
+        if (provider != null)
+        {
+            CurrentProviderName = provider.Name;
+            CurrentProviderIcon = provider.Icon;
+        }
+        else
+        {
+            CurrentProviderName = providerId;
+            CurrentProviderIcon = "🤖";
+        }
+
+        // Get model info
+        if (!string.IsNullOrEmpty(modelId))
+        {
+            AiConfigurationStatus = $"模型: {modelId}";
+        }
+        else
+        {
+            AiConfigurationStatus = "已配置";
+        }
     }
 
     private async Task SaveSettingsAsync()

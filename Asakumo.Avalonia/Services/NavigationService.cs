@@ -53,10 +53,10 @@ public class NavigationService : INavigationService
             NavigationChanged?.Invoke(viewModel);
             viewModel.OnNavigatedTo();
 
-            // Handle parameter for ChatViewModel - load async after navigation
-            if (viewModel is ChatViewModel chatViewModel)
+            // Handle navigation parameter using INavigationAware interface
+            if (viewModel is INavigationAware navigationAware)
             {
-                _ = chatViewModel.SetConversationAsync(parameter);
+                navigationAware.OnNavigatedTo(parameter);
             }
         }
     }

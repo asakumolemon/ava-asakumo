@@ -81,17 +81,43 @@ Asakumo.Avalonia/
 
 ## 构建与运行
 
-### 构建命令
+### 解决方案文件
+
+`Asakumo.Avalonia.sln`
+
+### 项目配置
+
+- **目标框架**: .NET 9.0
+- **可空引用**: 启用 (nullable)
+- **编译绑定**: 默认启用 (AvaloniaUseCompiledBindingsByDefault)
+- **诊断工具**: 仅 Debug 配置包含 Avalonia.Diagnostics
+
+### 开发命令
 
 ```bash
+# 恢复依赖
+dotnet restore
+
 # 构建核心项目
 dotnet build Asakumo.Avalonia/Asakumo.Avalonia.csproj
 
 # 构建桌面应用
 dotnet build Asakumo.Avalonia.Desktop/Asakumo.Avalonia.Desktop.csproj
 
+# 使用解决方案文件构建
+dotnet build Asakumo.Avalonia.sln
+
+# 清理构建
+dotnet clean
+
+# 格式化代码
+dotnet format
+
 # 运行桌面应用
 dotnet run --project Asakumo.Avalonia.Desktop/Asakumo.Avalonia.Desktop.csproj
+
+# 发布桌面应用 (Windows, 自包含)
+dotnet publish Asakumo.Avalonia.Desktop/Asakumo.Avalonia.Desktop.csproj -c Release -r win-x64 --self-contained
 ```
 
 ### 平台特定构建
@@ -105,6 +131,15 @@ dotnet build Asakumo.Avalonia.Android/Asakumo.Avalonia.Android.csproj
 
 # iOS (需要 macOS)
 dotnet build Asakumo.Avalonia.iOS/Asakumo.Avalonia.iOS.csproj
+```
+
+## 测试
+
+目前项目尚无测试项目。添加测试时应创建 `Asakumo.Avalonia.Tests` 项目并添加 xUnit/NUnit 测试框架。
+
+```bash
+# 运行测试 (待添加后)
+dotnet test
 ```
 
 ---

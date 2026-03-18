@@ -1,0 +1,122 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:Asakumo.Avalonia.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="700"
+             x:Class="Asakumo.Avalonia.Views.ModelSelectionView"
+             x:DataType="vm:ModelSelectionViewModel">
+
+  <Grid RowDefinitions="Auto, *, Auto" Background="{DynamicResource AppBackgroundBrush}">
+    <!-- Header -->
+    <Border Grid.Row="0" Padding="16,12" Background="{DynamicResource AppSurfaceBrush}">
+      <Grid ColumnDefinitions="Auto, *, Auto">
+        <Button Grid.Column="0" Command="{Binding GoBackCommand}"
+                Classes="icon" ToolTip.Tip="返回">
+          <PathIcon Data="M20,11H7.83L13.42,5.41L12,4L4,12L12,20L13.41,18.59L7.83,13H20V11Z"
+                    Width="20" Height="20"/>
+        </Button>
+        <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center"
+                    VerticalAlignment="Center" Spacing="8">
+          <TextBlock Text="{Binding ProviderIcon}" FontSize="18"/>
+          <TextBlock Text="选择模型" FontSize="18" FontWeight="SemiBold"/>
+        </StackPanel>
+      </Grid>
+    </Border>
+
+    <!-- Model List -->
+    <ScrollViewer Grid.Row="1">
+      <StackPanel Spacing="12" Margin="16">
+        <!-- Instructions -->
+        <TextBlock Text="选择您要使用的模型："
+                   Foreground="{DynamicResource AppTextSecondaryBrush}"
+                   TextWrapping="Wrap" Margin="0,8,0,16"/>
+
+        <!-- Model Cards -->
+        <ListBox ItemsSource="{Binding Models}"
+                 SelectedItem="{Binding SelectedModel}"
+                 Background="Transparent"
+                 BorderThickness="0"
+                 Padding="0">
+          <ListBox.Styles>
+            <Style Selector="ListBoxItem">
+              <Setter Property="Padding" Value="0"/>
+              <Setter Property="Margin" Value="0,0,0,8"/>
+              <Setter Property="Background" Value="{DynamicResource AppCardBrush}"/>
+              <Setter Property="BorderThickness" Value="2"/>
+              <Setter Property="BorderBrush" Value="Transparent"/>
+              <Setter Property="CornerRadius" Value="12"/>
+            </Style>
+            <Style Selector="ListBoxItem:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+              <Setter Property="Background" Value="{DynamicResource AppSurfaceBrush}"/>
+            </Style>
+            <Style Selector="ListBoxItem:selected /template/ ContentPresenter#PART_ContentPresenter">
+              <Setter Property="Background" Value="#0D10A37F"/>
+              <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
+            </Style>
+          </ListBox.Styles>
+          <ListBox.ItemTemplate>
+            <DataTemplate>
+              <Grid ColumnDefinitions="Auto, *" MinHeight="72">
+                <!-- Selection Indicator -->
+                <Border Grid.Column="0" Width="24" Height="24" CornerRadius="12"
+                        Margin="16,0,8,0"
+                        BorderThickness="2"
+                        BorderBrush="{DynamicResource AppBorderBrush}">
+                  <Ellipse Width="12" Height="12" Fill="{DynamicResource PrimaryBrush}"
+                           IsVisible="{Binding $parent[ListBoxItem].IsSelected}"/>
+                </Border>
+
+                <!-- Info -->
+                <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="8,12">
+                  <TextBlock Text="{Binding Name}" FontSize="16" FontWeight="Medium"/>
+                  <TextBlock Text="{Binding Description}" FontSize="12"
+                             Foreground="{DynamicResource AppTextSecondaryBrush}"
+                             TextWrapping="Wrap" MaxLines="2"/>
+                  <!-- Capabilities -->
+                  <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,4,0,0">
+                    <Border Background="#1A10A37F" CornerRadius="4" Padding="6,2"
+                            IsVisible="{Binding SupportsVision}">
+                      <TextBlock Text="视觉" FontSize="10" Foreground="#10A37F"/>
+                    </Border>
+                    <Border Background="#1A10A37F" CornerRadius="4" Padding="6,2"
+                            IsVisible="{Binding SupportsFunctionCalling}">
+                      <TextBlock Text="工具调用" FontSize="10" Foreground="#10A37F"/>
+                    </Border>
+                    <Border Background="#1A10A37F" CornerRadius="4" Padding="6,2">
+                      <TextBlock Text="{Binding MaxTokens, StringFormat='{}{0:N0} tokens'}"
+                                 FontSize="10" Foreground="#10A37F"/>
+                    </Border>
+                  </StackPanel>
+                </StackPanel>
+              </Grid>
+            </DataTemplate>
+          </ListBox.ItemTemplate>
+        </ListBox>
+
+        <!-- Error Message -->
+        <TextBlock Text="{Binding ErrorMessage}"
+                   Foreground="#FF6B6B" FontSize="14"
+                   IsVisible="{Binding HasError}"
+                   Margin="0,8"/>
+
+        <!-- Success Message -->
+        <TextBlock Text="{Binding SuccessMessage}"
+                   Foreground="#10A37F" FontSize="14"
+                   IsVisible="{Binding HasSuccess}"
+                   Margin="0,8"/>
+      </StackPanel>
+    </ScrollViewer>
+
+    <!-- Footer -->
+    <Border Grid.Row="2" Padding="16" Background="{DynamicResource AppSurfaceBrush}">
+      <Button Command="{Binding ConfirmCommand}"
+              Classes="primary"
+              HorizontalAlignment="Stretch"
+              HorizontalContentAlignment="Center"
+              IsEnabled="{Binding HasSelection}">
+        <TextBlock Text="确认选择" FontWeight="SemiBold" FontSize="16"/>
+      </Button>
+    </Border>
+  </Grid>
+</UserControl>

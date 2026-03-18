@@ -7,6 +7,7 @@ using Avalonia.Markup.Xaml;
 using Asakumo.Avalonia.ViewModels;
 using Asakumo.Avalonia.Views;
 using Asakumo.Avalonia.Services;
+using Asakumo.Avalonia.Services.Providers;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -29,6 +30,8 @@ public partial class App : Application
         services.AddSingleton<IThemeService, ThemeService>();
         services.AddSingleton<IDataService, DataService>();
         services.AddSingleton<INavigationService, NavigationService>();
+        services.AddSingleton<AIProviderFactory>();
+        services.AddSingleton<IAIService, AIService>();
 
         // Register view models
         services.AddTransient<MainViewModel>();
@@ -36,6 +39,9 @@ public partial class App : Application
         services.AddTransient<ConversationListViewModel>();
         services.AddTransient<ChatViewModel>();
         services.AddTransient<SettingsViewModel>();
+        services.AddTransient<ProviderSelectionViewModel>();
+        services.AddTransient<ApiKeyConfigViewModel>();
+        services.AddTransient<ModelSelectionViewModel>();
 
         _serviceProvider = services.BuildServiceProvider();
     }
