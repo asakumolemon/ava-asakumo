@@ -1,9 +1,7 @@
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Asakumo.Avalonia.Models;
@@ -23,7 +21,6 @@ public partial class SettingsViewModel : ViewModelBase
     private readonly IDataService _dataService;
     private readonly INavigationService _navigationService;
     private readonly IThemeService _themeService;
-    private readonly IModelService _modelService;
 
     #region Observable Properties
 
@@ -38,41 +35,6 @@ public partial class SettingsViewModel : ViewModelBase
     /// </summary>
     [ObservableProperty]
     private string _selectedLanguage = "简体中文";
-
-    /// <summary>
-    /// Gets or sets the current provider name.
-    /// </summary>
-    [ObservableProperty]
-    private string? _currentProviderName;
-
-    /// <summary>
-    /// Gets or sets the current model name.
-    /// </summary>
-    [ObservableProperty]
-    private string? _currentModelName;
-
-    /// <summary>
-    /// Gets or sets a value indicating whether a provider is configured.
-    /// </summary>
-    [ObservableProperty]
-    private bool _isProviderConfigured;
-
-    /// <summary>
-    /// Gets or sets the count of configured providers.
-    /// </summary>
-    [ObservableProperty]
-    private int _configuredProviderCount;
-
-    /// <summary>
-    /// Gets or sets the list of all available models from configured providers.
-    /// </summary>
-    [ObservableProperty]
-    private ObservableCollection<SettingsModelItemViewModel> _allModels = new();
-
-    /// <summary>
-    /// Gets a value indicating whether there are any available models.
-    /// </summary>
-    public bool HasModels => AllModels.Count > 0;
 
     [ObservableProperty]
     private string? _toastMessage;
@@ -106,13 +68,11 @@ public partial class SettingsViewModel : ViewModelBase
     public SettingsViewModel(
         IDataService dataService,
         INavigationService navigationService,
-        IThemeService themeService,
-        IModelService modelService)
+        IThemeService themeService)
     {
         _dataService = dataService ?? throw new ArgumentNullException(nameof(dataService));
         _navigationService = navigationService ?? throw new ArgumentNullException(nameof(navigationService));
         _themeService = themeService ?? throw new ArgumentNullException(nameof(themeService));
-        _modelService = modelService ?? throw new ArgumentNullException(nameof(modelService));
 
         // Sync with theme service
         IsDarkMode = _themeService.IsDarkMode;
@@ -146,37 +106,6 @@ public partial class SettingsViewModel : ViewModelBase
     {
         await SaveSettingsAsync();
         _navigationService.GoBack();
-    }
-
-    /// <summary>
-    /// Command to navigate to provider management page.
-    /// </summary>
-    [RelayCommand]
-    private void ManageProviders()
-    {
-        _navigationService.NavigateTo<ProviderManagementViewModel>();
-    }
-
-    /// <summary>
-    /// Command to switch to a specific model.
-    /// </summary>
-    [RelayCommand]
-    private async Task SelectModelAsync(SettingsModelItemViewModel? model)
-    {
-        if (model == null)
-            return;
-
-        await _modelService.SwitchModelAsync(model.ProviderId, model.Id);
-
-        // Update UI
-        CurrentProviderName = model.ProviderName;
-        CurrentModelName = model.Name;
-        IsProviderConfigured = true;
-
-        // Refresh to update current model indicators
-        await LoadModelsAsync();
-
-        ShowToastMessage($"已切换到 {model.Name}");
     }
 
     /// <summary>
@@ -334,75 +263,6 @@ public partial class SettingsViewModel : ViewModelBase
             "ja-JP" => "日本語",
             _ => "简体中文"
         };
-
-        // Load current model info
-        var currentModel = _modelService.CurrentModel;
-        if (currentModel != null)
-        {
-            CurrentProviderName = currentModel.ProviderName;
-            CurrentModelName = currentModel.Name;
-            IsProviderConfigured = true;
-        }
-
-        // Load providers and models
-        await LoadProvidersAndModelsAsync();
-    }
-
-    private async Task LoadProvidersAndModelsAsync()
-    {
-        var providers = await _modelService.GetProvidersAsync();
-        var currentModel = _modelService.CurrentModel;
-
-        ConfiguredProviderCount = providers.Count(p => p.IsConfigured);
-        AllModels.Clear();
-
-        foreach (var provider in providers.Where(p => p.IsConfigured))
-        {
-            var models = await _modelService.GetModelsByProviderAsync(provider.Id);
-
-            foreach (var model in models)
-            {
-                AllModels.Add(new SettingsModelItemViewModel
-                {
-                    Id = model.Id,
-                    Name = model.Name,
-                    Description = model.Description,
-                    ProviderId = model.ProviderId,
-                    ProviderName = model.ProviderName,
-                    IsCurrent = currentModel?.ProviderId == model.ProviderId && currentModel?.Id == model.Id
-                });
-            }
-        }
-
-        OnPropertyChanged(nameof(HasModels));
-    }
-
-    private async Task LoadModelsAsync()
-    {
-        var providers = await _modelService.GetProvidersAsync();
-        var currentModel = _modelService.CurrentModel;
-
-        AllModels.Clear();
-
-        foreach (var provider in providers.Where(p => p.IsConfigured))
-        {
-            var models = await _modelService.GetModelsByProviderAsync(provider.Id);
-
-            foreach (var model in models)
-            {
-                AllModels.Add(new SettingsModelItemViewModel
-                {
-                    Id = model.Id,
-                    Name = model.Name,
-                    Description = model.Description,
-                    ProviderId = model.ProviderId,
-                    ProviderName = model.ProviderName,
-                    IsCurrent = currentModel?.ProviderId == model.ProviderId && currentModel?.Id == model.Id
-                });
-            }
-        }
-
-        OnPropertyChanged(nameof(HasModels));
     }
 
     private async Task SaveSettingsAsync()
@@ -445,33 +305,4 @@ public partial class SettingsViewModel : ViewModelBase
     }
 
     #endregion
-}
-
-/// <summary>
-/// View model for a model item in settings.
-/// </summary>
-public partial class SettingsModelItemViewModel : ObservableObject
-{
-    [ObservableProperty]
-    private string _id = string.Empty;
-
-    [ObservableProperty]
-    private string _name = string.Empty;
-
-    [ObservableProperty]
-    private string? _description;
-
-    [ObservableProperty]
-    private string _providerId = string.Empty;
-
-    [ObservableProperty]
-    private string _providerName = string.Empty;
-
-    [ObservableProperty]
-    private bool _isCurrent;
-
-    /// <summary>
-    /// Gets the first character of the provider name for display.
-    /// </summary>
-    public string ProviderInitial => string.IsNullOrEmpty(ProviderName) ? "?" : ProviderName[0].ToString();
 }

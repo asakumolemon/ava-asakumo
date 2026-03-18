@@ -83,34 +83,6 @@ public interface IDataService
 
     #endregion
 
-    #region Provider Config
-
-    /// <summary>
-    /// Gets the provider configuration.
-    /// </summary>
-    /// <param name="providerId">The provider ID.</param>
-    /// <returns>The provider configuration, or null if not found.</returns>
-    Task<ProviderConfig?> GetProviderConfigAsync(string providerId);
-
-    /// <summary>
-    /// Saves the provider configuration.
-    /// </summary>
-    /// <param name="providerId">The provider ID.</param>
-    /// <param name="config">The configuration to save.</param>
-    Task SaveProviderConfigAsync(string providerId, ProviderConfig config);
-
-    #endregion
-
-    #region Providers (Static Data)
-
-    /// <summary>
-    /// Gets all AI providers (static definition).
-    /// </summary>
-    /// <returns>A list of AI providers.</returns>
-    List<AIProvider> GetProviders();
-
-    #endregion
-
     #region Backup & Maintenance
 
     /// <summary>

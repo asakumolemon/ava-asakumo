@@ -26,17 +26,6 @@ public partial class ChatView : UserControl
         DataContextChanged += OnDataContextChanged;
     }
 
-    /// <summary>
-    /// Handles pointer pressed on the overlay to close the model picker.
-    /// </summary>
-    private void OnOverlayPointerPressed(object? sender, PointerPressedEventArgs e)
-    {
-        if (DataContext is ChatViewModel vm && vm.ShowModelPicker)
-        {
-            vm.CloseModelPickerCommand.Execute(null);
-        }
-    }
-
     private void OnLoaded(object? sender, RoutedEventArgs e)
     {
         _messagesListBox = this.FindControl<ListBox>("MessagesListBox");
