@@ -358,8 +358,7 @@ public partial class ChatViewModel : ViewModelBase, INavigationAware
     }
 
     /// <summary>
-    /// Regenerates an AI response, saving the current version to history.
-    /// Removes all subsequent messages.
+    /// Regenerates an AI response with proper history management.
     /// </summary>
     /// <param name="aiMessage">The AI message to regenerate.</param>
     [RelayCommand]
@@ -369,14 +368,41 @@ public partial class ChatViewModel : ViewModelBase, INavigationAware
         if (userMessage == null)
             return;
 
-        // Save current content as a version before regenerating
-        aiMessage!.SaveCurrentAsVersion();
-        await _dataService.SaveMessageAsync(aiMessage);
+        try
+        {
+            await SaveVersionAndTruncateAsync(aiMessage!);
+            await SendToAiAsync(userMessage.Content, regenerateMessage: aiMessage);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to regenerate message for conversation {ConversationId}", _conversationId);
+            ShowToastMessage("重新生成失败");
+        }
+    }
 
+    /// <summary>
+    /// Saves current message as a version and removes all subsequent messages.
+    /// </summary>
+    /// <param name="aiMessage">The AI message to save and truncate after.</param>
+    private async Task SaveVersionAndTruncateAsync(ChatMessage aiMessage)
+    {
         var index = Messages.IndexOf(aiMessage);
+
+        aiMessage.SaveCurrentAsVersion();
+        await _dataService.SaveMessageAsync(aiMessage);
         await RemoveMessagesFromIndexAsync(index + 1);
 
-        await SendToAiAsync(userMessage.Content, regenerateMessage: aiMessage);
+        RebuildConversationHistory(index);
+    }
+
+    /// <summary>
+    /// Rebuilds AI conversation history up to the specified index.
+    /// </summary>
+    /// <param name="upToIndex">The index up to which messages are included.</param>
+    private void RebuildConversationHistory(int upToIndex)
+    {
+        _aiService.ClearHistory(_conversationId);
+        _aiService.RestoreHistory(_conversationId, Messages.Take(upToIndex + 1));
     }
 
     private async Task SendToAiAsync(string userMessage, ChatMessage? regenerateMessage = null)
