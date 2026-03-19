@@ -1,8 +1,32 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.Json;
 using SQLite;
 using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace Asakumo.Avalonia.Models;
+
+/// <summary>
+/// Represents a version of a message (used for AI message regeneration history).
+/// </summary>
+public class MessageVersion
+{
+    /// <summary>
+    /// Gets or sets the content of this version.
+    /// </summary>
+    public string Content { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the timestamp when this version was created.
+    /// </summary>
+    public DateTime Timestamp { get; set; } = DateTime.Now;
+
+    /// <summary>
+    /// Gets or sets a value indicating whether this version is an error.
+    /// </summary>
+    public bool IsError { get; set; }
+}
 
 /// <summary>
 /// Represents a single chat message in a conversation.
@@ -122,6 +146,160 @@ public partial class ChatMessage : ObservableObject
         EditableContent = string.Empty;
         IsEditing = false;
     }
+
+    #region Version History
+
+    /// <summary>
+    /// Gets or sets the JSON serialized version history.
+    /// Not directly used in UI - use VersionHistory property instead.
+    /// </summary>
+    public string? VersionHistoryJson { get; set; }
+
+    /// <summary>
+    /// Gets or sets the index of the currently displayed version.
+    /// -1 means displaying the original/current content.
+    /// </summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(DisplayVersionNumber))]
+    [NotifyPropertyChangedFor(nameof(CanGoToPreviousVersion))]
+    [NotifyPropertyChangedFor(nameof(CanGoToNextVersion))]
+    private int _currentVersionIndex = -1;
+
+    /// <summary>
+    /// Gets the list of historical versions for this message.
+    /// </summary>
+    [Ignore]
+    public List<MessageVersion> VersionHistory
+    {
+        get
+        {
+            if (string.IsNullOrEmpty(VersionHistoryJson))
+                return new List<MessageVersion>();
+            try
+            {
+                return JsonSerializer.Deserialize<List<MessageVersion>>(VersionHistoryJson) ?? new List<MessageVersion>();
+            }
+            catch
+            {
+                return new List<MessageVersion>();
+            }
+        }
+    }
+
+    /// <summary>
+    /// Gets the total number of versions including the original.
+    /// </summary>
+    [Ignore]
+    public int VersionCount => VersionHistory.Count + 1;
+
+    /// <summary>
+    /// Gets a value indicating whether this message has version history.
+    /// </summary>
+    [Ignore]
+    public bool HasVersionHistory => VersionHistory.Count > 0;
+
+    /// <summary>
+    /// Gets the current version number for display (1-based).
+    /// </summary>
+    [Ignore]
+    public int DisplayVersionNumber => CurrentVersionIndex == -1 ? VersionCount : CurrentVersionIndex + 1;
+
+    /// <summary>
+    /// Saves the current content as a new version before regenerating.
+    /// </summary>
+    public void SaveCurrentAsVersion()
+    {
+        var versions = VersionHistory;
+        versions.Add(new MessageVersion
+        {
+            Content = Content,
+            Timestamp = Timestamp,
+            IsError = IsError
+        });
+        VersionHistoryJson = JsonSerializer.Serialize(versions);
+
+        // Reset to show the new version (will be created after this)
+        CurrentVersionIndex = -1;
+
+        // Notify UI that version-related properties have changed
+        OnPropertyChanged(nameof(VersionCount));
+        OnPropertyChanged(nameof(HasVersionHistory));
+        OnPropertyChanged(nameof(DisplayVersionNumber));
+    }
+
+    /// <summary>
+    /// Switches to a specific version.
+    /// </summary>
+    /// <param name="versionIndex">-1 for original, 0+ for history versions.</param>
+    public void SwitchToVersion(int versionIndex)
+    {
+        var versions = VersionHistory;
+
+        if (versionIndex == -1)
+        {
+            // Switch to original (latest) version
+            CurrentVersionIndex = -1;
+            OnPropertyChanged(nameof(DisplayVersionNumber));
+            return;
+        }
+
+        if (versionIndex < 0 || versionIndex >= versions.Count)
+            return;
+
+        CurrentVersionIndex = versionIndex;
+        var version = versions[versionIndex];
+        Content = version.Content;
+        Timestamp = version.Timestamp;
+        IsError = version.IsError;
+        OnPropertyChanged(nameof(DisplayVersionNumber));
+    }
+
+    /// <summary>
+    /// Navigates to the previous (older) version.
+    /// </summary>
+    public void GoToPreviousVersion()
+    {
+        if (!HasVersionHistory) return;
+        
+        var targetIndex = CurrentVersionIndex == -1 ? VersionHistory.Count - 1 : CurrentVersionIndex - 1;
+        if (targetIndex >= 0)
+        {
+            SwitchToVersion(targetIndex);
+        }
+    }
+
+    /// <summary>
+    /// Navigates to the next (newer) version.
+    /// </summary>
+    public void GoToNextVersion()
+    {
+        if (CurrentVersionIndex == -1) return;
+        
+        var targetIndex = CurrentVersionIndex + 1;
+        if (targetIndex >= VersionHistory.Count)
+        {
+            // Go back to original
+            CurrentVersionIndex = -1;
+        }
+        else
+        {
+            SwitchToVersion(targetIndex);
+        }
+    }
+
+    /// <summary>
+    /// Gets a value indicating whether there is a previous version available.
+    /// </summary>
+    [Ignore]
+    public bool CanGoToPreviousVersion => HasVersionHistory && CurrentVersionIndex != 0;
+
+    /// <summary>
+    /// Gets a value indicating whether there is a next version available.
+    /// </summary>
+    [Ignore]
+    public bool CanGoToNextVersion => CurrentVersionIndex != -1;
+
+    #endregion
 }
 
 /// <summary>

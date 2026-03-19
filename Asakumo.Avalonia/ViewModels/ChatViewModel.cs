@@ -358,7 +358,8 @@ public partial class ChatViewModel : ViewModelBase, INavigationAware
     }
 
     /// <summary>
-    /// Regenerates an AI response and removes all subsequent messages.
+    /// Regenerates an AI response, saving the current version to history.
+    /// Removes all subsequent messages.
     /// </summary>
     /// <param name="aiMessage">The AI message to regenerate.</param>
     [RelayCommand]
@@ -368,23 +369,44 @@ public partial class ChatViewModel : ViewModelBase, INavigationAware
         if (userMessage == null)
             return;
 
-        var index = Messages.IndexOf(aiMessage!);
-        await RemoveMessagesFromIndexAsync(index);
+        // Save current content as a version before regenerating
+        aiMessage!.SaveCurrentAsVersion();
+        await _dataService.SaveMessageAsync(aiMessage);
 
-        await SendToAiAsync(userMessage.Content);
+        var index = Messages.IndexOf(aiMessage);
+        await RemoveMessagesFromIndexAsync(index + 1);
+
+        await SendToAiAsync(userMessage.Content, regenerateMessage: aiMessage);
     }
 
-    private async Task SendToAiAsync(string userMessage)
+    private async Task SendToAiAsync(string userMessage, ChatMessage? regenerateMessage = null)
     {
-        var aiMessage = new ChatMessage
-        {
-            ConversationId = _conversationId,
-            Content = string.Empty,
-            IsUser = false,
-            IsLoading = true
-        };
+        ChatMessage aiMessage;
+        bool isRegenerating = regenerateMessage != null;
 
-        Messages.Add(aiMessage);
+        if (isRegenerating)
+        {
+            // Reuse existing message for regeneration
+            aiMessage = regenerateMessage!;
+            aiMessage.Content = string.Empty;
+            aiMessage.IsLoading = true;
+            aiMessage.IsComplete = false;
+            aiMessage.IsError = false;
+            aiMessage.Timestamp = DateTime.Now;
+            // Note: VersionHistory is already preserved by SaveCurrentAsVersion()
+        }
+        else
+        {
+            aiMessage = new ChatMessage
+            {
+                ConversationId = _conversationId,
+                Content = string.Empty,
+                IsUser = false,
+                IsLoading = true
+            };
+            Messages.Add(aiMessage);
+        }
+
         IsAiResponding = true;
 
         _responseCts = new CancellationTokenSource();
@@ -466,6 +488,32 @@ public partial class ChatViewModel : ViewModelBase, INavigationAware
             await topLevel.Clipboard.SetTextAsync(message.Content);
             ShowToastMessage("已复制到剪贴板");
         }
+    }
+
+    /// <summary>
+    /// Navigates to the previous (older) version of an AI message.
+    /// </summary>
+    /// <param name="message">The AI message to navigate.</param>
+    [RelayCommand]
+    private void PreviousVersion(ChatMessage? message)
+    {
+        if (message == null || message.IsUser || !message.HasVersionHistory)
+            return;
+
+        message.GoToPreviousVersion();
+    }
+
+    /// <summary>
+    /// Navigates to the next (newer) version of an AI message.
+    /// </summary>
+    /// <param name="message">The AI message to navigate.</param>
+    [RelayCommand]
+    private void NextVersion(ChatMessage? message)
+    {
+        if (message == null || message.IsUser)
+            return;
+
+        message.GoToNextVersion();
     }
 
     [RelayCommand]
