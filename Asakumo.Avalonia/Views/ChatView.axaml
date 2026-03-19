@@ -301,9 +301,9 @@
                     <TextBlock Text="{Binding Content}"
                                TextWrapping="Wrap"
                                Foreground="White" FontSize="14"/>
-                    <StackPanel Orientation="Horizontal" Spacing="8">
+                    <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
                       <TextBlock Text="{Binding Timestamp, StringFormat='{}{0:HH:mm}'}"
-                                 FontSize="10" Foreground="#CCFFFFFF"/>
+                                 FontSize="10" Foreground="#CCFFFFFF" VerticalAlignment="Center"/>
                       <StackPanel Orientation="Horizontal" Spacing="4" Opacity="0.7">
                         <Button Classes="icon" Width="24" Height="24" Padding="4"
                                 Command="{Binding $parent[ListBox].((vm:ChatViewModel)DataContext).CopyMessageCommand}"
