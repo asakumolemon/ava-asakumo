@@ -276,12 +276,12 @@
           </Style>
           <!-- Edit Message TextBox in Bubble Style -->
           <Style Selector="TextBox.edit-message-input.edit-in-bubble">
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Background" Value="#30FFFFFF"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource AppBorderBrush}"/>
           </Style>
           <Style Selector="TextBox.edit-message-input.edit-in-bubble:focus">
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="BorderBrush" Value="#60FFFFFF"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
           </Style>
           <!-- Edit Action Inline Button Style -->
           <Style Selector="Button.edit-action-inline">
@@ -345,10 +345,10 @@
                                Padding="8,6"
                                FontSize="14"
                                CornerRadius="8"
-                               Background="#30FFFFFF"
-                               Foreground="White"
-                               CaretBrush="White"
-                               SelectionBrush="#60FFFFFF"/>
+                               Background="{DynamicResource AppBackgroundBrush}"
+                               Foreground="{DynamicResource AppTextPrimaryBrush}"
+                               CaretBrush="{DynamicResource PrimaryBrush}"
+                               SelectionBrush="{DynamicResource PrimaryBrush}"/>
                       <!-- Edit Buttons -->
                       <StackPanel Orientation="Horizontal"
                                   HorizontalAlignment="Right" Spacing="8">
