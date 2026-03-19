@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -105,4 +106,9 @@ public interface IAIService
     /// <param name="providerId">The provider ID.</param>
     /// <returns>True if successful.</returns>
     Task<bool> SetCurrentModelAsync(string modelId, string providerId);
+
+    /// <summary>
+    /// Fired when the AI service initialization completes.
+    /// </summary>
+    event Action? Initialized;
 }

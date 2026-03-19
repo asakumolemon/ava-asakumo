@@ -28,6 +28,9 @@ public class AIService : IAIService
 
     private const int MaxHistoryMessages = 20;
 
+    /// <inheritdoc/>
+    public event Action? Initialized;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="AIService"/> class.
     /// </summary>
@@ -318,6 +321,8 @@ public class AIService : IAIService
 
             _logger.LogInformation("Initialized AI service with provider {ProviderId} and model {ModelId}",
                 _currentProvider.ProviderId, _currentModelId);
+
+            Initialized?.Invoke();
         }
         catch (Exception ex)
         {

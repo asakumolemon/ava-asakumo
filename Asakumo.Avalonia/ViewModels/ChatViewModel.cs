@@ -113,9 +113,16 @@ public partial class ChatViewModel : ViewModelBase, INavigationAware
         Messages = new ObservableCollection<ChatMessage>();
         Messages.CollectionChanged += OnMessagesCollectionChanged;
 
+        // Subscribe to AI service initialization to refresh model info when ready
+        _aiService.Initialized += OnAiServiceInitialized;
+
         // Initialize current model and provider names
-        _currentModelName = _aiService.CurrentModelName ?? _aiService.CurrentModelId ?? string.Empty;
-        _currentProviderName = _aiService.CurrentProviderId ?? string.Empty;
+        RefreshModelInfo();
+    }
+
+    private void OnAiServiceInitialized()
+    {
+        RefreshModelInfo();
     }
 
     #endregion
@@ -123,12 +130,26 @@ public partial class ChatViewModel : ViewModelBase, INavigationAware
     #region Public Methods
 
     /// <inheritdoc/>
+    public override void OnNavigatedTo()
+    {
+        RefreshModelInfo();
+    }
+
+    /// <inheritdoc/>
     public void OnNavigatedTo(string? conversationId)
     {
+        RefreshModelInfo();
+
         if (!string.IsNullOrEmpty(conversationId))
         {
             _ = SetConversationAsync(conversationId);
         }
+    }
+
+    private void RefreshModelInfo()
+    {
+        CurrentModelName = _aiService.CurrentModelName ?? _aiService.CurrentModelId ?? string.Empty;
+        CurrentProviderName = _aiService.CurrentProviderId ?? string.Empty;
     }
 
     private async Task SetConversationAsync(string conversationId)
