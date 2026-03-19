@@ -47,9 +47,6 @@ public partial class ChatViewModel : ViewModelBase, INavigationAware
     private string _inputMessage = string.Empty;
 
     [ObservableProperty]
-    private bool _isMoreMenuOpen;
-
-    [ObservableProperty]
     private bool _isModelSwitcherOpen;
 
     [ObservableProperty]
@@ -420,18 +417,6 @@ public partial class ChatViewModel : ViewModelBase, INavigationAware
     }
 
     [RelayCommand]
-    private void OpenMoreMenu()
-    {
-        IsMoreMenuOpen = true;
-    }
-
-    [RelayCommand]
-    private void CloseMoreMenu()
-    {
-        IsMoreMenuOpen = false;
-    }
-
-    [RelayCommand]
     private async Task ClearCurrentConversationAsync()
     {
         if (Messages.Count == 0)
@@ -440,14 +425,12 @@ public partial class ChatViewModel : ViewModelBase, INavigationAware
         Messages.Clear();
         await _dataService.DeleteMessagesAsync(_conversationId);
         ShowToastMessage("会话已清空");
-        IsMoreMenuOpen = false;
     }
 
     [RelayCommand]
     private void RenameConversation()
     {
         IsEditingTitle = true;
-        IsMoreMenuOpen = false;
     }
 
     [RelayCommand]
@@ -472,14 +455,12 @@ public partial class ChatViewModel : ViewModelBase, INavigationAware
     private void ExportConversation()
     {
         ShowToastMessage("导出功能开发中...");
-        IsMoreMenuOpen = false;
     }
 
     [RelayCommand]
     private void NavigateToSettings()
     {
         _navigationService.NavigateTo<SettingsViewModel>();
-        IsMoreMenuOpen = false;
     }
 
     #endregion
