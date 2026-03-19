@@ -292,33 +292,85 @@ public partial class ChatViewModel : ViewModelBase, INavigationAware
         }
     }
 
-    [RelayCommand]
-    private async Task RetryMessageAsync(ChatMessage? errorMessage)
+    /// <summary>
+    /// Finds the user message that triggered an AI response.
+    /// </summary>
+    /// <param name="aiMessage">The AI message to find the trigger for.</param>
+    /// <returns>The user message, or null if not found.</returns>
+    private ChatMessage? FindTriggeringUserMessage(ChatMessage aiMessage)
     {
-        if (errorMessage == null || errorMessage.IsUser)
-            return;
+        var index = Messages.IndexOf(aiMessage);
+        if (index <= 0)
+            return null;
 
-        // Check if AI is configured
+        var userMessage = Messages[index - 1];
+        return userMessage.IsUser ? userMessage : null;
+    }
+
+    /// <summary>
+    /// Removes an AI message and all subsequent messages from the conversation.
+    /// </summary>
+    /// <param name="startIndex">The index to start removing from.</param>
+    private async Task RemoveMessagesFromIndexAsync(int startIndex)
+    {
+        while (Messages.Count > startIndex)
+        {
+            var msg = Messages[startIndex];
+            Messages.RemoveAt(startIndex);
+            await _dataService.DeleteMessageAsync(msg.Id);
+        }
+    }
+
+    /// <summary>
+    /// Validates that AI service is configured and returns the triggering user message.
+    /// </summary>
+    /// <param name="aiMessage">The AI message.</param>
+    /// <returns>The triggering user message, or null if validation fails.</returns>
+    private ChatMessage? ValidateAndGetUserMessage(ChatMessage? aiMessage)
+    {
+        if (aiMessage == null || aiMessage.IsUser)
+            return null;
+
         if (!_aiService.IsConfigured)
         {
             ShowConfigPrompt = true;
-            return;
+            return null;
         }
 
-        // Find the user message that triggered this AI response
-        var index = Messages.IndexOf(errorMessage);
-        if (index <= 0)
+        return FindTriggeringUserMessage(aiMessage);
+    }
+
+    /// <summary>
+    /// Retries sending an error message to AI.
+    /// </summary>
+    /// <param name="errorMessage">The error message to retry.</param>
+    [RelayCommand]
+    private async Task RetryMessageAsync(ChatMessage? errorMessage)
+    {
+        var userMessage = ValidateAndGetUserMessage(errorMessage);
+        if (userMessage == null)
             return;
 
-        var userMessage = Messages[index - 1];
-        if (!userMessage.IsUser)
+        Messages.Remove(errorMessage!);
+        await _dataService.DeleteMessageAsync(errorMessage!.Id);
+
+        await SendToAiAsync(userMessage.Content);
+    }
+
+    /// <summary>
+    /// Regenerates an AI response and removes all subsequent messages.
+    /// </summary>
+    /// <param name="aiMessage">The AI message to regenerate.</param>
+    [RelayCommand]
+    private async Task RegenerateMessageAsync(ChatMessage? aiMessage)
+    {
+        var userMessage = ValidateAndGetUserMessage(aiMessage);
+        if (userMessage == null)
             return;
 
-        // Remove the error message
-        Messages.Remove(errorMessage);
-        await _dataService.DeleteMessageAsync(errorMessage.Id);
+        var index = Messages.IndexOf(aiMessage!);
+        await RemoveMessagesFromIndexAsync(index);
 
-        // Resend to AI
         await SendToAiAsync(userMessage.Content);
     }
 
