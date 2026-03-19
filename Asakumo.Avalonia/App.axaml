@@ -11,6 +11,20 @@
     <!-- 色彩系统 - 基于 OpenAI 风格 -->
     <Application.Resources>
         <ResourceDictionary>
+            <!-- 图标路径资源 - 使用 StreamGeometry 以便 StaticResource 直接返回 Geometry 对象 -->
+            <StreamGeometry x:Key="IconChevronRight">M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z</StreamGeometry>
+            <StreamGeometry x:Key="IconSettings">M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.21,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.34 4.5,11.67 4.5,12C4.5,12.33 4.53,12.65 4.57,12.97L2.46,14.63C2.27,14.78 2.21,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.03 4.95,18.95L7.44,17.94C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.68 16.04,18.34 16.56,17.94L19.05,18.95C19.27,19.03 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z</StreamGeometry>
+            <StreamGeometry x:Key="IconModel">M12,2A2,2 0 0,1 14,4A2,2 0 0,1 12,6A2,2 0 0,1 10,4A2,2 0 0,1 12,2M12,7C16.97,7 21,10.13 21,14V17H3V14C3,10.13 7.03,7 12,7M6,15H18V14C18,11.24 15.31,9 12,9C8.69,9 6,11.24 6,14V15Z</StreamGeometry>
+            <StreamGeometry x:Key="IconDarkMode">M12,3C7.03,3 3,7.03 3,12C3,16.97 7.03,21 12,21C12.83,21 13.5,20.33 13.5,19.5C13.5,19.11 13.35,18.76 13.11,18.5C12.88,18.23 12.73,17.88 12.73,17.5C12.73,16.67 13.4,16 14.23,16H16.5C19,16 21,14 21,11.5C21,6.58 16.97,3 12,3M12,19C8.13,19 5,15.87 5,12C5,8.13 8.13,5 12,5C13.76,5 15.37,5.6 16.68,6.59C16.24,7.31 16,8.13 16,9C16,11.21 17.79,13 20,13V14C20,16.76 17.76,19 15,19H12Z</StreamGeometry>
+            <StreamGeometry x:Key="IconLanguage">M12.87,15.07L10.33,12.56L10.36,12.53C12.1,10.59 13.34,8.36 14.07,6H17V4H10V2H8V4H1V6H12.17C11.5,7.92 10.44,9.75 9,11.35C8.07,10.32 7.3,9.19 6.69,8H4.69C5.42,9.63 6.42,11.17 7.67,12.56L2.58,17.58L4,19L9,14L12.11,17.11L12.87,15.07M18.5,10H16.5L12,22H14L15.12,19H19.87L21,22H23L18.5,10M15.88,17L17.5,12.67L19.12,17H15.88Z</StreamGeometry>
+            <StreamGeometry x:Key="IconBackup">M12,3C7.58,3 4,4.79 4,7C4,9.21 7.58,11 12,11C16.42,11 20,9.21 20,7C20,4.79 16.42,3 12,3M4,9V12C4,14.21 7.58,16 12,16C16.42,16 20,14.21 20,12V9C20,11.21 16.42,13 12,13C7.58,13 4,11.21 4,9M4,14V17C4,19.21 7.58,21 12,21C16.42,21 20,19.21 20,17V14C20,16.21 16.42,18 12,18C7.58,18 4,16.21 4,14Z</StreamGeometry>
+            <StreamGeometry x:Key="IconDelete">M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19M8,9H16V19H8V9M15.5,4L14.5,3H9.5L8.5,4H5V6H19V4H15.5Z</StreamGeometry>
+            <StreamGeometry x:Key="IconClearAll">M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19M12,9A4,4 0 0,1 16,13V17H14V13A2,2 0 0,0 12,11A2,2 0 0,0 10,13V17H8V13A4,4 0 0,1 12,9Z</StreamGeometry>
+            <StreamGeometry x:Key="IconInfo">M13,9H11V7H13M13,17H11V11H13M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z</StreamGeometry>
+            <StreamGeometry x:Key="IconWarning">M13,9H11V7H13M13,17H11V11H13M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4A8,8 0 0,0 4,12C4,16.42 7.58,20 12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4M13,7H11V13H13V7M13,15H11V17H13V15Z</StreamGeometry>
+            <StreamGeometry x:Key="IconShield">M12,17A2,2 0 0,1 14,19A2,2 0 0,1 12,21A2,2 0 0,1 10,19A2,2 0 0,1 12,17M12,1L3,5V11C3,16.55 6.84,21.74 12,23C17.16,21.74 21,16.55 21,11V5L12,1Z</StreamGeometry>
+            <StreamGeometry x:Key="IconBack">M20,11H7.83L13.42,5.41L12,4L4,12L12,20L13.41,18.59L7.83,13H20V11Z</StreamGeometry>
+            
             <!-- 品牌色 -->
             <Color x:Key="BrandPrimaryColor">#10A37F</Color>
             <Color x:Key="BrandSecondaryColor">#0D8A6A</Color>
@@ -46,6 +60,7 @@
             <!-- 深色主题覆盖 -->
             <ResourceDictionary.ThemeDictionaries>
                 <ResourceDictionary x:Key="Light">
+                    <SolidColorBrush x:Key="ToastBackgroundBrush" Color="#333333"/>
                     <SolidColorBrush x:Key="AppBackgroundBrush" Color="#FFFFFF"/>
                     <SolidColorBrush x:Key="AppSurfaceBrush" Color="#F3F4F6"/>
                     <SolidColorBrush x:Key="AppCardBrush" Color="#FFFFFF"/>
@@ -57,6 +72,7 @@
                     <SolidColorBrush x:Key="AppAiMessageBrush" Color="#F3F4F6"/>
                 </ResourceDictionary>
                 <ResourceDictionary x:Key="Dark">
+                    <SolidColorBrush x:Key="ToastBackgroundBrush" Color="#1F1F1F"/>
                     <SolidColorBrush x:Key="AppBackgroundBrush" Color="#1A1A1A"/>
                     <SolidColorBrush x:Key="AppSurfaceBrush" Color="#2D2D2D"/>
                     <SolidColorBrush x:Key="AppCardBrush" Color="#2D2D2D"/>
@@ -510,6 +526,90 @@
                     </KeyFrame>
                 </Animation>
             </Style.Animations>
+        </Style>
+        
+        <!-- ==================== 设置页面专用样式 ==================== -->
+        
+        <!-- 设置项容器样式 - Material Design 列表项标准 56dp 高度 -->
+        <Style Selector="Border.settings-item">
+            <Setter Property="Height" Value="56"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+        </Style>
+        
+        <!-- 设置项图标容器 - 40dp 圆形背景 -->
+        <Style Selector="Border.settings-icon-bg">
+            <Setter Property="Width" Value="40"/>
+            <Setter Property="Height" Value="40"/>
+            <Setter Property="CornerRadius" Value="20"/>
+        </Style>
+        
+        <!-- 设置项图标 - 24dp 标准尺寸 -->
+        <Style Selector="PathIcon.settings-icon">
+            <Setter Property="Width" Value="24"/>
+            <Setter Property="Height" Value="24"/>
+        </Style>
+        
+        <!-- 设置项主标题 -->
+        <Style Selector="TextBlock.settings-title">
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="Medium"/>
+            <Setter Property="Foreground" Value="{DynamicResource AppTextPrimaryBrush}"/>
+        </Style>
+        
+        <!-- 设置项副标题 -->
+        <Style Selector="TextBlock.settings-subtitle">
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Foreground" Value="{DynamicResource AppTextSecondaryBrush}"/>
+        </Style>
+        
+        <!-- 设置分组标题 - Material Design 规范：14sp 次要色，上边距 16dp -->
+        <Style Selector="TextBlock.settings-section-title">
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="{DynamicResource AppTextSecondaryBrush}"/>
+            <Setter Property="Margin" Value="16,16,16,8"/>
+        </Style>
+        
+        <!-- 设置卡片容器 -->
+        <Style Selector="Border.settings-card">
+            <Setter Property="Background" Value="{DynamicResource AppCardBrush}"/>
+            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="ClipToBounds" Value="True"/>
+        </Style>
+        
+        <!-- Toast 提示样式 -->
+        <Style Selector="Border.toast-notification">
+            <Setter Property="Background" Value="{DynamicResource ToastBackgroundBrush}"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="16,10"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="VerticalAlignment" Value="Bottom"/>
+            <Setter Property="Margin" Value="0,0,0,40"/>
+            <Setter Property="Opacity" Value="0.9"/>
+            <Setter Property="ZIndex" Value="200"/>
+        </Style>
+        
+        <!-- 分隔线 - 全宽样式 -->
+        <Style Selector="Separator.settings-divider">
+            <Setter Property="Background" Value="{DynamicResource AppDividerBrush}"/>
+            <Setter Property="Margin" Value="16,0"/>
+            <Setter Property="Height" Value="1"/>
+        </Style>
+        
+        <!-- 确认对话框遮罩 -->
+        <Style Selector="Border.dialog-overlay">
+            <Setter Property="Background" Value="#80000000"/>
+            <Setter Property="ZIndex" Value="300"/>
+        </Style>
+        
+        <!-- 确认对话框卡片 -->
+        <Style Selector="Border.dialog-card">
+            <Setter Property="Background" Value="{DynamicResource AppCardBrush}"/>
+            <Setter Property="CornerRadius" Value="16"/>
+            <Setter Property="Padding" Value="24"/>
+            <Setter Property="Width" Value="320"/>
+            <Setter Property="BoxShadow" Value="0 4 16 0 #40000000"/>
         </Style>
     </Application.Styles>
 </Application>

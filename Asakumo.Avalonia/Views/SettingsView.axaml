@@ -11,15 +11,8 @@
   <Grid RowDefinitions="Auto, *">
     <!-- Toast Notification -->
     <Border Grid.Row="0" Grid.RowSpan="2"
-            Background="#333333"
-            CornerRadius="8"
-            Padding="16,10"
-            HorizontalAlignment="Center"
-            VerticalAlignment="Bottom"
-            Margin="0,0,0,40"
-            IsVisible="{Binding ShowToast}"
-            ZIndex="200"
-            Opacity="0.9">
+            Classes="toast-notification"
+            IsVisible="{Binding ShowToast}">
       <TextBlock Text="{Binding ToastMessage}"
                  Foreground="White"
                  FontSize="14"/>
@@ -27,18 +20,13 @@
 
     <!-- Clear All Data Confirmation Dialog -->
     <Border Grid.Row="0" Grid.RowSpan="2"
-            Background="#80000000"
-            IsVisible="{Binding ShowClearDataConfirmDialog}"
-            ZIndex="300">
+            Classes="dialog-overlay"
+            IsVisible="{Binding ShowClearDataConfirmDialog}">
       <Grid HorizontalAlignment="Center" VerticalAlignment="Center">
-        <Border Background="{DynamicResource AppCardBrush}"
-                CornerRadius="16"
-                Padding="24"
-                Width="320"
-                BoxShadow="0 4 16 0 #40000000">
+        <Border Classes="dialog-card">
           <StackPanel Spacing="16">
             <!-- Icon -->
-            <PathIcon Data="M13,9H11V7H13M13,17H11V11H13M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4A8,8 0 0,0 4,12C4,16.42 7.58,20 12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4M13,7H11V13H13V7M13,15H11V17H13V15Z"
+            <PathIcon Data="{StaticResource IconWarning}"
                         Width="48" Height="48"
                         HorizontalAlignment="Center"
                         Foreground="{DynamicResource ErrorBrush}"/>
@@ -90,7 +78,7 @@
                 Classes="icon"
                 VerticalAlignment="Center"
                 ToolTip.Tip="返回">
-          <PathIcon Data="M20,11H7.83L13.42,5.41L12,4L4,12L12,20L13.41,18.59L7.83,13H20V11Z"
+          <PathIcon Data="{StaticResource IconBack}"
                     Width="24" Height="24"/>
         </Button>
 
@@ -109,88 +97,76 @@
     <!-- Content -->
     <ScrollViewer Grid.Row="1"
                   Background="{DynamicResource AppBackgroundBrush}">
-      <StackPanel Spacing="16" Margin="16">
+      <StackPanel>
 
         <!-- AI Configuration Section -->
-        <StackPanel Spacing="8">
+        <StackPanel>
           <TextBlock Text="AI 配置"
-                     FontSize="14"
-                     FontWeight="SemiBold"
-                     Foreground="{DynamicResource AppTextSecondaryBrush}"/>
-          <Border Background="{DynamicResource AppCardBrush}"
-                  CornerRadius="12">
+                     Classes="settings-section-title"/>
+          <Border Classes="settings-card">
             <StackPanel>
               <!-- Provider Configuration -->
               <Button Command="{Binding NavigateToProviderConfigCommand}"
                       Background="Transparent"
                       BorderThickness="0"
+                      Padding="0"
                       HorizontalAlignment="Stretch"
-                      HorizontalContentAlignment="Left">
-                <Border Padding="12">
-                  <Grid ColumnDefinitions="Auto, *, Auto">
+                      HorizontalContentAlignment="Stretch">
+                <Border Classes="settings-item">
+                  <Grid ColumnDefinitions="56, *, 24" Margin="16,0">
                     <!-- Icon -->
                     <Border Grid.Column="0"
-                            Width="40" Height="40"
-                            CornerRadius="20"
-                            Background="{DynamicResource PrimaryBrush}"
-                            Margin="0,0,12,0">
-                      <TextBlock Text="⚙️"
-                                 FontSize="20"
-                                 HorizontalAlignment="Center"
-                                 VerticalAlignment="Center"/>
+                            Classes="settings-icon-bg"
+                            Background="{DynamicResource PrimaryBrush}">
+                      <PathIcon Data="{StaticResource IconSettings}"
+                                Classes="settings-icon"
+                                Foreground="White"/>
                     </Border>
 
                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
                       <TextBlock Text="供应商配置"
-                                 FontWeight="Medium"
-                                 Foreground="{DynamicResource AppTextPrimaryBrush}"/>
+                                 Classes="settings-title"/>
                       <TextBlock Text="{Binding AiConfigurationStatus}"
-                                 FontSize="12"
-                                 Foreground="{DynamicResource AppTextSecondaryBrush}"/>
+                                 Classes="settings-subtitle"/>
                     </StackPanel>
 
                     <PathIcon Grid.Column="2"
-                              Data="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z"
+                              Data="{StaticResource IconChevronRight}"
                               Width="20" Height="20"
                               Foreground="{DynamicResource AppTextSecondaryBrush}"/>
                   </Grid>
                 </Border>
               </Button>
 
-              <Separator Margin="52,0,0,0"
-                         Background="{DynamicResource AppDividerBrush}"/>
+              <Separator Classes="settings-divider"/>
 
               <!-- Default Model Configuration -->
               <Button Command="{Binding NavigateToDefaultModelConfigCommand}"
                       Background="Transparent"
                       BorderThickness="0"
+                      Padding="0"
                       HorizontalAlignment="Stretch"
-                      HorizontalContentAlignment="Left">
-                <Border Padding="12">
-                  <Grid ColumnDefinitions="Auto, *, Auto">
+                      HorizontalContentAlignment="Stretch">
+                <Border Classes="settings-item">
+                  <Grid ColumnDefinitions="56, *, 24" Margin="16,0">
                     <!-- Icon -->
                     <Border Grid.Column="0"
-                            Width="40" Height="40"
-                            CornerRadius="20"
-                            Background="{DynamicResource AppSurfaceBrush}"
-                            Margin="0,0,12,0">
-                      <TextBlock Text="🤖"
-                                 FontSize="20"
-                                 HorizontalAlignment="Center"
-                                 VerticalAlignment="Center"/>
+                            Classes="settings-icon-bg"
+                            Background="{DynamicResource AppSurfaceBrush}">
+                      <PathIcon Data="{StaticResource IconModel}"
+                                Classes="settings-icon"
+                                Foreground="{DynamicResource AppTextSecondaryBrush}"/>
                     </Border>
 
                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
                       <TextBlock Text="默认模型"
-                                 FontWeight="Medium"
-                                 Foreground="{DynamicResource AppTextPrimaryBrush}"/>
+                                 Classes="settings-title"/>
                       <TextBlock Text="{Binding DefaultModelStatus}"
-                                 FontSize="12"
-                                 Foreground="{DynamicResource AppTextSecondaryBrush}"/>
+                                 Classes="settings-subtitle"/>
                     </StackPanel>
 
                     <PathIcon Grid.Column="2"
-                              Data="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z"
+                              Data="{StaticResource IconChevronRight}"
                               Width="20" Height="20"
                               Foreground="{DynamicResource AppTextSecondaryBrush}"/>
                   </Grid>
@@ -201,56 +177,50 @@
         </StackPanel>
 
         <!-- Appearance Section -->
-        <StackPanel Spacing="8">
+        <StackPanel>
           <TextBlock Text="外观"
-                     FontSize="14"
-                     FontWeight="SemiBold"
-                     Foreground="{DynamicResource AppTextSecondaryBrush}"/>
-          <Border Background="{DynamicResource AppCardBrush}"
-                  CornerRadius="12">
+                     Classes="settings-section-title"/>
+          <Border Classes="settings-card">
             <StackPanel>
               <!-- Dark Mode -->
-              <Border Padding="12">
-                <Grid ColumnDefinitions="Auto, *, Auto">
+              <Border Classes="settings-item">
+                <Grid ColumnDefinitions="56, *, 50" Margin="16,0">
                   <PathIcon Grid.Column="0"
-                            Data="M12,3C7.03,3 3,7.03 3,12C3,16.97 7.03,21 12,21C12.83,21 13.5,20.33 13.5,19.5C13.5,19.11 13.35,18.76 13.11,18.5C12.88,18.23 12.73,17.88 12.73,17.5C12.73,16.67 13.4,16 14.23,16H16.5C19,16 21,14 21,11.5C21,6.58 16.97,3 12,3M12,19C8.13,19 5,15.87 5,12C5,8.13 8.13,5 12,5C13.76,5 15.37,5.6 16.68,6.59C16.24,7.31 16,8.13 16,9C16,11.21 17.79,13 20,13V14C20,16.76 17.76,19 15,19H12Z"
-                            Width="20" Height="20"
-                            Margin="0,0,12,0"
+                            Data="{StaticResource IconDarkMode}"
+                            Width="24" Height="24"
                             Foreground="{DynamicResource AppTextSecondaryBrush}"/>
                   <TextBlock Grid.Column="1"
                              Text="深色模式"
                              VerticalAlignment="Center"
-                             Foreground="{DynamicResource AppTextPrimaryBrush}"/>
+                             Classes="settings-title"/>
                   <ToggleSwitch Grid.Column="2"
                                 IsChecked="{Binding IsDarkMode}"/>
                 </Grid>
               </Border>
 
-              <Separator Margin="52,0,0,0"
-                         Background="{DynamicResource AppDividerBrush}"/>
+              <Separator Classes="settings-divider"/>
 
               <!-- Language -->
               <Button Command="{Binding OpenLanguageSettingsCommand}"
                       Background="Transparent"
                       BorderThickness="0"
+                      Padding="0"
                       HorizontalAlignment="Stretch"
-                      HorizontalContentAlignment="Left">
-                <Border Padding="12">
-                  <Grid ColumnDefinitions="Auto, *, Auto">
+                      HorizontalContentAlignment="Stretch">
+                <Border Classes="settings-item">
+                  <Grid ColumnDefinitions="56, *, 24" Margin="16,0">
                     <PathIcon Grid.Column="0"
-                              Data="M12.87,15.07L10.33,12.56L10.36,12.53C12.1,10.59 13.34,8.36 14.07,6H17V4H10V2H8V4H1V6H12.17C11.5,7.92 10.44,9.75 9,11.35C8.07,10.32 7.3,9.19 6.69,8H4.69C5.42,9.63 6.42,11.17 7.67,12.56L2.58,17.58L4,19L9,14L12.11,17.11L12.87,15.07M18.5,10H16.5L12,22H14L15.12,19H19.87L21,22H23L18.5,10M15.88,17L17.5,12.67L19.12,17H15.88Z"
-                              Width="20" Height="20"
-                              Margin="0,0,12,0"
+                              Data="{StaticResource IconLanguage}"
+                              Width="24" Height="24"
                               Foreground="{DynamicResource AppTextSecondaryBrush}"/>
                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
                       <TextBlock Text="语言"
-                                 Foreground="{DynamicResource AppTextPrimaryBrush}"/>
+                                 Classes="settings-title"/>
                       <TextBlock Text="{Binding SelectedLanguage}"
-                                 FontSize="12"
-                                 Foreground="{DynamicResource AppTextSecondaryBrush}"/>
+                                 Classes="settings-subtitle"/>
                     </StackPanel>
                     <PathIcon Grid.Column="2"
-                              Data="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z"
+                              Data="{StaticResource IconChevronRight}"
                               Width="20" Height="20"
                               Foreground="{DynamicResource AppTextSecondaryBrush}"/>
                   </Grid>
@@ -261,93 +231,86 @@
         </StackPanel>
 
         <!-- Data Section -->
-        <StackPanel Spacing="8">
+        <StackPanel>
           <TextBlock Text="数据"
-                     FontSize="14"
-                     FontWeight="SemiBold"
-                     Foreground="{DynamicResource AppTextSecondaryBrush}"/>
-          <Border Background="{DynamicResource AppCardBrush}"
-                  CornerRadius="12">
+                     Classes="settings-section-title"/>
+          <Border Classes="settings-card">
             <StackPanel>
               <!-- Backup -->
               <Button Command="{Binding BackupCommand}"
                       Background="Transparent"
                       BorderThickness="0"
+                      Padding="0"
                       HorizontalAlignment="Stretch"
-                      HorizontalContentAlignment="Left">
-                <Border Padding="12">
-                  <Grid ColumnDefinitions="Auto, *, Auto">
+                      HorizontalContentAlignment="Stretch">
+                <Border Classes="settings-item">
+                  <Grid ColumnDefinitions="56, *, 24" Margin="16,0">
                     <PathIcon Grid.Column="0"
-                              Data="M12,3C7.58,3 4,4.79 4,7C4,9.21 7.58,11 12,11C16.42,11 20,9.21 20,7C20,4.79 16.42,3 12,3M4,9V12C4,14.21 7.58,16 12,16C16.42,16 20,14.21 20,12V9C20,11.21 16.42,13 12,13C7.58,13 4,11.21 4,9M4,14V17C4,19.21 7.58,21 12,21C16.42,21 20,19.21 20,17V14C20,16.21 16.42,18 12,18C7.58,18 4,16.21 4,14Z"
-                              Width="20" Height="20"
-                              Margin="0,0,12,0"
+                              Data="{StaticResource IconBackup}"
+                              Width="24" Height="24"
                               Foreground="{DynamicResource AppTextSecondaryBrush}"/>
                     <TextBlock Grid.Column="1"
                                Text="备份与恢复"
                                VerticalAlignment="Center"
-                               Foreground="{DynamicResource AppTextPrimaryBrush}"/>
+                               Classes="settings-title"/>
                     <PathIcon Grid.Column="2"
-                              Data="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z"
+                              Data="{StaticResource IconChevronRight}"
                               Width="20" Height="20"
                               Foreground="{DynamicResource AppTextSecondaryBrush}"/>
                   </Grid>
                 </Border>
               </Button>
 
-              <Separator Margin="52,0,0,0"
-                         Background="{DynamicResource AppDividerBrush}"/>
+              <Separator Classes="settings-divider"/>
 
               <!-- Clear Data -->
               <Button Command="{Binding ClearConversationsCommand}"
                       Background="Transparent"
                       BorderThickness="0"
+                      Padding="0"
                       HorizontalAlignment="Stretch"
-                      HorizontalContentAlignment="Left">
-                <Border Padding="12">
-                  <Grid ColumnDefinitions="Auto, *, Auto">
+                      HorizontalContentAlignment="Stretch">
+                <Border Classes="settings-item">
+                  <Grid ColumnDefinitions="56, *, 24" Margin="16,0">
                     <PathIcon Grid.Column="0"
-                              Data="M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19M8,9H16V19H8V9M15.5,4L14.5,3H9.5L8.5,4H5V6H19V4H15.5Z"
-                              Width="20" Height="20"
-                              Margin="0,0,12,0"
+                              Data="{StaticResource IconDelete}"
+                              Width="24" Height="24"
                               Foreground="{DynamicResource ErrorBrush}"/>
                     <TextBlock Grid.Column="1"
                                Text="清除所有会话"
                                VerticalAlignment="Center"
                                Foreground="{DynamicResource ErrorBrush}"/>
                     <PathIcon Grid.Column="2"
-                              Data="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z"
+                              Data="{StaticResource IconChevronRight}"
                               Width="20" Height="20"
                               Foreground="{DynamicResource AppTextSecondaryBrush}"/>
                   </Grid>
                 </Border>
               </Button>
 
-              <Separator Margin="52,0,0,0"
-                         Background="{DynamicResource AppDividerBrush}"/>
+              <Separator Classes="settings-divider"/>
 
               <!-- Clear All Data -->
               <Button Command="{Binding OpenClearDataDialogCommand}"
                       Background="Transparent"
                       BorderThickness="0"
+                      Padding="0"
                       HorizontalAlignment="Stretch"
-                      HorizontalContentAlignment="Left">
-                <Border Padding="12">
-                  <Grid ColumnDefinitions="Auto, *, Auto">
+                      HorizontalContentAlignment="Stretch">
+                <Border Classes="settings-item">
+                  <Grid ColumnDefinitions="56, *, 24" Margin="16,0">
                     <PathIcon Grid.Column="0"
-                              Data="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19M12,9A4,4 0 0,1 16,13V17H14V13A2,2 0 0,0 12,11A2,2 0 0,0 10,13V17H8V13A4,4 0 0,1 12,9Z"
-                              Width="20" Height="20"
-                              Margin="0,0,12,0"
+                              Data="{StaticResource IconClearAll}"
+                              Width="24" Height="24"
                               Foreground="{DynamicResource ErrorBrush}"/>
-                    <StackPanel Grid.Column="1" Spacing="2">
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
                       <TextBlock Text="清除所有数据"
-                                 VerticalAlignment="Center"
                                  Foreground="{DynamicResource ErrorBrush}"/>
                       <TextBlock Text="包括会话和设置，应用将重启"
-                                 FontSize="11"
-                                 Foreground="{DynamicResource AppTextSecondaryBrush}"/>
+                                 Classes="settings-subtitle"/>
                     </StackPanel>
                     <PathIcon Grid.Column="2"
-                              Data="M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2M12,4A8,8 0 0,0 4,12C4,16.42 7.58,20 12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4M13,7H11V13H13V7M13,15H11V17H13V15Z"
+                              Data="{StaticResource IconWarning}"
                               Width="20" Height="20"
                               Foreground="{DynamicResource ErrorBrush}"/>
                   </Grid>
@@ -358,54 +321,51 @@
         </StackPanel>
 
         <!-- About Section -->
-        <StackPanel Spacing="8">
+        <StackPanel>
           <TextBlock Text="关于"
-                     FontSize="14"
-                     FontWeight="SemiBold"
-                     Foreground="{DynamicResource AppTextSecondaryBrush}"/>
-          <Border Background="{DynamicResource AppCardBrush}"
-                  CornerRadius="12">
+                     Classes="settings-section-title"/>
+          <Border Classes="settings-card">
             <StackPanel>
               <!-- Version -->
-              <Border Padding="12">
-                <Grid ColumnDefinitions="Auto, *, Auto">
+              <Border Classes="settings-item">
+                <Grid ColumnDefinitions="56, *" Margin="16,0">
                   <PathIcon Grid.Column="0"
-                            Data="M13,9H11V7H13M13,17H11V11H13M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z"
-                            Width="20" Height="20"
-                            Margin="0,0,12,0"
+                            Data="{StaticResource IconInfo}"
+                            Width="24" Height="24"
                             Foreground="{DynamicResource AppTextSecondaryBrush}"/>
                   <TextBlock Grid.Column="1"
-                             Text="版本 1.0.0"
+                             Text="{Binding AppVersion}"
                              VerticalAlignment="Center"
-                             Foreground="{DynamicResource AppTextPrimaryBrush}"/>
-                  <PathIcon Grid.Column="2"
-                            Data="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z"
-                            Width="20" Height="20"
-                            Foreground="{DynamicResource AppTextSecondaryBrush}"/>
+                             Classes="settings-title"/>
                 </Grid>
               </Border>
 
-              <Separator Margin="52,0,0,0"
-                         Background="{DynamicResource AppDividerBrush}"/>
+              <Separator Classes="settings-divider"/>
 
               <!-- Privacy Policy -->
-              <Border Padding="12">
-                <Grid ColumnDefinitions="Auto, *, Auto">
-                  <PathIcon Grid.Column="0"
-                            Data="M12,17A2,2 0 0,1 14,19A2,2 0 0,1 12,21A2,2 0 0,1 10,19A2,2 0 0,1 12,17M12,1L3,5V11C3,16.55 6.84,21.74 12,23C17.16,21.74 21,16.55 21,11V5L12,1Z"
-                            Width="20" Height="20"
-                            Margin="0,0,12,0"
-                            Foreground="{DynamicResource AppTextSecondaryBrush}"/>
-                  <TextBlock Grid.Column="1"
-                             Text="隐私政策"
-                             VerticalAlignment="Center"
-                             Foreground="{DynamicResource AppTextPrimaryBrush}"/>
-                  <PathIcon Grid.Column="2"
-                            Data="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z"
-                            Width="20" Height="20"
-                            Foreground="{DynamicResource AppTextSecondaryBrush}"/>
-                </Grid>
-              </Border>
+              <Button Command="{Binding OpenPrivacyPolicyCommand}"
+                      Background="Transparent"
+                      BorderThickness="0"
+                      Padding="0"
+                      HorizontalAlignment="Stretch"
+                      HorizontalContentAlignment="Stretch">
+                <Border Classes="settings-item">
+                  <Grid ColumnDefinitions="56, *, 24" Margin="16,0">
+                    <PathIcon Grid.Column="0"
+                              Data="{StaticResource IconShield}"
+                              Width="24" Height="24"
+                              Foreground="{DynamicResource AppTextSecondaryBrush}"/>
+                    <TextBlock Grid.Column="1"
+                               Text="隐私政策"
+                               VerticalAlignment="Center"
+                               Classes="settings-title"/>
+                    <PathIcon Grid.Column="2"
+                              Data="{StaticResource IconChevronRight}"
+                              Width="20" Height="20"
+                              Foreground="{DynamicResource AppTextSecondaryBrush}"/>
+                  </Grid>
+                </Border>
+              </Button>
             </StackPanel>
           </Border>
         </StackPanel>

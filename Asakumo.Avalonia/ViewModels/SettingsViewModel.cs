@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Asakumo.Avalonia.Models;
@@ -43,8 +44,14 @@ public partial class SettingsViewModel : ViewModelBase
     [ObservableProperty]
     private string _currentProviderName = "点击配置 AI 模型";
 
-    [ObservableProperty]
-    private string _currentProviderIcon = "🤖";
+    /// <summary>
+    /// 应用版本号。
+    /// 从程序集信息动态读取，格式为 v{Major}.{Minor}.{Build}。
+    /// 使用静态字段缓存避免重复反射调用。
+    /// </summary>
+    public string AppVersion => _cachedAppVersion;
+
+    private static readonly string _cachedAppVersion = GetAppVersion();
 
     [ObservableProperty]
     private string _aiConfigurationStatus = "未配置";
@@ -125,6 +132,13 @@ public partial class SettingsViewModel : ViewModelBase
     private void OpenLanguageSettings()
     {
         // Could open a language selection dialog
+    }
+
+    [RelayCommand]
+    private void OpenPrivacyPolicy()
+    {
+        // Open privacy policy in browser or navigate to privacy policy page
+        ShowToastMessage("隐私政策页面开发中");
     }
 
     [RelayCommand]
@@ -278,13 +292,11 @@ public partial class SettingsViewModel : ViewModelBase
             CurrentProviderName = "点击配置供应商";
             AiConfigurationStatus = "未配置";
             DefaultModelStatus = "未设置";
-            CurrentProviderIcon = "🤖";
             return;
         }
 
         HasAiConfiguration = true;
         CurrentProviderName = $"已配置 {ConfiguredProviderCount} 个供应商";
-        CurrentProviderIcon = "⚙️";
         AiConfigurationStatus = $"{ConfiguredProviderCount} 个供应商已启用";
 
         // Load default model info
@@ -328,6 +340,16 @@ public partial class SettingsViewModel : ViewModelBase
         ShowToast = true;
 
         _ = HideToastAsync(_toastCts.Token);
+    }
+
+    /// <summary>
+    /// 从程序集获取应用版本号
+    /// </summary>
+    private static string GetAppVersion()
+    {
+        var assembly = Assembly.GetExecutingAssembly();
+        var version = assembly.GetName().Version;
+        return version != null ? $"v{version.Major}.{version.Minor}.{version.Build}" : "v1.0.0";
     }
 
     private async Task HideToastAsync(CancellationToken ct)
