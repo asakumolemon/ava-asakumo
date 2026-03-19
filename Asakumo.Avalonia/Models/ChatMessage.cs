@@ -149,11 +149,30 @@ public partial class ChatMessage : ObservableObject
 
     #region Version History
 
+    // Cache for deserialized version history to avoid repeated JSON parsing
+    private List<MessageVersion>? _versionHistoryCache;
+
     /// <summary>
     /// Gets or sets the JSON serialized version history.
     /// Not directly used in UI - use VersionHistory property instead.
     /// </summary>
-    public string? VersionHistoryJson { get; set; }
+    public string? VersionHistoryJson
+    {
+        get => _versionHistoryJson;
+        set
+        {
+            if (_versionHistoryJson != value)
+            {
+                _versionHistoryJson = value;
+                _versionHistoryCache = null; // Invalidate cache
+                OnPropertyChanged(nameof(VersionHistoryJson));
+                OnPropertyChanged(nameof(VersionHistory));
+                OnPropertyChanged(nameof(VersionCount));
+                OnPropertyChanged(nameof(HasVersionHistory));
+            }
+        }
+    }
+    private string? _versionHistoryJson;
 
     /// <summary>
     /// Gets or sets the index of the currently displayed version.
@@ -167,22 +186,25 @@ public partial class ChatMessage : ObservableObject
 
     /// <summary>
     /// Gets the list of historical versions for this message.
+    /// Uses lazy loading with cache to avoid repeated JSON deserialization.
     /// </summary>
     [Ignore]
-    public List<MessageVersion> VersionHistory
+    public IReadOnlyList<MessageVersion> VersionHistory
     {
         get
         {
-            if (string.IsNullOrEmpty(VersionHistoryJson))
-                return new List<MessageVersion>();
-            try
+            if (_versionHistoryCache is null && !string.IsNullOrEmpty(_versionHistoryJson))
             {
-                return JsonSerializer.Deserialize<List<MessageVersion>>(VersionHistoryJson) ?? new List<MessageVersion>();
+                try
+                {
+                    _versionHistoryCache = JsonSerializer.Deserialize<List<MessageVersion>>(_versionHistoryJson) ?? new List<MessageVersion>();
+                }
+                catch
+                {
+                    _versionHistoryCache = new List<MessageVersion>();
+                }
             }
-            catch
-            {
-                return new List<MessageVersion>();
-            }
+            return _versionHistoryCache ?? new List<MessageVersion>();
         }
     }
 
@@ -209,7 +231,8 @@ public partial class ChatMessage : ObservableObject
     /// </summary>
     public void SaveCurrentAsVersion()
     {
-        var versions = VersionHistory;
+        // Get mutable copy for modification
+        var versions = new List<MessageVersion>(VersionHistory);
         versions.Add(new MessageVersion
         {
             Content = Content,
@@ -220,11 +243,6 @@ public partial class ChatMessage : ObservableObject
 
         // Reset to show the new version (will be created after this)
         CurrentVersionIndex = -1;
-
-        // Notify UI that version-related properties have changed
-        OnPropertyChanged(nameof(VersionCount));
-        OnPropertyChanged(nameof(HasVersionHistory));
-        OnPropertyChanged(nameof(DisplayVersionNumber));
     }
 
     /// <summary>
@@ -237,9 +255,7 @@ public partial class ChatMessage : ObservableObject
 
         if (versionIndex == -1)
         {
-            // Switch to original (latest) version
             CurrentVersionIndex = -1;
-            OnPropertyChanged(nameof(DisplayVersionNumber));
             return;
         }
 
@@ -251,7 +267,6 @@ public partial class ChatMessage : ObservableObject
         Content = version.Content;
         Timestamp = version.Timestamp;
         IsError = version.IsError;
-        OnPropertyChanged(nameof(DisplayVersionNumber));
     }
 
     /// <summary>
