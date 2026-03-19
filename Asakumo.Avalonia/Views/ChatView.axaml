@@ -607,13 +607,25 @@
                    Classes="chat-input"
                    AcceptsReturn="True"/>
 
-          <!-- Send Button -->
+          <!-- Send Button (shown when not responding) -->
           <Button Grid.Column="2"
                   Classes="send"
                   Command="{Binding SendMessageCommand}"
-                  ToolTip.Tip="发送 (Enter)">
+                  ToolTip.Tip="发送 (Enter)"
+                  IsVisible="{Binding !IsAiResponding}">
             <PathIcon Data="M2,21L23,12L2,3V10L17,12L2,14V21Z"
-                      Width="16" Height="16"
+                      Width="18" Height="18"
+                      Foreground="White"/>
+          </Button>
+
+          <!-- Stop Button (shown when AI is responding) -->
+          <Button Grid.Column="2"
+                  Classes="send"
+                  Command="{Binding StopGenerationCommand}"
+                  ToolTip.Tip="停止生成"
+                  IsVisible="{Binding IsAiResponding}">
+            <PathIcon Data="M6,6H18V18H6V6Z"
+                      Width="18" Height="18"
                       Foreground="White"/>
           </Button>
         </Grid>

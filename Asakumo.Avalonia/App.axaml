@@ -204,15 +204,16 @@
             <Setter Property="Padding" Value="6,2"/>
         </Style>
         
-        <!-- 发送按钮样式 -->
+        <!-- 发送按钮样式 - 圆形 -->
         <Style Selector="Button.send">
             <Setter Property="Background" Value="#10A37F"/>
             <Setter Property="Foreground" Value="White"/>
             <Setter Property="FontWeight" Value="Medium"/>
             <Setter Property="CornerRadius" Value="20"/>
-            <Setter Property="Padding" Value="16,8"/>
+            <Setter Property="Padding" Value="0"/>
             <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="MinWidth" Value="60"/>
+            <Setter Property="Width" Value="40"/>
+            <Setter Property="Height" Value="40"/>
             <Setter Property="Transitions">
                 <Transitions>
                     <DoubleTransition Property="ScaleTransform.ScaleX" Duration="0:0:0.1"/>
