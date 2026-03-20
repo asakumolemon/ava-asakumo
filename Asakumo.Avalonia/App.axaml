@@ -21,7 +21,7 @@
             <StreamGeometry x:Key="IconDelete">M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19M8,9H16V19H8V9M15.5,4L14.5,3H9.5L8.5,4H5V6H19V4H15.5Z</StreamGeometry>
             <StreamGeometry x:Key="IconClearAll">M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19M12,9A4,4 0 0,1 16,13V17H14V13A2,2 0 0,0 12,11A2,2 0 0,0 10,13V17H8V13A4,4 0 0,1 12,9Z</StreamGeometry>
             <StreamGeometry x:Key="IconInfo">M13,9H11V7H13M13,17H11V11H13M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z</StreamGeometry>
-            <StreamGeometry x:Key="IconWarning">M13,9H11V7H13M13,17H11V11H13M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4A8,8 0 0,0 4,12C4,16.42 7.58,20 12,20A8,8 0 0,0 20,12C8,8 0 0,0 12,4M13,7H11V13H13V7M13,15H11V17H13V15Z</StreamGeometry>
+            <StreamGeometry x:Key="IconWarning">M13,9H11V7H13M13,17H11V11H13M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4A8,8 0 0,1 20,12A8,8 0 0,1 12,20A8,8 0 0,1 4,12A8,8 0 0,1 12,4Z</StreamGeometry>
             <StreamGeometry x:Key="IconShield">M12,17A2,2 0 0,1 14,19A2,2 0 0,1 12,21A2,2 0 0,1 10,19A2,2 0 0,1 12,17M12,1L3,5V11C3,16.55 6.84,21.74 12,23C17.16,21.74 21,16.55 21,11V5L12,1Z</StreamGeometry>
             <StreamGeometry x:Key="IconBack">M20,11H7.83L13.42,5.41L12,4L4,12L12,20L13.41,18.59L7.83,13H20V11Z</StreamGeometry>
             
@@ -533,7 +533,7 @@
         
         <!-- 设置卡片容器 -->
         <Style Selector="Border.settings-card">
-            <Setter Property="Background" Value="{DynamicResource AppCardBrush}"/>
+            <Setter Property="Background" Value="#11182B"/>
             <Setter Property="BorderBrush" Value="#1E2A4A"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="CornerRadius" Value="20"/>
@@ -542,7 +542,7 @@
         
         <!-- Toast 提示样式 -->
         <Style Selector="Border.toast-notification">
-            <Setter Property="Background" Value="{DynamicResource ToastBackgroundBrush}"/>
+            <Setter Property="Background" Value="#1E2A4A"/>
             <Setter Property="CornerRadius" Value="12"/>
             <Setter Property="Padding" Value="16,10"/>
             <Setter Property="HorizontalAlignment" Value="Center"/>
@@ -554,7 +554,7 @@
         
         <!-- 分隔线 -->
         <Style Selector="Separator.settings-divider">
-            <Setter Property="Background" Value="{DynamicResource AppDividerBrush}"/>
+            <Setter Property="Background" Value="#161F38"/>
             <Setter Property="Margin" Value="16,0"/>
             <Setter Property="Height" Value="1"/>
         </Style>
@@ -567,7 +567,7 @@
         
         <!-- 确认对话框卡片 -->
         <Style Selector="Border.dialog-card">
-            <Setter Property="Background" Value="{DynamicResource AppCardBrush}"/>
+            <Setter Property="Background" Value="#11182B"/>
             <Setter Property="BorderBrush" Value="#1E2A4A"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="CornerRadius" Value="20"/>
