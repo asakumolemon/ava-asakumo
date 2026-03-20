@@ -5,21 +5,25 @@
              xmlns:vm="using:Asakumo.Avalonia.ViewModels"
              mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="700"
              x:Class="Asakumo.Avalonia.Views.ApiKeyConfigView"
-             x:DataType="vm:ApiKeyConfigViewModel">
+             x:DataType="vm:ApiKeyConfigViewModel"
+             Background="{DynamicResource AppBackgroundBrush}">
 
-  <Grid RowDefinitions="Auto, *, Auto" Background="{DynamicResource AppBackgroundBrush}">
-    <!-- Header -->
-    <Border Grid.Row="0" Padding="16,12" Background="{DynamicResource AppSurfaceBrush}">
+  <Grid RowDefinitions="Auto, *, Auto">
+    <!-- Header - MD3 Top App Bar -->
+    <Border Grid.Row="0"
+            Classes="top-app-bar">
       <Grid ColumnDefinitions="Auto, *, Auto">
         <Button Grid.Column="0" Command="{Binding GoBackCommand}"
                 Classes="icon" ToolTip.Tip="返回">
           <PathIcon Data="M20,11H7.83L13.42,5.41L12,4L4,12L12,20L13.41,18.59L7.83,13H20V11Z"
-                    Width="20" Height="20"/>
+                    Width="20" Height="20"
+                    Foreground="{DynamicResource AppTextSecondaryBrush}"/>
         </Button>
         <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center"
                     VerticalAlignment="Center" Spacing="8">
           <TextBlock Text="{Binding ProviderIcon}" FontSize="18"/>
-          <TextBlock Text="{Binding ProviderName}" FontSize="18" FontWeight="SemiBold"/>
+          <TextBlock Text="{Binding ProviderName}" FontSize="18" FontWeight="SemiBold"
+                     Foreground="{DynamicResource AppTextPrimaryBrush}"/>
         </StackPanel>
       </Grid>
     </Border>
@@ -29,9 +33,10 @@
       <StackPanel Spacing="20" Margin="24,24,24,16">
         <!-- API Key Section -->
         <StackPanel Spacing="8">
-          <TextBlock Text="API Key" FontSize="14" FontWeight="Medium"/>
+          <TextBlock Text="API Key" FontSize="14" FontWeight="Medium"
+                     Foreground="{DynamicResource AppTextPrimaryBrush}"/>
           <TextBlock Text="请输入您的 API Key，用于访问 AI 服务"
-                     FontSize="12" Foreground="{DynamicResource AppTextSecondaryBrush}"
+                     FontSize="12" Foreground="{DynamicResource AppTextTertiaryBrush}"
                      TextWrapping="Wrap"/>
           <TextBox Text="{Binding ApiKey}"
                    PasswordChar="*"
@@ -42,9 +47,10 @@
 
         <!-- Base URL Section (Conditional) -->
         <StackPanel Spacing="8" IsVisible="{Binding ShowBaseUrl}">
-          <TextBlock Text="API 地址" FontSize="14" FontWeight="Medium"/>
+          <TextBlock Text="API 地址" FontSize="14" FontWeight="Medium"
+                     Foreground="{DynamicResource AppTextPrimaryBrush}"/>
           <TextBlock Text="如果您使用自定义服务地址，请在此填写"
-                     FontSize="12" Foreground="{DynamicResource AppTextSecondaryBrush}"
+                     FontSize="12" Foreground="{DynamicResource AppTextTertiaryBrush}"
                      TextWrapping="Wrap"/>
           <TextBox Text="{Binding BaseUrl}"
                    Watermark="{Binding BaseUrlPlaceholder}"
@@ -62,47 +68,139 @@
             <PathIcon Data="M9,16.17L4.83,12L3.41,13.41L9,19L21,7L19.59,5.59L9,16.17Z"
                       Width="18" Height="18"
                       IsVisible="{Binding !IsValidating}"/>
-            <TextBlock Text="{Binding ValidateButtonText}"/>
+            <TextBlock Text="{Binding ValidateButtonText}"
+                       Foreground="{DynamicResource AppTextPrimaryBrush}"/>
           </StackPanel>
         </Button>
 
         <!-- Status Messages -->
-        <Border Background="#1A10A37F" CornerRadius="8" Padding="12"
+        <Border Classes="status-message-success"
                 IsVisible="{Binding ValidationSuccess}">
           <StackPanel Orientation="Horizontal" Spacing="8">
             <PathIcon Data="M9,16.17L4.83,12L3.41,13.41L9,19L21,7L19.59,5.59L9,16.17Z"
-                      Width="18" Height="18" Foreground="#10A37F"/>
-            <TextBlock Text="{Binding SuccessMessage}" Foreground="#10A37F"/>
+                      Width="18" Height="18" Foreground="{DynamicResource SuccessBrush}"/>
+            <TextBlock Text="{Binding SuccessMessage}" Foreground="{DynamicResource SuccessBrush}"/>
           </StackPanel>
         </Border>
 
-        <Border Background="#1AFF6B6B" CornerRadius="8" Padding="12"
+        <Border Classes="status-message-error"
                 IsVisible="{Binding HasError}">
           <StackPanel Orientation="Horizontal" Spacing="8">
             <PathIcon Data="M12,2C6.48,2 2,6.48 2,12C2,17.52 6.48,22 12,22C17.52,22 22,17.52 22,12C22,6.48 17.52,2 12,2ZM13,17H11V15H13V17ZM13,13H11V7H13V13Z"
-                      Width="18" Height="18" Foreground="#FF6B6B"/>
-            <TextBlock Text="{Binding ErrorMessage}" Foreground="#FF6B6B"/>
+                      Width="18" Height="18" Foreground="{DynamicResource ErrorBrush}"/>
+            <TextBlock Text="{Binding ErrorMessage}" Foreground="{DynamicResource ErrorBrush}"/>
           </StackPanel>
         </Border>
 
         <!-- Help Link -->
-        <Button HorizontalAlignment="Center" Background="Transparent" BorderThickness="0"
+        <Button Command="{Binding OpenApiKeyHelpCommand}"
+                HorizontalAlignment="Center" Background="Transparent" BorderThickness="0"
                 Padding="0" Margin="0,8">
           <TextBlock Text="如何获取 API Key？"
-                     Foreground="{DynamicResource PrimaryBrush}"
+                     Foreground="{DynamicResource InfoBrush}"
                      TextDecorations="Underline" FontSize="13"/>
         </Button>
+
+        <!-- Model Selection Section (shown after validation) -->
+        <StackPanel Spacing="12" IsVisible="{Binding ValidationSuccess}">
+          <Separator Margin="0,8"
+                     Background="{DynamicResource AppDividerBrush}"/>
+
+          <TextBlock Text="选择要添加的模型"
+                     FontSize="16" FontWeight="SemiBold"
+                     Foreground="{DynamicResource AppTextPrimaryBrush}"/>
+          <TextBlock Text="点击模型卡片进行多选："
+                     FontSize="12"
+                     Foreground="{DynamicResource AppTextTertiaryBrush}"/>
+
+          <!-- Model List -->
+          <ItemsControl ItemsSource="{Binding Models}">
+            <ItemsControl.Styles>
+              <Style Selector="Border.model-card">
+                <Setter Property="Background" Value="{DynamicResource AppCardBrush}"/>
+                <Setter Property="BorderThickness" Value="2"/>
+                <Setter Property="BorderBrush" Value="{DynamicResource AppBorderBrush}"/>
+                <Setter Property="CornerRadius" Value="16"/>
+                <Setter Property="Padding" Value="12"/>
+                <Setter Property="Margin" Value="0,0,0,8"/>
+              </Style>
+              <Style Selector="Border.model-card.selected">
+                <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
+                <Setter Property="Background" Value="{DynamicResource AppSurfaceBrush}"/>
+              </Style>
+            </ItemsControl.Styles>
+            <ItemsControl.ItemTemplate>
+              <DataTemplate DataType="vm:ModelSelectionItem">
+                <Border Classes="model-card">
+                  <Grid ColumnDefinitions="*, Auto">
+                    <!-- Info -->
+                    <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                      <TextBlock Text="{Binding Model.Name}" FontSize="16" FontWeight="Medium"
+                                 Foreground="{DynamicResource AppTextPrimaryBrush}"/>
+                      <TextBlock Text="{Binding Model.Description}" FontSize="12"
+                                 Foreground="{DynamicResource AppTextTertiaryBrush}"
+                                 TextWrapping="Wrap" MaxLines="2"/>
+                      <!-- Capabilities -->
+                      <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,4,0,0">
+                        <Border Classes="capability-tag-vision"
+                                IsVisible="{Binding Model.SupportsVision}">
+                          <TextBlock Text="视觉" FontSize="10" Foreground="{DynamicResource InfoBrush}"/>
+                        </Border>
+                        <Border Classes="capability-tag-function"
+                                IsVisible="{Binding Model.SupportsFunctionCalling}">
+                          <TextBlock Text="工具调用" FontSize="10" Foreground="{DynamicResource AstralVioletBrush}"/>
+                        </Border>
+                        <Border Classes="capability-tag-tokens">
+                          <TextBlock Text="{Binding Model.MaxTokens, StringFormat='{}{0:N0} tokens'}"
+                                     FontSize="10" Foreground="{DynamicResource PrimaryBrush}"/>
+                        </Border>
+                      </StackPanel>
+                    </StackPanel>
+
+                    <!-- Add/Remove Button -->
+                    <Button Grid.Column="1" Width="36" Height="36" CornerRadius="18"
+                            Background="{DynamicResource PrimaryBrush}"
+                            Command="{Binding $parent[ItemsControl].((vm:ApiKeyConfigViewModel)DataContext).ToggleModelCommand}"
+                            CommandParameter="{Binding}"
+                            VerticalAlignment="Center"
+                            Margin="8,0,0,0">
+                      <Panel>
+                        <!-- Plus Icon (Not Selected) -->
+                        <PathIcon Data="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z"
+                                  Width="20" Height="20"
+                                  Foreground="{DynamicResource AppBackgroundBrush}"
+                                  IsVisible="{Binding !IsSelected}"/>
+                        <!-- Check Icon (Selected) -->
+                        <PathIcon Data="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z"
+                                  Width="20" Height="20"
+                                  Foreground="{DynamicResource AppBackgroundBrush}"
+                                  IsVisible="{Binding IsSelected}"/>
+                      </Panel>
+                    </Button>
+                  </Grid>
+                </Border>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+
+          <!-- Error/Success Messages -->
+          <TextBlock Text="{Binding ModelErrorMessage}"
+                     Foreground="{DynamicResource ErrorBrush}" FontSize="14"
+                     IsVisible="{Binding HasModelError}"/>
+        </StackPanel>
       </StackPanel>
     </ScrollViewer>
 
     <!-- Footer -->
-    <Border Grid.Row="2" Padding="16" Background="{DynamicResource AppSurfaceBrush}">
-      <Button Command="{Binding ContinueCommand}"
+    <Border Grid.Row="2"
+            Classes="top-app-bar">
+      <Button Command="{Binding SaveCommand}"
               Classes="primary"
               HorizontalAlignment="Stretch"
               HorizontalContentAlignment="Center"
-              IsEnabled="{Binding ValidationSuccess}">
-        <TextBlock Text="继续" FontWeight="SemiBold" FontSize="16"/>
+              IsEnabled="{Binding CanSave}">
+        <TextBlock Text="{Binding SaveButtonText}" FontWeight="SemiBold" FontSize="16"
+                   Foreground="{DynamicResource AppBackgroundBrush}"/>
       </Button>
     </Border>
   </Grid>

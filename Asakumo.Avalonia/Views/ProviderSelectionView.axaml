@@ -5,19 +5,23 @@
              xmlns:vm="using:Asakumo.Avalonia.ViewModels"
              mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="700"
              x:Class="Asakumo.Avalonia.Views.ProviderSelectionView"
-             x:DataType="vm:ProviderSelectionViewModel">
+             x:DataType="vm:ProviderSelectionViewModel"
+             Background="{DynamicResource AppBackgroundBrush}">
 
-  <Grid RowDefinitions="Auto, *, Auto" Background="{DynamicResource AppBackgroundBrush}">
-    <!-- Header -->
-    <Border Grid.Row="0" Padding="16,12" Background="{DynamicResource AppSurfaceBrush}">
+  <Grid RowDefinitions="Auto, *, Auto">
+    <!-- Header - MD3 Top App Bar -->
+    <Border Grid.Row="0"
+            Classes="top-app-bar">
       <Grid ColumnDefinitions="Auto, *, Auto">
         <Button Grid.Column="0" Command="{Binding GoBackCommand}"
                 Classes="icon" ToolTip.Tip="返回">
           <PathIcon Data="M20,11H7.83L13.42,5.41L12,4L4,12L12,20L13.41,18.59L7.83,13H20V11Z"
-                    Width="20" Height="20"/>
+                    Width="20" Height="20"
+                    Foreground="{DynamicResource AppTextSecondaryBrush}"/>
         </Button>
         <TextBlock Grid.Column="1" Text="选择 AI 服务" FontSize="18" FontWeight="SemiBold"
-                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                   HorizontalAlignment="Center" VerticalAlignment="Center"
+                   Foreground="{DynamicResource AppTextPrimaryBrush}"/>
       </Grid>
     </Border>
 
@@ -26,31 +30,37 @@
       <StackPanel Spacing="12" Margin="16">
         <!-- Instructions -->
         <TextBlock Text="请选择您要使用的 AI 服务提供商："
-                   Foreground="{DynamicResource AppTextSecondaryBrush}"
+                   Foreground="{DynamicResource AppTextTertiaryBrush}"
                    TextWrapping="Wrap" Margin="0,8,0,16"/>
 
         <!-- Provider Cards -->
         <ItemsControl ItemsSource="{Binding Providers}">
           <ItemsControl.ItemTemplate>
             <DataTemplate>
-              <Button Command="{Binding $parent[ItemsControl].((vm:ProviderSelectionViewModel)DataContext).SelectProviderCommand}"
-                      CommandParameter="{Binding}"
-                      Background="{DynamicResource AppCardBrush}"
-                      BorderThickness="2"
-                      CornerRadius="12"
-                      Padding="0"
-                      Margin="0,0,0,8"
-                      HorizontalAlignment="Stretch">
-                <Button.Styles>
-                  <Style Selector="Button">
-                    <Setter Property="BorderBrush" Value="Transparent"/>
-                  </Style>
-                  <Style Selector="Button:selected /template/ ContentPresenter#PART_ContentPresenter">
-                    <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
-                    <Setter Property="Background" Value="#0D10A37F"/>
-                  </Style>
-                </Button.Styles>
-                <Grid ColumnDefinitions="Auto, *, Auto" Height="72">
+              <Grid>
+                <!-- Selected Border Indicator -->
+                <Border Background="Transparent"
+                        BorderThickness="2"
+                        BorderBrush="{DynamicResource PrimaryBrush}"
+                        CornerRadius="16"
+                        IsVisible="{Binding IsSelected}"
+                        Margin="0,0,0,8"/>
+
+                <Button Command="{Binding $parent[ItemsControl].((vm:ProviderSelectionViewModel)DataContext).SelectProviderCommand}"
+                        CommandParameter="{Binding}"
+                        Background="{DynamicResource AppCardBrush}"
+                        BorderBrush="{DynamicResource AppBorderBrush}"
+                        BorderThickness="1"
+                        CornerRadius="16"
+                        Padding="0"
+                        Margin="2,2,2,10"
+                        HorizontalAlignment="Stretch">
+                  <Button.Styles>
+                    <Style Selector="Button:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+                      <Setter Property="Background" Value="{DynamicResource AppSurfaceBrush}"/>
+                    </Style>
+                  </Button.Styles>
+                  <Grid ColumnDefinitions="Auto, *, Auto" Height="68">
                   <!-- Icon -->
                   <Border Grid.Column="0" Width="48" Height="48" CornerRadius="24"
                           Background="{DynamicResource PrimaryBrush}" Margin="16,0,0,0">
@@ -61,51 +71,46 @@
                   <!-- Info -->
                   <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="16,0">
                     <StackPanel Orientation="Horizontal" Spacing="8">
-                      <TextBlock Text="{Binding Name}" FontSize="16" FontWeight="Medium"/>
-                      <!-- Configured Badge -->
-                      <Border Background="#1A10A37F" CornerRadius="4" Padding="6,2"
-                              IsVisible="{Binding IsConfigured}">
-                        <TextBlock Text="已配置" FontSize="10" Foreground="#10A37F"/>
-                      </Border>
-                      <!-- Active Badge -->
-                      <Border Background="#1A10A37F" CornerRadius="4" Padding="6,2"
-                              IsVisible="{Binding IsActive}">
-                        <TextBlock Text="当前" FontSize="10" Foreground="#10A37F"/>
-                      </Border>
+                      <TextBlock Text="{Binding Name}" FontSize="16" FontWeight="Medium"
+                                 Foreground="{DynamicResource AppTextPrimaryBrush}"/>
                     </StackPanel>
                     <TextBlock Text="{Binding Description}" FontSize="12"
-                               Foreground="{DynamicResource AppTextSecondaryBrush}"
+                               Foreground="{DynamicResource AppTextTertiaryBrush}"
                                TextWrapping="Wrap" MaxLines="2"/>
                   </StackPanel>
 
                   <!-- Status Indicator -->
-                  <StackPanel Grid.Column="2" VerticalAlignment="Center" Margin="8,0">
+                  <StackPanel Grid.Column="2" VerticalAlignment="Center" Margin="8,0" Spacing="4">
+                    <!-- Selected Indicator -->
                     <PathIcon Data="M9,16.17L4.83,12L3.41,13.41L9,19L21,7L19.59,5.59L9,16.17Z"
-                              Width="16" Height="16" Foreground="#10A37F"
-                              IsVisible="{Binding IsConfigured}"/>
+                              Width="16" Height="16" Foreground="{DynamicResource PrimaryBrush}"
+                              IsVisible="{Binding IsSelected}"/>
                   </StackPanel>
                 </Grid>
-              </Button>
+                </Button>
+              </Grid>
             </DataTemplate>
           </ItemsControl.ItemTemplate>
         </ItemsControl>
 
         <!-- Error Message -->
         <TextBlock Text="{Binding ErrorMessage}"
-                   Foreground="#FF6B6B" FontSize="14"
+                   Foreground="{DynamicResource ErrorBrush}" FontSize="14"
                    IsVisible="{Binding HasError}"
                    Margin="0,8"/>
       </StackPanel>
     </ScrollViewer>
 
     <!-- Footer -->
-    <Border Grid.Row="2" Padding="16" Background="{DynamicResource AppSurfaceBrush}">
+    <Border Grid.Row="2"
+            Classes="top-app-bar">
       <Button Command="{Binding ContinueCommand}"
               Classes="primary"
               HorizontalAlignment="Stretch"
               HorizontalContentAlignment="Center"
               IsEnabled="{Binding HasSelection}">
-        <TextBlock Text="继续" FontWeight="SemiBold" FontSize="16"/>
+        <TextBlock Text="继续" FontWeight="SemiBold" FontSize="16"
+                   Foreground="{DynamicResource AppBackgroundBrush}"/>
       </Button>
     </Border>
   </Grid>

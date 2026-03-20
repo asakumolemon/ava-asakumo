@@ -1,0 +1,212 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- ==================== MD3 Top App Bar ==================== -->
+    <Style Selector="Border.top-app-bar">
+        <Setter Property="Background" Value="{DynamicResource AppBackgroundBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource AppBorderBrush}" />
+        <Setter Property="BorderThickness" Value="0,0,0,1" />
+        <Setter Property="Height" Value="64" />
+    </Style>
+
+    <!-- Logo Border -->
+    <Style Selector="Border.app-logo">
+        <Setter Property="Background" Value="{DynamicResource AppSurfaceBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource AppBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="20" />
+        <Setter Property="Width" Value="40" />
+        <Setter Property="Height" Value="40" />
+    </Style>
+
+    <!-- ==================== MD3 List Item ==================== -->
+    <Style Selector="Border.list-item">
+        <Setter Property="Background" Value="{DynamicResource AppCardBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource AppBorderBrush}" />
+        <Setter Property="BorderThickness" Value="0,0,0,1" />
+        <Setter Property="CornerRadius" Value="0" />
+    </Style>
+
+    <!-- List Item Avatar -->
+    <Style Selector="Border.list-item-avatar">
+        <Setter Property="Background" Value="{DynamicResource PrimaryBrush}" />
+        <Setter Property="CornerRadius" Value="24" />
+        <Setter Property="Width" Value="48" />
+        <Setter Property="Height" Value="48" />
+    </Style>
+
+    <!-- Pinned Indicator -->
+    <Style Selector="Border.pinned-indicator">
+        <Setter Property="Background" Value="{DynamicResource AstralVioletBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource AppCardBrush}" />
+        <Setter Property="BorderThickness" Value="2" />
+        <Setter Property="CornerRadius" Value="6" />
+        <Setter Property="Width" Value="12" />
+        <Setter Property="Height" Value="12" />
+    </Style>
+
+    <!-- Unread Badge -->
+    <Style Selector="Border.unread-badge">
+        <Setter Property="Background" Value="{DynamicResource FrostCyanBrush}" />
+        <Setter Property="CornerRadius" Value="10" />
+        <Setter Property="Width" Value="20" />
+        <Setter Property="Height" Value="20" />
+        <Setter Property="HorizontalAlignment" Value="Right" />
+    </Style>
+
+    <!-- Unread Badge Text -->
+    <Style Selector="TextBlock.unread-badge-text">
+        <Setter Property="FontSize" Value="11" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Foreground" Value="{DynamicResource AppBackgroundBrush}" />
+        <Setter Property="HorizontalAlignment" Value="Center" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+
+    <!-- ==================== MD3 Button ==================== -->
+
+    <!-- Filled Button - MD3 Pill Shape -->
+    <Style Selector="Button.btn-filled">
+        <Setter Property="Background" Value="{DynamicResource PrimaryBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource AppBackgroundBrush}" />
+        <Setter Property="CornerRadius" Value="20" />
+        <Setter Property="Padding" Value="24,12" />
+        <Setter Property="Height" Value="48" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Transitions">
+            <Transitions>
+                <BrushTransition Property="Background" Duration="0:0:0.15" />
+            </Transitions>
+        </Setter>
+    </Style>
+    <Style Selector="Button.btn-filled:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource PrimaryHoverBrush}" />
+    </Style>
+    <Style Selector="Button.btn-filled:pressed /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource BrandAccentColor}" />
+    </Style>
+
+    <!-- FAB - Material Design 3 Specification -->
+    <Style Selector="Button.fab">
+        <Setter Property="Background" Value="{DynamicResource PrimaryBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource AppBackgroundBrush}" />
+        <Setter Property="Width" Value="56" />
+        <Setter Property="Height" Value="56" />
+        <Setter Property="CornerRadius" Value="16" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Transitions">
+            <Transitions>
+                <DoubleTransition Property="ScaleTransform.ScaleX" Duration="0:0:0.15" />
+                <DoubleTransition Property="ScaleTransform.ScaleY" Duration="0:0:0.15" />
+                <BrushTransition Property="Background" Duration="0:0:0.15" />
+            </Transitions>
+        </Setter>
+        <Setter Property="RenderTransform">
+            <ScaleTransform ScaleX="1" ScaleY="1" />
+        </Setter>
+        <Setter Property="RenderTransformOrigin" Value="0.5,0.5" />
+    </Style>
+    <Style Selector="Button.fab:pointerover">
+        <Setter Property="ScaleTransform.ScaleX" Value="1.05" />
+        <Setter Property="ScaleTransform.ScaleY" Value="1.05" />
+    </Style>
+    <Style Selector="Button.fab:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource PrimaryHoverBrush}" />
+    </Style>
+    <Style Selector="Button.fab:pressed">
+        <Setter Property="ScaleTransform.ScaleX" Value="0.95" />
+        <Setter Property="ScaleTransform.ScaleY" Value="0.95" />
+    </Style>
+    <Style Selector="Button.fab:pressed /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource BrandAccentColor}" />
+    </Style>
+
+    <!-- Icon Button -->
+    <Style Selector="Button.icon">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="8" />
+        <Setter Property="Width" Value="40" />
+        <Setter Property="Height" Value="40" />
+        <Setter Property="CornerRadius" Value="20" />
+        <Setter Property="Transitions">
+            <Transitions>
+                <DoubleTransition Property="ScaleTransform.ScaleX" Duration="0:0:0.15" />
+                <DoubleTransition Property="ScaleTransform.ScaleY" Duration="0:0:0.15" />
+            </Transitions>
+        </Setter>
+        <Setter Property="RenderTransform">
+            <ScaleTransform ScaleX="1" ScaleY="1" />
+        </Setter>
+        <Setter Property="RenderTransformOrigin" Value="0.5,0.5" />
+    </Style>
+    <Style Selector="Button.icon:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource AppSurfaceBrush}" />
+    </Style>
+    <Style Selector="Button.icon:pressed">
+        <Setter Property="ScaleTransform.ScaleX" Value="0.9" />
+        <Setter Property="ScaleTransform.ScaleY" Value="0.9" />
+    </Style>
+
+    <!-- Swipe Action Button -->
+    <Style Selector="Button.swipe-action">
+        <Setter Property="Width" Value="72" />
+        <Setter Property="Height" Value="72" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+    </Style>
+
+    <!-- ==================== MD3 Empty State ==================== -->
+
+    <!-- Empty State Illustration Container -->
+    <Style Selector="Border.empty-state-illustration">
+        <Setter Property="Background" Value="{DynamicResource AppCardBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource AppBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="60" />
+        <Setter Property="Width" Value="120" />
+        <Setter Property="Height" Value="120" />
+    </Style>
+
+    <!-- Empty State Title -->
+    <Style Selector="TextBlock.empty-state-title">
+        <Setter Property="FontSize" Value="20" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Foreground" Value="{DynamicResource AppTextPrimaryBrush}" />
+    </Style>
+
+    <!-- Empty State Subtitle -->
+    <Style Selector="TextBlock.empty-state-subtitle">
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="Foreground" Value="{DynamicResource AppTextTertiaryBrush}" />
+    </Style>
+
+    <!-- Quick Prompt Chip -->
+    <Style Selector="Border.quick-prompt-chip">
+        <Setter Property="Background" Value="{DynamicResource AppCardBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource AppBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="16" />
+        <Setter Property="Padding" Value="12,8" />
+        <Setter Property="Margin" Value="4" />
+    </Style>
+
+    <!-- Quick Prompt Text -->
+    <Style Selector="TextBlock.quick-prompt-text">
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="Foreground" Value="{DynamicResource AppTextSecondaryBrush}" />
+    </Style>
+
+    <!-- Section Title -->
+    <Style Selector="TextBlock.section-title">
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Foreground" Value="{DynamicResource AppTextTertiaryBrush}" />
+        <Setter Property="Margin" Value="0,16,0,8" />
+    </Style>
+
+</Styles>

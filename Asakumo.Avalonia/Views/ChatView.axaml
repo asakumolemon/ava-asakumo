@@ -20,8 +20,9 @@
 
   <Grid RowDefinitions="Auto, *, Auto">
 
-    <!-- Header -->
-    <Border Grid.Row="0" Background="{DynamicResource AppBackgroundBrush}" Padding="12,8">
+    <!-- Header - MD3 Top App Bar -->
+    <Border Grid.Row="0"
+            Classes="chat-top-app-bar">
       <Grid RowDefinitions="Auto, Auto" ColumnDefinitions="Auto, *, Auto">
         <!-- Row 0: Back Button, Title, More Button -->
         <Button Grid.Row="0" Grid.Column="0"
@@ -30,35 +31,41 @@
                 ToolTip.Tip="返回"
                 VerticalAlignment="Center">
           <PathIcon Data="M20,11H7.83L13.42,5.41L12,4L4,12L12,20L13.41,18.59L7.83,13H20V11Z"
-                    Width="20" Height="20"/>
+                    Width="20" Height="20"
+                    Foreground="{DynamicResource AppTextSecondaryBrush}"/>
         </Button>
 
         <!-- Title (Center) -->
         <StackPanel Grid.Row="0" Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="2">
           <!-- Normal Title Display -->
-          <TextBlock Text="{Binding Title}"
+          <TextBlock IsVisible="{Binding !IsEditingTitle}"
+                     Text="{Binding Title}"
                      FontWeight="SemiBold" FontSize="16"
                      HorizontalAlignment="Center"
                      TextTrimming="CharacterEllipsis"
                      MaxWidth="200"
-                     Foreground="{DynamicResource AppTextPrimaryBrush}"
-                     IsVisible="{Binding !IsEditingTitle}"/>
+                     Foreground="{DynamicResource AppTextPrimaryBrush}"/>
 
           <!-- Title Edit Mode -->
           <StackPanel IsVisible="{Binding IsEditingTitle}"
                       Orientation="Horizontal" Spacing="8">
             <TextBox Text="{Binding EditableTitle}"
                      Width="150"
-                     FontSize="14"/>
+                     FontSize="14"
+                     Background="{DynamicResource AppSurfaceBrush}"
+                     Foreground="{DynamicResource AppTextPrimaryBrush}"
+                     BorderBrush="{DynamicResource AppInputBorderBrush}"/>
             <Button Classes="icon" Width="28" Height="28"
                     Command="{Binding SaveTitleCommand}">
               <PathIcon Data="M9,16.17L4.83,12L3.41,13.41L9,19L21,7L19.59,5.59L9,16.17Z"
-                        Width="16" Height="16"/>
+                        Width="16" Height="16"
+                        Foreground="{DynamicResource SuccessBrush}"/>
             </Button>
             <Button Classes="icon" Width="28" Height="28"
                     Command="{Binding CancelRenameTitleCommand}">
               <PathIcon Data="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"
-                        Width="16" Height="16"/>
+                        Width="16" Height="16"
+                        Foreground="{DynamicResource ErrorBrush}"/>
             </Button>
           </StackPanel>
         </StackPanel>
@@ -70,35 +77,40 @@
                 VerticalAlignment="Center"
                 x:Name="MoreOptionsButton">
           <PathIcon Data="M12,16A2,2 0 0,1 14,18A2,2 0 0,1 12,20A2,2 0 0,1 10,18A2,2 0 0,1 12,16M12,10A2,2 0 0,1 14,12A2,2 0 0,1 12,14A2,2 0 0,1 10,12A2,2 0 0,1 12,10M12,4A2,2 0 0,1 14,6A2,2 0 0,1 12,8A2,2 0 0,1 10,6A2,2 0 0,1 12,4Z"
-                    Width="20" Height="20"/>
+                    Width="20" Height="20"
+                    Foreground="{DynamicResource AppTextSecondaryBrush}"/>
           <Button.Flyout>
             <MenuFlyout Placement="BottomEdgeAlignedRight">
               <MenuItem Header="重命名"
                         Command="{Binding RenameConversationCommand}">
                 <MenuItem.Icon>
                   <PathIcon Data="M3,17.25V21H6.75L17.81,9.94L14.06,6.19L3,17.25M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.13,5.12L18.88,8.87L20.71,7.04Z"
-                            Width="18" Height="18"/>
+                            Width="18" Height="18"
+                            Foreground="{DynamicResource PrimaryBrush}"/>
                 </MenuItem.Icon>
               </MenuItem>
               <MenuItem Header="清空会话"
                         Command="{Binding ClearCurrentConversationCommand}">
                 <MenuItem.Icon>
                   <PathIcon Data="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19V4M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"
-                            Width="18" Height="18"/>
+                            Width="18" Height="18"
+                            Foreground="{DynamicResource WarningBrush}"/>
                 </MenuItem.Icon>
               </MenuItem>
               <MenuItem Header="导出对话"
                         Command="{Binding ExportConversationCommand}">
                 <MenuItem.Icon>
                   <PathIcon Data="M19,9H15V3H9V9H5L12,16L19,9M5,18V20H19V18H5Z"
-                            Width="18" Height="18"/>
+                            Width="18" Height="18"
+                            Foreground="{DynamicResource FrostCyanBrush}"/>
                 </MenuItem.Icon>
               </MenuItem>
               <MenuItem Header="设置"
                         Command="{Binding NavigateToSettingsCommand}">
                 <MenuItem.Icon>
                   <PathIcon Data="M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.21,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.34 4.5,11.67 4.5,12C4.5,12.33 4.53,12.65 4.57,12.97L2.46,14.63C2.27,14.78 2.21,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.03 4.95,18.95L7.44,17.94C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.68 16.04,18.34 16.56,17.94L19.05,18.95C19.27,19.03 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z"
-                            Width="18" Height="18"/>
+                            Width="18" Height="18"
+                            Foreground="{DynamicResource AstralVioletBrush}"/>
                 </MenuItem.Icon>
               </MenuItem>
             </MenuFlyout>
@@ -108,13 +120,13 @@
         <!-- Row 1: Model Switcher Button (Center) -->
         <Button Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3"
                 Command="{Binding OpenModelSwitcherCommand}"
-                Classes="model-switcher-button"
+                Classes="model-switcher"
                 HorizontalAlignment="Center"
                 Margin="0,4,0,0"
                 ToolTip.Tip="切换模型">
           <TextBlock Text="{Binding CurrentModelName}"
                      FontSize="13" FontWeight="Medium"
-                     Foreground="{DynamicResource AppTextPrimaryBrush}"
+                     Foreground="{DynamicResource AppTextSecondaryBrush}"
                      MaxWidth="200"
                      TextTrimming="CharacterEllipsis"/>
         </Button>
@@ -123,15 +135,12 @@
 
     <!-- Model Switcher Popup -->
     <Border Grid.Row="1"
-            Background="{DynamicResource AppCardBrush}"
-            CornerRadius="12"
-            Padding="8"
+            Classes="model-switcher-popup"
             Margin="12,56,12,0"
             HorizontalAlignment="Center"
             VerticalAlignment="Top"
             IsVisible="{Binding IsModelSwitcherOpen}"
             ZIndex="100"
-            BoxShadow="0 4 16 0 #40000000"
             MaxHeight="400">
       <ScrollViewer>
         <StackPanel Width="240" Spacing="8">
@@ -148,7 +157,7 @@
                   <TextBlock Text="{Binding ProviderName}"
                              FontSize="12" FontWeight="Medium"
                              Margin="8,4,8,2"
-                             Foreground="{DynamicResource AppTextSecondaryBrush}"/>
+                             Foreground="{DynamicResource AppTextTertiaryBrush}"/>
 
                   <!-- Models List -->
                   <ItemsControl ItemsSource="{Binding Models}">
@@ -182,7 +191,7 @@
                   Command="{Binding CloseModelSwitcherCommand}"
                   HorizontalAlignment="Stretch"
                   Margin="0,4,0,0">
-            <TextBlock Text="取消" HorizontalAlignment="Center"/>
+            <TextBlock Text="取消" HorizontalAlignment="Center" Foreground="{DynamicResource AppTextSecondaryBrush}"/>
           </Button>
         </StackPanel>
       </ScrollViewer>
@@ -195,21 +204,15 @@
                   VerticalAlignment="Center"
                   HorizontalAlignment="Center"
                   Spacing="16">
-        <Border Background="{DynamicResource AppSurfaceBrush}"
-                Width="80" Height="80"
-                CornerRadius="40">
+        <Border Classes="chat-empty-state">
           <PathIcon Data="M20,2H4A2,2 0 0,0 2,4V22L6,18H20A2,2 0 0,0 22,16V4A2,2 0 0,0 20,2M20,16H6L4,18V4H20V16Z"
-                    Width="36" Height="36"
-                    Foreground="{DynamicResource AppTextSecondaryBrush}"/>
+                    Width="48" Height="48"
+                    Foreground="{DynamicResource PrimaryBrush}"/>
         </Border>
         <TextBlock Text="开始新对话"
-                   FontSize="18" FontWeight="SemiBold"
-                   HorizontalAlignment="Center"
-                   Foreground="{DynamicResource AppTextPrimaryBrush}"/>
+                   Classes="chat-empty-state-title"/>
         <TextBlock Text="发送消息开始记录"
-                   FontSize="14"
-                   HorizontalAlignment="Center"
-                   Foreground="{DynamicResource AppTextSecondaryBrush}"/>
+                   Classes="chat-empty-state-subtitle"/>
       </StackPanel>
 
       <!-- Messages List (ListBox with virtualization) -->
@@ -241,7 +244,7 @@
             <Setter Property="HorizontalContentAlignment" Value="Left"/>
           </Style>
           <Style Selector="Button.menu-item:pointerover">
-            <Setter Property="Background" Value="{DynamicResource AppSurfaceBrush}"/>
+            <Setter Property="Background" Value="#161F38"/>
           </Style>
           <!-- Edit Mode Button Styles -->
           <Style Selector="Button.edit-action">
@@ -251,37 +254,37 @@
           </Style>
           <Style Selector="Button.edit-action.cancel">
             <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Foreground" Value="{DynamicResource AppTextSecondaryBrush}"/>
+            <Setter Property="Foreground" Value="#B8C1D9"/>
           </Style>
           <Style Selector="Button.edit-action.cancel:pointerover">
-            <Setter Property="Background" Value="{DynamicResource AppSurfaceBrush}"/>
+            <Setter Property="Background" Value="#161F38"/>
           </Style>
           <Style Selector="Button.edit-action.save">
-            <Setter Property="Background" Value="{DynamicResource PrimaryBrush}"/>
-            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Background" Value="#8FA8FF"/>
+            <Setter Property="Foreground" Value="#08101F"/>
           </Style>
           <Style Selector="Button.edit-action.save:pointerover">
-            <Setter Property="Background" Value="{DynamicResource PrimaryDarkBrush}"/>
+            <Setter Property="Background" Value="#B8C8FF"/>
           </Style>
           <!-- Edit Message TextBox Style -->
           <Style Selector="TextBox.edit-message-input">
             <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource AppBorderBrush}"/>
-            <Setter Property="SelectionBrush" Value="{DynamicResource PrimaryBrush}"/>
-            <Setter Property="CaretBrush" Value="{DynamicResource PrimaryBrush}"/>
+            <Setter Property="BorderBrush" Value="#2A3654"/>
+            <Setter Property="SelectionBrush" Value="#8FA8FF"/>
+            <Setter Property="CaretBrush" Value="#8FA8FF"/>
           </Style>
           <Style Selector="TextBox.edit-message-input:focus">
-            <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
+            <Setter Property="BorderBrush" Value="#8EDBFF"/>
             <Setter Property="BorderThickness" Value="2"/>
           </Style>
           <!-- Edit Message TextBox in Bubble Style -->
           <Style Selector="TextBox.edit-message-input.edit-in-bubble">
             <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource AppBorderBrush}"/>
+            <Setter Property="BorderBrush" Value="#2A3654"/>
           </Style>
           <Style Selector="TextBox.edit-message-input.edit-in-bubble:focus">
             <Setter Property="BorderThickness" Value="2"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
+            <Setter Property="BorderBrush" Value="#8EDBFF"/>
           </Style>
           <!-- Edit Action Inline Button Style -->
           <Style Selector="Button.edit-action-inline">
@@ -302,7 +305,7 @@
           <DataTemplate x:DataType="model:ChatMessage">
             <!-- Message Container with Interleaved Layout -->
             <Grid Margin="0,4" ColumnDefinitions="2*, 6*, 2*">
-              <!-- User Message (Right side) -->
+              <!-- User Message (Right side) - Rani 用户气泡 -->
               <Grid Grid.Column="1"
                     Grid.ColumnSpan="2"
                     IsVisible="{Binding IsUser}"
@@ -313,30 +316,27 @@
                   <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
                 
-                <!-- Row 0: Message Bubble -->
+                <!-- Row 0: Message Bubble - Rani 用户气泡样式 -->
                 <Border Grid.Row="0"
-                        Background="{DynamicResource AppUserMessageBrush}"
-                        CornerRadius="16,4,16,16"
-                        Padding="12,8"
-                        HorizontalAlignment="Right">
+                        Classes="chat-bubble-user">
                   <Grid>
                     <!-- Normal Content -->
                     <TextBlock IsVisible="{Binding !IsEditing}"
                                Text="{Binding Content}"
                                TextWrapping="Wrap"
-                               Foreground="White" FontSize="14"/>
-                    
+                               Foreground="{DynamicResource AppTextPrimaryBrush}" FontSize="14"/>
+
                     <!-- Edit Mode Content -->
                     <StackPanel IsVisible="{Binding IsEditing}" Spacing="8">
                       <!-- Edit Label -->
                       <StackPanel Orientation="Horizontal" Spacing="6">
                         <PathIcon Data="M3,17.25V21H6.75L17.81,9.94L14.06,6.19L3,17.25M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.13,5.12L18.88,8.87L20.71,7.04Z"
                                   Width="14" Height="14"
-                                  Foreground="White" Opacity="0.8"/>
+                                  Foreground="{DynamicResource PrimaryBrush}" Opacity="0.8"/>
                         <TextBlock Text="编辑消息"
                                    FontSize="12"
                                    FontWeight="Medium"
-                                   Foreground="White" Opacity="0.8"/>
+                                   Foreground="{DynamicResource PrimaryHoverBrush}" Opacity="0.8"/>
                       </StackPanel>
                       <!-- Edit TextBox -->
                       <TextBox Text="{Binding EditableContent}"
@@ -345,7 +345,6 @@
                                Padding="8,6"
                                FontSize="14"
                                CornerRadius="8"
-                               Background="{DynamicResource AppBackgroundBrush}"
                                Foreground="{DynamicResource AppTextPrimaryBrush}"
                                CaretBrush="{DynamicResource PrimaryBrush}"
                                SelectionBrush="{DynamicResource PrimaryBrush}"/>
@@ -357,8 +356,8 @@
                                 CommandParameter="{Binding}">
                           <StackPanel Orientation="Horizontal" Spacing="4">
                             <PathIcon Data="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"
-                                      Width="12" Height="12" Foreground="White"/>
-                            <TextBlock Text="取消" FontSize="12" Foreground="White"/>
+                                      Width="12" Height="12" Foreground="{DynamicResource AppTextPrimaryBrush}"/>
+                            <TextBlock Text="取消" FontSize="12" Foreground="{DynamicResource AppTextPrimaryBrush}"/>
                           </StackPanel>
                         </Button>
                         <Button Classes="edit-action-inline save"
@@ -366,56 +365,56 @@
                                 CommandParameter="{Binding}">
                           <StackPanel Orientation="Horizontal" Spacing="4">
                             <PathIcon Data="M9,16.17L4.83,12L3.41,13.41L9,19L21,7L19.59,5.59L9,16.17Z"
-                                      Width="12" Height="12" Foreground="White"/>
-                            <TextBlock Text="保存" FontSize="12" Foreground="White"/>
+                                      Width="12" Height="12" Foreground="{DynamicResource AppBackgroundBrush}"/>
+                            <TextBlock Text="保存" FontSize="12" Foreground="{DynamicResource AppBackgroundBrush}"/>
                           </StackPanel>
                         </Button>
                       </StackPanel>
                     </StackPanel>
                   </Grid>
                 </Border>
-                
+
                 <!-- Row 1: Action Bar (below bubble) - only show when not editing -->
-                <StackPanel Grid.Row="1" 
+                <StackPanel Grid.Row="1"
                             IsVisible="{Binding !IsEditing}"
-                            Orientation="Horizontal" 
+                            Orientation="Horizontal"
                             Spacing="8"
                             HorizontalAlignment="Right"
                             Margin="0,4,0,0">
                   <TextBlock Text="{Binding Timestamp, StringFormat='{}{0:HH:mm}'}"
-                             FontSize="10" 
-                             Foreground="{DynamicResource AppTextSecondaryBrush}"
+                             FontSize="10"
+                             Foreground="{DynamicResource AppTextTertiaryBrush}"
                              VerticalAlignment="Center"/>
                   <StackPanel Orientation="Horizontal" Spacing="4">
-                    <Button Classes="icon" Width="22" Height="22" Padding="3"
+                    <Button Classes="chat-action"
                             Command="{Binding $parent[ListBox].((vm:ChatViewModel)DataContext).CopyMessageCommand}"
                             CommandParameter="{Binding}"
                             ToolTip.Tip="复制">
                       <PathIcon Data="M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M19,21H8V7H19V21Z"
-                                Width="12" Height="12" 
-                                Foreground="{DynamicResource AppTextSecondaryBrush}"/>
+                                Width="12" Height="12"
+                                Foreground="{DynamicResource AppTextTertiaryBrush}"/>
                     </Button>
-                    <Button Classes="icon" Width="22" Height="22" Padding="3"
+                    <Button Classes="chat-action"
                             Command="{Binding $parent[ListBox].((vm:ChatViewModel)DataContext).EditMessageCommand}"
                             CommandParameter="{Binding}"
                             ToolTip.Tip="编辑">
                       <PathIcon Data="M3,17.25V21H6.75L17.81,9.94L14.06,6.19L3,17.25M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.13,5.12L18.88,8.87L20.71,7.04Z"
-                                Width="12" Height="12" 
-                                Foreground="{DynamicResource AppTextSecondaryBrush}"/>
+                                Width="12" Height="12"
+                                Foreground="{DynamicResource AppTextTertiaryBrush}"/>
                     </Button>
-                    <Button Classes="icon" Width="22" Height="22" Padding="3"
+                    <Button Classes="chat-action"
                             Command="{Binding $parent[ListBox].((vm:ChatViewModel)DataContext).DeleteMessageCommand}"
                             CommandParameter="{Binding}"
                             ToolTip.Tip="删除">
                       <PathIcon Data="M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19V4Z"
-                                Width="12" Height="12" 
-                                Foreground="{DynamicResource AppTextSecondaryBrush}"/>
+                                Width="12" Height="12"
+                                Foreground="{DynamicResource ErrorBrush}"/>
                     </Button>
                   </StackPanel>
                 </StackPanel>
               </Grid>
 
-              <!-- AI Message (Left side) -->
+              <!-- AI Message (Left side) - Rani AI 气泡 -->
               <Grid Grid.Column="0"
                     Grid.ColumnSpan="2"
                     IsVisible="{Binding !IsUser}"
@@ -424,19 +423,17 @@
                   <ColumnDefinition Width="Auto"/>
                   <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
-                
+
                 <!-- AI Avatar -->
                 <Border Grid.Column="0"
-                        Background="{DynamicResource PrimaryBrush}"
-                        Width="32" Height="32"
-                        CornerRadius="16"
+                        Classes="chat-ai-avatar"
                         Margin="0,0,8,0"
                         VerticalAlignment="Top">
                   <TextBlock Text="AI"
                              HorizontalAlignment="Center"
                              VerticalAlignment="Center"
                              FontSize="11" FontWeight="Bold"
-                             Foreground="White"/>
+                             Foreground="{DynamicResource AppBackgroundBrush}"/>
                 </Border>
 
                 <!-- AI Message Content -->
@@ -448,8 +445,7 @@
                   
                   <!-- Row 0: Message Bubble -->
                   <Border Grid.Row="0"
-                          Background="{DynamicResource AppAiMessageBrush}"
-                          CornerRadius="4,16,16,16"
+                          Classes="chat-bubble-ai"
                           Padding="12,8"
                           HorizontalAlignment="Left"
                           MinWidth="60">
@@ -485,10 +481,10 @@
                       <TextBlock IsVisible="{Binding IsError}"
                                  Text="{Binding Content, Mode=OneWay}"
                                  TextWrapping="Wrap" FontSize="14"
-                                 Foreground="#FF5252"/>
+                                 Foreground="{DynamicResource ErrorBrush}"/>
                     </StackPanel>
                   </Border>
-                  
+
                   <!-- Row 1: Action Bar (below bubble) -->
                   <StackPanel Grid.Row="1"
                               Orientation="Horizontal"
@@ -496,71 +492,71 @@
                               HorizontalAlignment="Left"
                               Margin="0,4,0,0">
                     <StackPanel Orientation="Horizontal" Spacing="4">
-                      <Button Classes="icon" Width="22" Height="22" Padding="3"
+                      <Button Classes="chat-action"
                               Command="{Binding $parent[ListBox].((vm:ChatViewModel)DataContext).CopyMessageCommand}"
                               CommandParameter="{Binding}"
                               ToolTip.Tip="复制">
                         <PathIcon Data="M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M19,21H8V7H19V21Z"
                                   Width="12" Height="12"
-                                  Foreground="{DynamicResource AppTextSecondaryBrush}"/>
+                                  Foreground="{DynamicResource AppTextTertiaryBrush}"/>
                       </Button>
-                      <Button Classes="icon" Width="22" Height="22" Padding="3"
+                      <Button Classes="chat-action"
                               Command="{Binding $parent[ListBox].((vm:ChatViewModel)DataContext).RegenerateMessageCommand}"
                               CommandParameter="{Binding}"
                               ToolTip.Tip="重新生成"
                               IsEnabled="{Binding !IsLoading}">
                         <PathIcon Data="M17.65,6.35C16.2,4.9 14.21,4 12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20C15.73,20 18.84,17.45 19.73,14H17.65C16.83,16.33 14.61,18 12,18A6,6 0 0,1 6,12A6,6 0 0,1 12,6C13.66,6 15.14,6.69 16.22,7.78L13,11H20V4L17.65,6.35Z"
                                   Width="12" Height="12"
-                                  Foreground="{DynamicResource AppTextSecondaryBrush}"/>
+                                  Foreground="{DynamicResource AppTextTertiaryBrush}"/>
                       </Button>
-                      <Button Classes="icon" Width="22" Height="22" Padding="3"
+                      <Button Classes="chat-action"
                               Command="{Binding $parent[ListBox].((vm:ChatViewModel)DataContext).DeleteMessageCommand}"
                               CommandParameter="{Binding}"
                               ToolTip.Tip="删除">
                         <PathIcon Data="M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19V4Z"
                                   Width="12" Height="12"
-                                  Foreground="{DynamicResource AppTextSecondaryBrush}"/>
+                                  Foreground="{DynamicResource ErrorBrush}"/>
                       </Button>
                     </StackPanel>
 
                     <!-- Version Navigation (only show when has version history) -->
                     <StackPanel Orientation="Horizontal" Spacing="2"
                                 IsVisible="{Binding HasVersionHistory}">
-                      <Button Classes="icon" Width="20" Height="20" Padding="2"
+                      <Button Classes="chat-action"
                               Command="{Binding $parent[ListBox].((vm:ChatViewModel)DataContext).PreviousVersionCommand}"
                               CommandParameter="{Binding}"
                               ToolTip.Tip="上一个版本"
                               IsEnabled="{Binding CanGoToPreviousVersion}">
                         <PathIcon Data="M15.41,7.41L14,6L8,12L14,18L15.41,16.59L10.83,12L15.41,7.41Z"
                                   Width="10" Height="10"
-                                  Foreground="{DynamicResource AppTextSecondaryBrush}"/>
+                                  Foreground="{DynamicResource AppTextTertiaryBrush}"/>
                       </Button>
                       <TextBlock Text="{Binding DisplayVersionNumber, StringFormat='{}{0}'}"
                                  FontSize="10"
-                                 Foreground="{DynamicResource AppTextSecondaryBrush}"
+                                 Foreground="{DynamicResource AppTextTertiaryBrush}"
                                  VerticalAlignment="Center"/>
                       <TextBlock Text="/"
                                  FontSize="10"
-                                 Foreground="{DynamicResource AppTextSecondaryBrush}"
+                                 Foreground="{DynamicResource AppTextTertiaryBrush}"
                                  VerticalAlignment="Center"/>
                       <TextBlock Text="{Binding VersionCount, StringFormat='{}{0}'}"
                                  FontSize="10"
-                                 Foreground="{DynamicResource AppTextSecondaryBrush}"
+                                 Foreground="{DynamicResource AppTextTertiaryBrush}"
                                  VerticalAlignment="Center"/>
-                      <Button Classes="icon" Width="20" Height="20" Padding="2"
+                      <Button Classes="chat-action"
                               Command="{Binding $parent[ListBox].((vm:ChatViewModel)DataContext).NextVersionCommand}"
                               CommandParameter="{Binding}"
                               ToolTip.Tip="下一个版本"
                               IsEnabled="{Binding CanGoToNextVersion}">
                         <PathIcon Data="M8.59,16.59L10,18L16,12L10,6L8.59,7.41L13.17,12L8.59,16.59Z"
                                   Width="10" Height="10"
-                                  Foreground="{DynamicResource AppTextSecondaryBrush}"/>
+                                  Foreground="{DynamicResource AppTextTertiaryBrush}"/>
                       </Button>
                     </StackPanel>
 
                     <TextBlock Text="{Binding Timestamp, StringFormat='{}{0:HH:mm}'}"
                                FontSize="10"
-                               Foreground="{DynamicResource AppTextSecondaryBrush}"
+                               Foreground="{DynamicResource AppTextTertiaryBrush}"
                                VerticalAlignment="Center"/>
                   </StackPanel>
                 </Grid>
@@ -573,48 +569,66 @@
 
     <!-- Toast Notification -->
     <Border Grid.Row="0" Grid.RowSpan="3"
-            Background="#333333"
-            CornerRadius="8"
-            Padding="16,10"
+            Classes="chat-toast"
             HorizontalAlignment="Center"
             VerticalAlignment="Bottom"
             Margin="0,0,0,100"
             IsVisible="{Binding ShowToast}"
-            ZIndex="200"
-            Opacity="0.9">
+            ZIndex="200">
       <TextBlock Text="{Binding ToastMessage}"
-                 Foreground="White"
+                 Foreground="{DynamicResource AppTextPrimaryBrush}"
                  FontSize="14"/>
     </Border>
 
     <!-- Input Area -->
     <Border Grid.Row="2"
             Background="{DynamicResource AppBackgroundBrush}"
-            Padding="12,12">
+            BorderBrush="{DynamicResource AppBorderBrush}"
+            BorderThickness="0,1,0,0"
+            Padding="16,12"
+            MinHeight="56">
       <Border Background="{DynamicResource AppSurfaceBrush}"
+              BorderBrush="{DynamicResource AppInputBorderBrush}"
+              BorderThickness="1"
               CornerRadius="24"
               Padding="4">
         <Grid ColumnDefinitions="Auto, *, Auto" VerticalAlignment="Center">
           <Button Grid.Column="0" Classes="icon"
                   ToolTip.Tip="添加附件">
             <PathIcon Data="M16.5,6V17.5A4,4 0 0,1 12.5,21.5A4,4 0 0,1 8.5,17.5V5A2.5,2.5 0 0,1 11,2.5A2.5,2.5 0 0,1 13.5,5V15.5A1,1 0 0,1 12.5,16.5A1,1 0 0,1 11.5,15.5V6H10V15.5A2.5,2.5 0 0,0 12.5,18A2.5,2.5 0 0,0 15,15.5V5A4,4 0 0,0 11,1A4,4 0 0,0 7,5V17.5A5.5,5.5 0 0,0 12.5,23A5.5,5.5 0 0,0 18,17.5V6H16.5Z"
-                      Width="18" Height="18"/>
+                      Width="18" Height="18"
+                      Foreground="#7E8AAC"/>
           </Button>
 
           <TextBox Grid.Column="1"
                    Text="{Binding InputMessage}"
                    Watermark="输入消息... (Shift+Enter 换行)"
                    Classes="chat-input"
-                   AcceptsReturn="True"/>
+                   AcceptsReturn="True"
+                   Foreground="#F3F6FF"
+                   CaretBrush="#8FA8FF"
+                   SelectionBrush="#8FA8FF"/>
 
-          <!-- Send Button -->
+          <!-- Send Button (shown when not responding) -->
           <Button Grid.Column="2"
                   Classes="send"
                   Command="{Binding SendMessageCommand}"
-                  ToolTip.Tip="发送 (Enter)">
+                  ToolTip.Tip="发送 (Enter)"
+                  IsVisible="{Binding !IsAiResponding}">
             <PathIcon Data="M2,21L23,12L2,3V10L17,12L2,14V21Z"
-                      Width="16" Height="16"
-                      Foreground="White"/>
+                      Width="18" Height="18"
+                      Foreground="#08101F"/>
+          </Button>
+
+          <!-- Stop Button (shown when AI is responding) -->
+          <Button Grid.Column="2"
+                  Classes="send"
+                  Command="{Binding StopGenerationCommand}"
+                  ToolTip.Tip="停止生成"
+                  IsVisible="{Binding IsAiResponding}">
+            <PathIcon Data="M6,6H18V18H6V6Z"
+                      Width="18" Height="18"
+                      Foreground="#08101F"/>
           </Button>
         </Grid>
       </Border>

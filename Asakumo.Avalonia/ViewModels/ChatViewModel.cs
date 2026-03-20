@@ -145,7 +145,7 @@ public partial class ChatViewModel : ViewModelBase, INavigationAware
 
     private void RefreshModelInfo()
     {
-        CurrentModelName = _aiService.CurrentModelName ?? _aiService.CurrentModelId ?? string.Empty;
+        CurrentModelName = _aiService.CurrentModelName ?? _aiService.CurrentModelId ?? "点击选择模型";
         CurrentProviderName = _aiService.CurrentProviderId ?? string.Empty;
     }
 
@@ -684,6 +684,14 @@ public partial class ChatViewModel : ViewModelBase, INavigationAware
     private async Task OpenModelSwitcherAsync()
     {
         await LoadAvailableModelsAsync();
+
+        if (AvailableModels.Count == 0)
+        {
+            ShowToastMessage("请先配置 AI 服务商");
+            _navigationService.NavigateTo<ProviderSelectionViewModel>();
+            return;
+        }
+
         IsModelSwitcherOpen = true;
     }
 
