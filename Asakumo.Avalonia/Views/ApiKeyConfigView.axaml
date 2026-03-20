@@ -8,18 +8,23 @@
              x:DataType="vm:ApiKeyConfigViewModel">
 
   <Grid RowDefinitions="Auto, *, Auto" Background="{DynamicResource AppBackgroundBrush}">
-    <!-- Header -->
-    <Border Grid.Row="0" Padding="16,12" Background="{DynamicResource AppSurfaceBrush}">
+    <!-- Header - Rani 风格 -->
+    <Border Grid.Row="0" Padding="16,12" 
+            Background="{DynamicResource AppSurfaceBrush}"
+            BorderBrush="#1E2A4A"
+            BorderThickness="0,0,0,1">
       <Grid ColumnDefinitions="Auto, *, Auto">
         <Button Grid.Column="0" Command="{Binding GoBackCommand}"
                 Classes="icon" ToolTip.Tip="返回">
           <PathIcon Data="M20,11H7.83L13.42,5.41L12,4L4,12L12,20L13.41,18.59L7.83,13H20V11Z"
-                    Width="20" Height="20"/>
+                    Width="20" Height="20"
+                    Foreground="#C8D2EA"/>
         </Button>
         <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center"
                     VerticalAlignment="Center" Spacing="8">
           <TextBlock Text="{Binding ProviderIcon}" FontSize="18"/>
-          <TextBlock Text="{Binding ProviderName}" FontSize="18" FontWeight="SemiBold"/>
+          <TextBlock Text="{Binding ProviderName}" FontSize="18" FontWeight="SemiBold"
+                     Foreground="#F3F6FF"/>
         </StackPanel>
       </Grid>
     </Border>
@@ -29,27 +34,37 @@
       <StackPanel Spacing="20" Margin="24,24,24,16">
         <!-- API Key Section -->
         <StackPanel Spacing="8">
-          <TextBlock Text="API Key" FontSize="14" FontWeight="Medium"/>
+          <TextBlock Text="API Key" FontSize="14" FontWeight="Medium"
+                     Foreground="#F3F6FF"/>
           <TextBlock Text="请输入您的 API Key，用于访问 AI 服务"
-                     FontSize="12" Foreground="{DynamicResource AppTextSecondaryBrush}"
+                     FontSize="12" Foreground="#7E8AAC"
                      TextWrapping="Wrap"/>
           <TextBox Text="{Binding ApiKey}"
                    PasswordChar="*"
                    Watermark="sk-..."
                    MinHeight="48"
-                   Padding="12,0"/>
+                   Padding="12,0"
+                   Background="#11182B"
+                   Foreground="#F3F6FF"
+                   BorderBrush="#2A3654"
+                   CornerRadius="12"/>
         </StackPanel>
 
         <!-- Base URL Section (Conditional) -->
         <StackPanel Spacing="8" IsVisible="{Binding ShowBaseUrl}">
-          <TextBlock Text="API 地址" FontSize="14" FontWeight="Medium"/>
+          <TextBlock Text="API 地址" FontSize="14" FontWeight="Medium"
+                     Foreground="#F3F6FF"/>
           <TextBlock Text="如果您使用自定义服务地址，请在此填写"
-                     FontSize="12" Foreground="{DynamicResource AppTextSecondaryBrush}"
+                     FontSize="12" Foreground="#7E8AAC"
                      TextWrapping="Wrap"/>
           <TextBox Text="{Binding BaseUrl}"
                    Watermark="{Binding BaseUrlPlaceholder}"
                    MinHeight="48"
-                   Padding="12,0"/>
+                   Padding="12,0"
+                   Background="#11182B"
+                   Foreground="#F3F6FF"
+                   BorderBrush="#2A3654"
+                   CornerRadius="12"/>
         </StackPanel>
 
         <!-- Validate Button -->
@@ -62,26 +77,33 @@
             <PathIcon Data="M9,16.17L4.83,12L3.41,13.41L9,19L21,7L19.59,5.59L9,16.17Z"
                       Width="18" Height="18"
                       IsVisible="{Binding !IsValidating}"/>
-            <TextBlock Text="{Binding ValidateButtonText}"/>
+            <TextBlock Text="{Binding ValidateButtonText}"
+                       Foreground="#F3F6FF"/>
           </StackPanel>
         </Button>
 
-        <!-- Status Messages -->
-        <Border Background="#1A10A37F" CornerRadius="8" Padding="12"
+        <!-- Status Messages - Rani 风格 -->
+        <Border Background="#1A6FD7B8" 
+                BorderBrush="#2A6FD7B8"
+                BorderThickness="1"
+                CornerRadius="12" Padding="12"
                 IsVisible="{Binding ValidationSuccess}">
           <StackPanel Orientation="Horizontal" Spacing="8">
             <PathIcon Data="M9,16.17L4.83,12L3.41,13.41L9,19L21,7L19.59,5.59L9,16.17Z"
-                      Width="18" Height="18" Foreground="#10A37F"/>
-            <TextBlock Text="{Binding SuccessMessage}" Foreground="#10A37F"/>
+                      Width="18" Height="18" Foreground="#6FD7B8"/>
+            <TextBlock Text="{Binding SuccessMessage}" Foreground="#6FD7B8"/>
           </StackPanel>
         </Border>
 
-        <Border Background="#1AFF6B6B" CornerRadius="8" Padding="12"
+        <Border Background="#1AF28AA8" 
+                BorderBrush="#2AF28AA8"
+                BorderThickness="1"
+                CornerRadius="12" Padding="12"
                 IsVisible="{Binding HasError}">
           <StackPanel Orientation="Horizontal" Spacing="8">
             <PathIcon Data="M12,2C6.48,2 2,6.48 2,12C2,17.52 6.48,22 12,22C17.52,22 22,17.52 22,12C22,6.48 17.52,2 12,2ZM13,17H11V15H13V17ZM13,13H11V7H13V13Z"
-                      Width="18" Height="18" Foreground="#FF6B6B"/>
-            <TextBlock Text="{Binding ErrorMessage}" Foreground="#FF6B6B"/>
+                      Width="18" Height="18" Foreground="#F28AA8"/>
+            <TextBlock Text="{Binding ErrorMessage}" Foreground="#F28AA8"/>
           </StackPanel>
         </Border>
 
@@ -89,34 +111,36 @@
         <Button HorizontalAlignment="Center" Background="Transparent" BorderThickness="0"
                 Padding="0" Margin="0,8">
           <TextBlock Text="如何获取 API Key？"
-                     Foreground="{DynamicResource PrimaryBrush}"
+                     Foreground="#8EDBFF"
                      TextDecorations="Underline" FontSize="13"/>
         </Button>
 
         <!-- Model Selection Section (shown after validation) -->
         <StackPanel Spacing="12" IsVisible="{Binding ValidationSuccess}">
-          <Separator Margin="0,8"/>
+          <Separator Margin="0,8"
+                     Background="#1E2A4A"/>
 
           <TextBlock Text="选择要添加的模型"
-                     FontSize="16" FontWeight="SemiBold"/>
+                     FontSize="16" FontWeight="SemiBold"
+                     Foreground="#F3F6FF"/>
           <TextBlock Text="点击模型卡片进行多选："
                      FontSize="12"
-                     Foreground="{DynamicResource AppTextSecondaryBrush}"/>
+                     Foreground="#7E8AAC"/>
 
           <!-- Model List -->
           <ItemsControl ItemsSource="{Binding Models}">
             <ItemsControl.Styles>
               <Style Selector="Border.model-card">
-                <Setter Property="Background" Value="{DynamicResource AppCardBrush}"/>
+                <Setter Property="Background" Value="#11182B"/>
                 <Setter Property="BorderThickness" Value="2"/>
-                <Setter Property="BorderBrush" Value="Transparent"/>
-                <Setter Property="CornerRadius" Value="12"/>
+                <Setter Property="BorderBrush" Value="#2A3654"/>
+                <Setter Property="CornerRadius" Value="16"/>
                 <Setter Property="Padding" Value="12"/>
                 <Setter Property="Margin" Value="0,0,0,8"/>
               </Style>
               <Style Selector="Border.model-card.selected">
-                <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
-                <Setter Property="Background" Value="#0D10A37F"/>
+                <Setter Property="BorderBrush" Value="#8FA8FF"/>
+                <Setter Property="Background" Value="#1A2B4D"/>
               </Style>
             </ItemsControl.Styles>
             <ItemsControl.ItemTemplate>
@@ -125,30 +149,31 @@
                   <Grid ColumnDefinitions="*, Auto">
                     <!-- Info -->
                     <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                      <TextBlock Text="{Binding Model.Name}" FontSize="16" FontWeight="Medium"/>
+                      <TextBlock Text="{Binding Model.Name}" FontSize="16" FontWeight="Medium"
+                                 Foreground="#F3F6FF"/>
                       <TextBlock Text="{Binding Model.Description}" FontSize="12"
-                                 Foreground="{DynamicResource AppTextSecondaryBrush}"
+                                 Foreground="#7E8AAC"
                                  TextWrapping="Wrap" MaxLines="2"/>
                       <!-- Capabilities -->
                       <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,4,0,0">
-                        <Border Background="#1A10A37F" CornerRadius="4" Padding="6,2"
+                        <Border Background="#1A8EDBFF" CornerRadius="4" Padding="6,2"
                                 IsVisible="{Binding Model.SupportsVision}">
-                          <TextBlock Text="视觉" FontSize="10" Foreground="#10A37F"/>
+                          <TextBlock Text="视觉" FontSize="10" Foreground="#8EDBFF"/>
                         </Border>
-                        <Border Background="#1A10A37F" CornerRadius="4" Padding="6,2"
+                        <Border Background="#1AA792E8" CornerRadius="4" Padding="6,2"
                                 IsVisible="{Binding Model.SupportsFunctionCalling}">
-                          <TextBlock Text="工具调用" FontSize="10" Foreground="#10A37F"/>
+                          <TextBlock Text="工具调用" FontSize="10" Foreground="#A792E8"/>
                         </Border>
-                        <Border Background="#1A10A37F" CornerRadius="4" Padding="6,2">
+                        <Border Background="#1A8FA8FF" CornerRadius="4" Padding="6,2">
                           <TextBlock Text="{Binding Model.MaxTokens, StringFormat='{}{0:N0} tokens'}"
-                                     FontSize="10" Foreground="#10A37F"/>
+                                     FontSize="10" Foreground="#8FA8FF"/>
                         </Border>
                       </StackPanel>
                     </StackPanel>
 
                     <!-- Add/Remove Button -->
                     <Button Grid.Column="1" Width="36" Height="36" CornerRadius="18"
-                            Background="{DynamicResource PrimaryBrush}"
+                            Background="#8FA8FF"
                             Command="{Binding $parent[ItemsControl].((vm:ApiKeyConfigViewModel)DataContext).ToggleModelCommand}"
                             CommandParameter="{Binding}"
                             VerticalAlignment="Center"
@@ -157,12 +182,12 @@
                         <!-- Plus Icon (Not Selected) -->
                         <PathIcon Data="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z"
                                   Width="20" Height="20"
-                                  Foreground="White"
+                                  Foreground="#08101F"
                                   IsVisible="{Binding !IsSelected}"/>
                         <!-- Check Icon (Selected) -->
                         <PathIcon Data="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z"
                                   Width="20" Height="20"
-                                  Foreground="White"
+                                  Foreground="#08101F"
                                   IsVisible="{Binding IsSelected}"/>
                       </Panel>
                     </Button>
@@ -174,20 +199,24 @@
 
           <!-- Error/Success Messages -->
           <TextBlock Text="{Binding ModelErrorMessage}"
-                     Foreground="#FF6B6B" FontSize="14"
+                     Foreground="#F28AA8" FontSize="14"
                      IsVisible="{Binding HasModelError}"/>
         </StackPanel>
       </StackPanel>
     </ScrollViewer>
 
-    <!-- Footer -->
-    <Border Grid.Row="2" Padding="16" Background="{DynamicResource AppSurfaceBrush}">
+    <!-- Footer - Rani 风格 -->
+    <Border Grid.Row="2" Padding="16" 
+            Background="{DynamicResource AppSurfaceBrush}"
+            BorderBrush="#1E2A4A"
+            BorderThickness="0,1,0,0">
       <Button Command="{Binding SaveCommand}"
               Classes="primary"
               HorizontalAlignment="Stretch"
               HorizontalContentAlignment="Center"
               IsEnabled="{Binding CanSave}">
-        <TextBlock Text="{Binding SaveButtonText}" FontWeight="SemiBold" FontSize="16"/>
+        <TextBlock Text="{Binding SaveButtonText}" FontWeight="SemiBold" FontSize="16"
+                   Foreground="#08101F"/>
       </Button>
     </Border>
   </Grid>
