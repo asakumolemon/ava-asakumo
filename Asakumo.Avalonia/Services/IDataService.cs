@@ -128,6 +128,80 @@ public interface IDataService
 
     #endregion
 
+    #region Characters
+
+    /// <summary>
+    /// Gets all characters ordered by last used time.
+    /// </summary>
+    /// <returns>A read-only list of characters.</returns>
+    Task<IReadOnlyList<Character>> GetCharactersAsync();
+
+    /// <summary>
+    /// Gets a character by ID.
+    /// </summary>
+    /// <param name="id">The character ID.</param>
+    /// <returns>The character, or null if not found.</returns>
+    Task<Character?> GetCharacterAsync(string id);
+
+    /// <summary>
+    /// Saves a character.
+    /// </summary>
+    /// <param name="character">The character to save.</param>
+    Task SaveCharacterAsync(Character character);
+
+    /// <summary>
+    /// Deletes a character by ID.
+    /// </summary>
+    /// <param name="id">The character ID.</param>
+    Task DeleteCharacterAsync(string id);
+
+    /// <summary>
+    /// Gets all lorebook entries for a character.
+    /// </summary>
+    /// <param name="characterId">The character ID.</param>
+    /// <returns>A read-only list of lorebook entries.</returns>
+    Task<IReadOnlyList<CharacterBookEntry>> GetCharacterBookEntriesAsync(string characterId);
+
+    /// <summary>
+    /// Saves a lorebook entry.
+    /// </summary>
+    /// <param name="entry">The entry to save.</param>
+    Task SaveCharacterBookEntryAsync(CharacterBookEntry entry);
+
+    /// <summary>
+    /// Deletes a lorebook entry by ID.
+    /// </summary>
+    /// <param name="entryId">The entry ID.</param>
+    Task DeleteCharacterBookEntryAsync(int entryId);
+
+    /// <summary>
+    /// Deletes all lorebook entries for a character.
+    /// </summary>
+    /// <param name="characterId">The character ID.</param>
+    Task DeleteCharacterBookEntriesAsync(string characterId);
+
+    /// <summary>
+    /// Searches characters by name or tags.
+    /// </summary>
+    /// <param name="query">The search query.</param>
+    /// <returns>A read-only list of matching characters.</returns>
+    Task<IReadOnlyList<Character>> SearchCharactersAsync(string query);
+
+    /// <summary>
+    /// Gets favourite characters.
+    /// </summary>
+    /// <returns>A read-only list of favourite characters.</returns>
+    Task<IReadOnlyList<Character>> GetFavouriteCharactersAsync();
+
+    /// <summary>
+    /// Gets recently used characters.
+    /// </summary>
+    /// <param name="count">The maximum number of characters to return.</param>
+    /// <returns>A read-only list of recently used characters.</returns>
+    Task<IReadOnlyList<Character>> GetRecentlyUsedCharactersAsync(int count = 10);
+
+    #endregion
+
     #region Backup & Maintenance
 
     /// <summary>

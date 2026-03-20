@@ -59,6 +59,12 @@ public partial class ProviderItem : ObservableObject
     private bool _isActive;
 
     /// <summary>
+    /// Gets or sets a value indicating whether this provider is selected.
+    /// </summary>
+    [ObservableProperty]
+    private bool _isSelected;
+
+    /// <summary>
     /// Gets the configured status text.
     /// </summary>
     public string ConfiguredStatus => IsConfigured
@@ -191,6 +197,14 @@ public partial class ProviderSelectionViewModel : ViewModelBase
     [RelayCommand]
     private void SelectProvider(ProviderItem item)
     {
+        // Clear previous selection
+        foreach (var provider in Providers)
+        {
+            provider.IsSelected = false;
+        }
+
+        // Set new selection
+        item.IsSelected = true;
         SelectedProviderItem = item;
     }
 

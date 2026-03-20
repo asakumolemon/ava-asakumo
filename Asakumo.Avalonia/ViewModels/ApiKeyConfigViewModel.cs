@@ -1,5 +1,6 @@
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using Asakumo.Avalonia.Models;
 using Asakumo.Avalonia.Services;
@@ -19,6 +20,7 @@ public partial class ApiKeyConfigViewModel : ViewModelBase, INavigationAware
 
     private string _providerId = string.Empty;
     private AIProvider? _provider;
+    private List<string> _selectedModelIds = new();
 
     #region Observable Properties
 
@@ -44,9 +46,11 @@ public partial class ApiKeyConfigViewModel : ViewModelBase, INavigationAware
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(ValidateButtonText))]
+    [NotifyPropertyChangedFor(nameof(CanSave))]
     private bool _isValidating;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CanSave))]
     private bool _validationSuccess;
 
     [ObservableProperty]
@@ -68,6 +72,32 @@ public partial class ApiKeyConfigViewModel : ViewModelBase, INavigationAware
     [ObservableProperty]
     private string? _apiKeyHelpUrl;
 
+    /// <summary>
+    /// Gets or sets the available models for selection.
+    /// </summary>
+    [ObservableProperty]
+    private ObservableCollection<ModelSelectionItem> _models = new();
+
+    /// <summary>
+    /// Gets or sets the number of selected models.
+    /// </summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(SaveButtonText))]
+    private int _selectedCount;
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the view model is saving.
+    /// </summary>
+    [ObservableProperty]
+    private bool _isSaving;
+
+    /// <summary>
+    /// Gets or sets the model error message.
+    /// </summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasModelError))]
+    private string? _modelErrorMessage;
+
     #endregion
 
     #region Computed Properties
@@ -86,6 +116,25 @@ public partial class ApiKeyConfigViewModel : ViewModelBase, INavigationAware
     /// Gets a value indicating whether there is a help URL available.
     /// </summary>
     public bool HasHelpUrl => !string.IsNullOrEmpty(ApiKeyHelpUrl);
+
+    /// <summary>
+    /// Gets a value indicating whether there is a model error message.
+    /// </summary>
+    public bool HasModelError => !string.IsNullOrEmpty(ModelErrorMessage);
+
+    /// <summary>
+    /// Gets the save button text based on selection state.
+    /// </summary>
+    public string SaveButtonText => IsSaving
+        ? "保存中..."
+        : ValidationSuccess
+            ? $"保存 ({SelectedCount})"
+            : "请先验证 API Key";
+
+    /// <summary>
+    /// Gets a value indicating whether the save button can be clicked.
+    /// </summary>
+    public bool CanSave => ValidationSuccess && !IsSaving;
 
     #endregion
 
@@ -141,11 +190,39 @@ public partial class ApiKeyConfigViewModel : ViewModelBase, INavigationAware
         {
             ApiKey = existingConfig.ApiKey ?? string.Empty;
             BaseUrl = existingConfig.BaseUrl ?? _provider.DefaultBaseUrl;
+            _selectedModelIds = existingConfig.AvailableModelIds ?? new List<string>();
         }
         else if (!string.IsNullOrEmpty(_provider.DefaultBaseUrl))
         {
             BaseUrl = _provider.DefaultBaseUrl;
         }
+
+        // Initialize model list
+        InitializeModels();
+    }
+
+    /// <summary>
+    /// Initializes the model list.
+    /// </summary>
+    private void InitializeModels()
+    {
+        if (_provider == null) return;
+
+        var items = _provider.Models.Select(m => new ModelSelectionItem(
+            m,
+            _selectedModelIds.Contains(m.Id)
+        )).ToList();
+
+        Models = new ObservableCollection<ModelSelectionItem>(items);
+        UpdateSelectedCount();
+    }
+
+    /// <summary>
+    /// Updates the selected count.
+    /// </summary>
+    private void UpdateSelectedCount()
+    {
+        SelectedCount = Models.Count(m => m.IsSelected);
     }
 
     #region Commands
@@ -180,10 +257,14 @@ public partial class ApiKeyConfigViewModel : ViewModelBase, INavigationAware
                     ProviderId = _providerId,
                     ApiKey = ApiKey,
                     BaseUrl = ShowBaseUrl ? BaseUrl : null,
-                    IsEnabled = true
+                    IsEnabled = true,
+                    AvailableModelIds = _selectedModelIds.ToList()
                 };
 
                 await _dataService.SaveProviderConfigAsync(config);
+
+                // Initialize model list for selection
+                InitializeModels();
             }
             else
             {
@@ -201,7 +282,7 @@ public partial class ApiKeyConfigViewModel : ViewModelBase, INavigationAware
     }
 
     [RelayCommand]
-    private void Continue()
+    private async Task SaveAsync()
     {
         if (!ValidationSuccess)
         {
@@ -211,8 +292,68 @@ public partial class ApiKeyConfigViewModel : ViewModelBase, INavigationAware
 
         if (_provider == null) return;
 
-        // Navigate to model selection
-        _navigationService.NavigateTo<ModelSelectionViewModel>(_providerId);
+        IsSaving = true;
+        ModelErrorMessage = null;
+
+        try
+        {
+            // Get existing config
+            var config = await _dataService.GetProviderConfigAsync(_providerId);
+            if (config == null)
+            {
+                config = new ProviderConfig
+                {
+                    ProviderId = _providerId,
+                    ApiKey = ApiKey,
+                    BaseUrl = ShowBaseUrl ? BaseUrl : null,
+                    IsEnabled = true
+                };
+            }
+
+            // Update model list
+            config.AvailableModelIds = _selectedModelIds.ToList();
+            config.UpdatedAt = System.DateTime.UtcNow;
+
+            await _dataService.SaveProviderConfigAsync(config);
+
+            // Clear configuration pages from navigation stack and navigate to settings
+            // If Settings is already in stack (entered from Settings), go back to it
+            // Otherwise (entered from ChatView), go back to ChatView and navigate to Settings
+            bool wentBackToSettings = _navigationService.GoBackTo<SettingsViewModel>();
+
+            if (!wentBackToSettings)
+            {
+                _navigationService.GoBackToAndNavigate<ChatViewModel, SettingsViewModel>();
+            }
+        }
+        catch (System.Exception ex)
+        {
+            ModelErrorMessage = $"保存失败: {ex.Message}";
+        }
+        finally
+        {
+            IsSaving = false;
+        }
+    }
+
+    [RelayCommand]
+    private void ToggleModel(ModelSelectionItem? item)
+    {
+        if (item?.Model == null) return;
+
+        item.IsSelected = !item.IsSelected;
+        UpdateSelectedCount();
+
+        var modelId = item.Model.Id;
+        if (item.IsSelected)
+        {
+            if (!_selectedModelIds.Contains(modelId))
+                _selectedModelIds.Add(modelId);
+        }
+        else
+        {
+            _selectedModelIds.Remove(modelId);
+        }
     }
 
     [RelayCommand]

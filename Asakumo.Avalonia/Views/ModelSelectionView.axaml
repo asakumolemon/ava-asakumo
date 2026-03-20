@@ -5,25 +5,29 @@
              xmlns:vm="using:Asakumo.Avalonia.ViewModels"
              mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="700"
              x:Class="Asakumo.Avalonia.Views.ModelSelectionView"
-             x:DataType="vm:ModelSelectionViewModel">
+             x:DataType="vm:ModelSelectionViewModel"
+             Background="{DynamicResource AppBackgroundBrush}">
 
-  <Grid RowDefinitions="Auto, *, Auto" Background="{DynamicResource AppBackgroundBrush}">
-    <!-- Header -->
-    <Border Grid.Row="0" Padding="16,12" Background="{DynamicResource AppSurfaceBrush}">
+  <Grid RowDefinitions="Auto, *, Auto">
+    <!-- Header - MD3 Top App Bar -->
+    <Border Grid.Row="0"
+            Classes="top-app-bar">
       <Grid ColumnDefinitions="Auto, *, Auto">
         <Button Grid.Column="0" Command="{Binding GoBackCommand}"
                 Classes="icon" ToolTip.Tip="返回">
           <PathIcon Data="M20,11H7.83L13.42,5.41L12,4L4,12L12,20L13.41,18.59L7.83,13H20V11Z"
-                    Width="20" Height="20"/>
+                    Width="20" Height="20"
+                    Foreground="{DynamicResource AppTextSecondaryBrush}"/>
         </Button>
         <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center"
                     VerticalAlignment="Center" Spacing="8">
           <TextBlock Text="{Binding ProviderIcon}" FontSize="18"/>
-          <TextBlock Text="{Binding ProviderName}" FontSize="18" FontWeight="SemiBold"/>
+          <TextBlock Text="{Binding ProviderName}" FontSize="18" FontWeight="SemiBold"
+                     Foreground="{DynamicResource AppTextPrimaryBrush}"/>
         </StackPanel>
         <TextBlock Grid.Column="2" Text="{Binding SelectedCount, StringFormat='已选 {0}'}"
                    VerticalAlignment="Center" FontSize="14"
-                   Foreground="{DynamicResource PrimaryBrush}"/>
+                   Foreground="{DynamicResource InfoBrush}"/>
       </Grid>
     </Border>
 
@@ -32,7 +36,7 @@
       <StackPanel Spacing="12" Margin="16">
         <!-- Instructions -->
         <TextBlock Text="点击 + 添加模型，点击 ✓ 移除模型："
-                   Foreground="{DynamicResource AppTextSecondaryBrush}"
+                   Foreground="{DynamicResource AppTextTertiaryBrush}"
                    TextWrapping="Wrap" Margin="0,8,0,16"/>
 
         <!-- Model Cards -->
@@ -41,14 +45,14 @@
             <Style Selector="Border.model-card">
               <Setter Property="Background" Value="{DynamicResource AppCardBrush}"/>
               <Setter Property="BorderThickness" Value="2"/>
-              <Setter Property="BorderBrush" Value="Transparent"/>
-              <Setter Property="CornerRadius" Value="12"/>
+              <Setter Property="BorderBrush" Value="{DynamicResource AppBorderBrush}"/>
+              <Setter Property="CornerRadius" Value="16"/>
               <Setter Property="Padding" Value="12"/>
               <Setter Property="Margin" Value="0,0,0,8"/>
             </Style>
             <Style Selector="Border.model-card.selected">
               <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
-              <Setter Property="Background" Value="#0D10A37F"/>
+              <Setter Property="Background" Value="{DynamicResource AppSurfaceBrush}"/>
             </Style>
           </ItemsControl.Styles>
           <ItemsControl.ItemTemplate>
@@ -57,23 +61,24 @@
                 <Grid ColumnDefinitions="*, Auto">
                   <!-- Info -->
                   <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                    <TextBlock Text="{Binding Model.Name}" FontSize="16" FontWeight="Medium"/>
+                    <TextBlock Text="{Binding Model.Name}" FontSize="16" FontWeight="Medium"
+                               Foreground="{DynamicResource AppTextPrimaryBrush}"/>
                     <TextBlock Text="{Binding Model.Description}" FontSize="12"
-                               Foreground="{DynamicResource AppTextSecondaryBrush}"
+                               Foreground="{DynamicResource AppTextTertiaryBrush}"
                                TextWrapping="Wrap" MaxLines="2"/>
                     <!-- Capabilities -->
                     <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,4,0,0">
-                      <Border Background="#1A10A37F" CornerRadius="4" Padding="6,2"
+                      <Border Classes="capability-tag-vision"
                               IsVisible="{Binding Model.SupportsVision}">
-                        <TextBlock Text="视觉" FontSize="10" Foreground="#10A37F"/>
+                        <TextBlock Text="视觉" FontSize="10" Foreground="{DynamicResource InfoBrush}"/>
                       </Border>
-                      <Border Background="#1A10A37F" CornerRadius="4" Padding="6,2"
+                      <Border Classes="capability-tag-function"
                               IsVisible="{Binding Model.SupportsFunctionCalling}">
-                        <TextBlock Text="工具调用" FontSize="10" Foreground="#10A37F"/>
+                        <TextBlock Text="工具调用" FontSize="10" Foreground="{DynamicResource AstralVioletBrush}"/>
                       </Border>
-                      <Border Background="#1A10A37F" CornerRadius="4" Padding="6,2">
+                      <Border Classes="capability-tag-tokens">
                         <TextBlock Text="{Binding Model.MaxTokens, StringFormat='{}{0:N0} tokens'}"
-                                   FontSize="10" Foreground="#10A37F"/>
+                                   FontSize="10" Foreground="{DynamicResource PrimaryBrush}"/>
                       </Border>
                     </StackPanel>
                   </StackPanel>
@@ -89,12 +94,12 @@
                       <!-- Plus Icon (Not Selected) -->
                       <PathIcon Data="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z"
                                 Width="20" Height="20"
-                                Foreground="White"
+                                Foreground="{DynamicResource AppBackgroundBrush}"
                                 IsVisible="{Binding !IsSelected}"/>
                       <!-- Check Icon (Selected) -->
                       <PathIcon Data="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z"
                                 Width="20" Height="20"
-                                Foreground="White"
+                                Foreground="{DynamicResource AppBackgroundBrush}"
                                 IsVisible="{Binding IsSelected}"/>
                     </Panel>
                   </Button>
@@ -106,27 +111,29 @@
 
         <!-- Error Message -->
         <TextBlock Text="{Binding ErrorMessage}"
-                   Foreground="#FF6B6B" FontSize="14"
+                   Foreground="{DynamicResource ErrorBrush}" FontSize="14"
                    IsVisible="{Binding HasError}"
                    Margin="0,8"/>
 
         <!-- Success Message -->
         <TextBlock Text="{Binding SuccessMessage}"
-                   Foreground="#10A37F" FontSize="14"
+                   Foreground="{DynamicResource SuccessBrush}" FontSize="14"
                    IsVisible="{Binding HasSuccess}"
                    Margin="0,8"/>
       </StackPanel>
     </ScrollViewer>
 
     <!-- Footer -->
-    <Border Grid.Row="2" Padding="16" Background="{DynamicResource AppSurfaceBrush}">
+    <Border Grid.Row="2"
+            Classes="top-app-bar">
       <Button Command="{Binding SaveCommand}"
               Classes="primary"
               HorizontalAlignment="Stretch"
               HorizontalContentAlignment="Center"
               IsEnabled="{Binding CanSave}">
         <TextBlock Text="{Binding SelectedCount, StringFormat='保存 ({0})'}"
-                   FontWeight="SemiBold" FontSize="16"/>
+                   FontWeight="SemiBold" FontSize="16"
+                   Foreground="{DynamicResource AppBackgroundBrush}"/>
       </Button>
     </Border>
   </Grid>

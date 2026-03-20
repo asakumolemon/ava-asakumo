@@ -32,6 +32,30 @@ public interface INavigationService
     void GoBack();
 
     /// <summary>
+    /// Navigates back to a specific view model type, removing all intermediate pages.
+    /// </summary>
+    /// <typeparam name="T">The type of view model to navigate back to.</typeparam>
+    /// <returns>True if navigation succeeded, false if the type was not found in the stack.</returns>
+    bool GoBackTo<T>() where T : ViewModelBase;
+
+    /// <summary>
+    /// Pops the current page and navigates to a new page.
+    /// Useful for completing a flow and navigating to a result page.
+    /// </summary>
+    /// <typeparam name="T">The type of view model to navigate to.</typeparam>
+    void NavigateReplacingCurrent<T>() where T : ViewModelBase;
+
+    /// <summary>
+    /// Navigates to a new page after popping back to a specific page type.
+    /// Useful for completing a configuration flow and navigating to a result page.
+    /// </summary>
+    /// <typeparam name="TTarget">The type of view model to navigate back to first.</typeparam>
+    /// <typeparam name="TNavigate">The type of view model to navigate to after going back.</typeparam>
+    void GoBackToAndNavigate<TTarget, TNavigate>()
+        where TTarget : ViewModelBase
+        where TNavigate : ViewModelBase;
+
+    /// <summary>
     /// Gets a value indicating whether navigation back is possible.
     /// </summary>
     bool CanGoBack { get; }

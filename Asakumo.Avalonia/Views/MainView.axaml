@@ -5,9 +5,10 @@
              xmlns:vm="using:Asakumo.Avalonia.ViewModels"
              mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="700"
              x:Class="Asakumo.Avalonia.Views.MainView"
-             x:DataType="vm:MainViewModel">
+             x:DataType="vm:MainViewModel"
+             Background="#090C14">
 
-  <Grid>
+  <Grid Background="#090C14">
     <ContentControl Content="{Binding CurrentView}"/>
   </Grid>
 
