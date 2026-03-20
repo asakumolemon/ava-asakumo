@@ -7,11 +7,12 @@
         mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="700"
         x:Class="Asakumo.Avalonia.Views.MainWindow"
         Icon="/Assets/avalonia-logo.ico"
-        Title="Asakumo"
+        Title="Asakumo - 月之魔法"
         Width="450" Height="750"
         MinWidth="350" MinHeight="500"
         WindowStartupLocation="CenterScreen"
-        Background="{DynamicResource SystemChromeLowColor}">
+        Background="#090C14"
+        TransparencyLevelHint="AcrylicBlur">
 
         <views:MainView />
 </Window>
