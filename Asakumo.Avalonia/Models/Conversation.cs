@@ -52,6 +52,14 @@ public class Conversation
     public string? ProviderId { get; set; }
 
     /// <summary>
+    /// Gets or sets the character ID used for this conversation.
+    /// Null means no RP character is being used.
+    /// </summary>
+    [MaxLength(50)]
+    [Indexed]
+    public string? CharacterId { get; set; }
+
+    /// <summary>
     /// Gets or sets a value indicating whether the conversation is pinned.
     /// </summary>
     public bool IsPinned { get; set; }

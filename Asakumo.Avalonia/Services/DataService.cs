@@ -66,6 +66,8 @@ public class DataService : IDataService
             await _database.CreateTableAsync<Conversation>();
             await _database.CreateTableAsync<ChatMessage>();
             await _database.CreateTableAsync<ProviderConfig>();
+            await _database.CreateTableAsync<Character>();
+            await _database.CreateTableAsync<CharacterBookEntry>();
 
             _isInitialized = true;
             _logger.LogInformation("Database initialized at {Path}", _dbPath);
@@ -316,6 +318,155 @@ public class DataService : IDataService
 
     #endregion
 
+    #region Characters
+
+    /// <inheritdoc/>
+    public async Task<IReadOnlyList<Character>> GetCharactersAsync()
+    {
+        await EnsureInitializedAsync();
+
+        var characters = await _database!.Table<Character>()
+            .OrderByDescending(c => c.LastUsedAt ?? c.CreatedAt)
+            .ToListAsync();
+
+        return characters;
+    }
+
+    /// <inheritdoc/>
+    public async Task<Character?> GetCharacterAsync(string id)
+    {
+        await EnsureInitializedAsync();
+
+        var character = await _database!.Table<Character>()
+            .Where(c => c.Id == id)
+            .FirstOrDefaultAsync();
+
+        return character;
+    }
+
+    /// <inheritdoc/>
+    public async Task SaveCharacterAsync(Character character)
+    {
+        await EnsureInitializedAsync();
+
+        character.MarkAsUpdated();
+        await _database!.InsertOrReplaceAsync(character);
+
+        _logger.LogDebug("Saved character {Id} - {Name}", character.Id, character.Name);
+    }
+
+    /// <inheritdoc/>
+    public async Task DeleteCharacterAsync(string id)
+    {
+        await EnsureInitializedAsync();
+
+        // Delete lorebook entries first, then character
+        await _database!.ExecuteAsync("DELETE FROM character_book_entries WHERE CharacterId = ?", id);
+        await _database.ExecuteAsync("DELETE FROM characters WHERE Id = ?", id);
+
+        _logger.LogDebug("Deleted character {Id} and its lorebook entries", id);
+    }
+
+    /// <inheritdoc/>
+    public async Task<IReadOnlyList<CharacterBookEntry>> GetCharacterBookEntriesAsync(string characterId)
+    {
+        await EnsureInitializedAsync();
+
+        var entries = await _database!.Table<CharacterBookEntry>()
+            .Where(e => e.CharacterId == characterId)
+            .OrderBy(e => e.Order)
+            .ToListAsync();
+
+        return entries;
+    }
+
+    /// <inheritdoc/>
+    public async Task SaveCharacterBookEntryAsync(CharacterBookEntry entry)
+    {
+        await EnsureInitializedAsync();
+
+        if (entry.Id == 0)
+        {
+            await _database!.InsertAsync(entry);
+        }
+        else
+        {
+            await _database!.UpdateAsync(entry);
+        }
+
+        _logger.LogDebug("Saved lorebook entry {Id} for character {CharacterId}", entry.Id, entry.CharacterId);
+    }
+
+    /// <inheritdoc/>
+    public async Task DeleteCharacterBookEntryAsync(int entryId)
+    {
+        await EnsureInitializedAsync();
+
+        await _database!.ExecuteAsync(
+            "DELETE FROM character_book_entries WHERE Id = ?",
+            entryId);
+
+        _logger.LogDebug("Deleted lorebook entry {Id}", entryId);
+    }
+
+    /// <inheritdoc/>
+    public async Task DeleteCharacterBookEntriesAsync(string characterId)
+    {
+        await EnsureInitializedAsync();
+
+        await _database!.ExecuteAsync(
+            "DELETE FROM character_book_entries WHERE CharacterId = ?",
+            characterId);
+
+        _logger.LogDebug("Deleted all lorebook entries for character {CharacterId}", characterId);
+    }
+
+    /// <inheritdoc/>
+    public async Task<IReadOnlyList<Character>> SearchCharactersAsync(string query)
+    {
+        await EnsureInitializedAsync();
+
+        var lowerQuery = $"%{query.ToLowerInvariant()}%";
+
+        var characters = await _database!.Table<Character>()
+            .Where(c => c.Name.ToLower().Contains(lowerQuery) ||
+                       (c.Tags != null && c.Tags.ToLower().Contains(lowerQuery)) ||
+                       (c.Description != null && c.Description.ToLower().Contains(lowerQuery)))
+            .OrderByDescending(c => c.LastUsedAt ?? c.CreatedAt)
+            .ToListAsync();
+
+        return characters;
+    }
+
+    /// <inheritdoc/>
+    public async Task<IReadOnlyList<Character>> GetFavouriteCharactersAsync()
+    {
+        await EnsureInitializedAsync();
+
+        var characters = await _database!.Table<Character>()
+            .Where(c => c.IsFavourite)
+            .OrderByDescending(c => c.LastUsedAt ?? c.CreatedAt)
+            .ToListAsync();
+
+        return characters;
+    }
+
+    /// <inheritdoc/>
+    public async Task<IReadOnlyList<Character>> GetRecentlyUsedCharactersAsync(int count = 10)
+    {
+        await EnsureInitializedAsync();
+
+        var characters = await _database!.Table<Character>()
+            .Where(c => c.LastUsedAt != null)
+            .OrderByDescending(c => c.LastUsedAt)
+            .Take(count)
+            .ToListAsync();
+
+        return characters;
+    }
+
+    #endregion
+
     #region Backup & Maintenance
 
     /// <summary>
@@ -356,6 +507,16 @@ public class DataService : IDataService
                 allMessages.AddRange(messages);
             }
             backup.Messages = allMessages;
+
+            // Get all characters and their lorebook entries
+            backup.Characters = (await GetCharactersAsync()).ToList();
+            var allEntries = new List<CharacterBookEntry>();
+            foreach (var character in backup.Characters)
+            {
+                var entries = await GetCharacterBookEntriesAsync(character.Id);
+                allEntries.AddRange(entries);
+            }
+            backup.CharacterBookEntries = allEntries;
 
             var json = JsonSerializer.Serialize(backup, _jsonOptions);
             await File.WriteAllTextAsync(backupPath, json);
@@ -492,4 +653,6 @@ internal class BackupData
     public AppSettings? Settings { get; set; }
     public List<Conversation> Conversations { get; set; } = new();
     public List<ChatMessage> Messages { get; set; } = new();
+    public List<Character> Characters { get; set; } = new();
+    public List<CharacterBookEntry> CharacterBookEntries { get; set; } = new();
 }
