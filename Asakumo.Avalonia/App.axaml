@@ -112,7 +112,10 @@
         <Style Selector="ScrollViewer">
             <Setter Property="Background" Value="Transparent"/>
         </Style>
-        
+
+        <!-- MD3 Components -->
+        <StyleInclude Source="avares://Asakumo.Avalonia/Styles/MD3/ConversationList.axaml" />
+
         <!-- ==================== 按钮系统 ==================== -->
         
         <!-- 主按钮样式 - Rani 风格 -->

@@ -8,26 +8,18 @@
              x:Class="Asakumo.Avalonia.Views.ConversationListView"
              x:DataType="vm:ConversationListViewModel"
              x:Name="ConversationListControl"
-             Background="#090C14">
+             Background="{DynamicResource AppBackgroundBrush}">
 
   <Grid RowDefinitions="Auto, *">
-    <!-- Header - Rani 风格 -->
+    <!-- Header - MD3 Top App Bar -->
     <Border Grid.Row="0"
-            Background="#090C14"
-            Height="64"
-            BorderBrush="#1E2A4A"
-            BorderThickness="0,0,0,1">
+            Classes="top-app-bar">
       <Grid ColumnDefinitions="Auto, *, Auto"
             Margin="16,0">
-        <!-- Logo - Moon with glow -->
+        <!-- Logo -->
         <Border Grid.Column="0"
-                Width="40" Height="40"
-                CornerRadius="20"
-                Background="#0D1220"
-                BorderBrush="#3A4B6D"
-                BorderThickness="1"
+                Classes="app-logo"
                 VerticalAlignment="Center">
-          <Border.BoxShadow>0 0 16 0 #308FA8FF</Border.BoxShadow>
           <TextBlock Text="&#x1F319;"
                      FontSize="20"
                      HorizontalAlignment="Center"
@@ -44,7 +36,7 @@
                 VerticalAlignment="Center">
           <PathIcon Data="M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.21,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.34 4.5,11.67 4.5,12C4.5,12.33 4.53,12.65 4.57,12.97L2.46,14.63C2.27,14.78 2.21,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.03 4.95,18.95L7.44,17.94C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.68 16.04,18.34 16.56,17.94L19.05,18.95C19.27,19.03 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z"
                     Width="24" Height="24"
-                    Foreground="#C8D2EA"/>
+                    Foreground="{DynamicResource SilverMistBrush}"/>
         </Button>
       </Grid>
     </Border>
@@ -52,56 +44,43 @@
     <!-- Content -->
     <ScrollViewer Grid.Row="1">
       <StackPanel Spacing="16" Margin="16">
-        <!-- Empty State - Rani 风格 -->
+        <!-- Empty State -->
         <StackPanel IsVisible="{Binding IsEmpty}"
                     VerticalAlignment="Center"
                     HorizontalAlignment="Center"
                     Spacing="32"
                     Margin="0,40,0,0">
-          <!-- 插图区域 -->
-          <Border Width="120" Height="120"
-                  CornerRadius="60"
-                  Background="#11182B"
-                  BorderBrush="#2A3654"
-                  BorderThickness="1"
+          <!-- Illustration -->
+          <Border Classes="empty-state-illustration"
                   HorizontalAlignment="Center">
             <Grid>
-              <!-- 聊天气泡图标 -->
               <PathIcon Data="M20,2H4A2,2 0 0,0 2,4V22L6,18H20A2,2 0 0,0 22,16V4A2,2 0 0,0 20,2M20,16H6L4,18V4H20V16Z"
                         Width="48" Height="48"
-                        Foreground="#8FA8FF"
+                        Foreground="{DynamicResource PrimaryBrush}"
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center"/>
-              <!-- 装饰点 -->
               <Border Width="16" Height="16"
                       CornerRadius="8"
-                      Background="#6FD7B8"
+                      Background="{DynamicResource SuccessBrush}"
                       HorizontalAlignment="Right"
                       VerticalAlignment="Top"
                       Margin="0,20,20,0"/>
             </Grid>
           </Border>
 
-          <!-- 文字内容 -->
+          <!-- Text Content -->
           <StackPanel Spacing="8" HorizontalAlignment="Center">
             <TextBlock Text="还没有会话"
-                       FontSize="20"
-                       FontWeight="SemiBold"
-                       HorizontalAlignment="Center"
-                       Foreground="#F3F6FF"/>
+                       Classes="empty-state-title"/>
             <TextBlock Text="点击下方按钮开始与 AI 对话"
-                       FontSize="14"
-                       HorizontalAlignment="Center"
-                       Foreground="#7E8AAC"/>
+                       Classes="empty-state-subtitle"/>
           </StackPanel>
 
-          <!-- 主按钮 -->
+          <!-- Primary Button -->
           <Button Command="{Binding NewConversationCommand}"
-                  Classes="primary"
+                  Classes="btn-filled"
                   HorizontalAlignment="Center"
-                  MinWidth="160"
-                  Height="48"
-                  CornerRadius="24">
+                  MinWidth="160">
             <StackPanel Orientation="Horizontal" Spacing="8">
               <PathIcon Data="M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z"
                         Width="20" Height="20"
@@ -122,7 +101,7 @@
                        FontSize="12"
                        FontWeight="Medium"
                        HorizontalAlignment="Center"
-                       Foreground="#7E8AAC"/>
+                       Foreground="{DynamicResource AppTextTertiaryBrush}"/>
             <ItemsControl ItemsSource="{Binding QuickPrompts}">
               <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
@@ -132,20 +111,14 @@
               </ItemsControl.ItemsPanel>
               <ItemsControl.ItemTemplate>
                 <DataTemplate>
-                  <Border Background="#11182B"
-                          CornerRadius="16"
-                          BorderBrush="#2A3654"
-                          BorderThickness="1"
-                          Margin="4"
-                          Padding="12,8">
+                  <Border Classes="quick-prompt-chip">
                     <Button Command="{Binding $parent[ItemsControl].((vm:ConversationListViewModel)DataContext).UseQuickPromptCommand}"
                             CommandParameter="{Binding}"
                             Background="Transparent"
                             BorderThickness="0"
                             Padding="0">
                       <TextBlock Text="{Binding}"
-                                 FontSize="13"
-                                 Foreground="#B8C1D9"/>
+                                 Classes="quick-prompt-text"/>
                     </Button>
                   </Border>
                 </DataTemplate>
@@ -161,11 +134,10 @@
             <DataTemplate x:DataType="vm:ConversationGroup">
               <StackPanel Spacing="8">
                 <!-- 时间分组标题 -->
-                <TextBlock Text="{Binding DateLabel}" 
+                <TextBlock Text="{Binding DateLabel}"
                            Classes="section-title"
-                           Margin="0,16,0,8"
-                           Foreground="#7E8AAC"/>
-                
+                           Margin="0,16,0,8"/>
+
                 <!-- 会话列表 -->
                 <ItemsControl ItemsSource="{Binding Conversations}"
                               x:Name="ConversationsList">
@@ -187,7 +159,7 @@
                               x:Name="SwipeActionsBackground">
                           <!-- Left Action: Pin -->
                           <Border Grid.Column="0"
-                                  Background="#8FA8FF"
+                                  Background="{DynamicResource PrimaryBrush}"
                                   Width="72"
                                   HorizontalAlignment="Left">
                             <Button Classes="swipe-action"
@@ -200,7 +172,7 @@
                           </Border>
                           <!-- Right Action: Delete -->
                           <Border Grid.Column="2"
-                                  Background="#F28AA8"
+                                  Background="{DynamicResource ErrorBrush}"
                                   Width="72"
                                   HorizontalAlignment="Right">
                             <Button Classes="swipe-action"
@@ -215,9 +187,7 @@
 
                         <!-- Foreground Content -->
                         <Border x:Name="SwipeContent"
-                                Background="#11182B"
-                                BorderBrush="#1E2A4A"
-                                BorderThickness="0,0,0,1"
+                                Classes="list-item"
                                 PointerPressed="OnSwipePointerPressed"
                                 PointerMoved="OnSwipePointerMoved"
                                 PointerReleased="OnSwipePointerReleased">
@@ -228,16 +198,14 @@
                                   HorizontalAlignment="Stretch"
                                   HorizontalContentAlignment="Stretch"
                                   Padding="16,0">
-                            <!-- Material Design 3: Three-column layout -->
+                            <!-- MD3 Three-column layout -->
                             <Grid ColumnDefinitions="Auto, *, Auto"
                                   Height="72">
                               <!-- Avatar Column -->
                               <Grid Grid.Column="0"
                                     Width="56"
                                     VerticalAlignment="Center">
-                                <Border Width="48" Height="48"
-                                        CornerRadius="24"
-                                        Background="#8FA8FF">
+                                <Border Classes="list-item-avatar">
                                   <TextBlock Text="AI"
                                              HorizontalAlignment="Center"
                                              VerticalAlignment="Center"
@@ -246,11 +214,7 @@
                                              Foreground="#08101F"/>
                                 </Border>
                                 <!-- Pinned Indicator -->
-                                <Border Width="12" Height="12"
-                                        CornerRadius="6"
-                                        Background="#A792E8"
-                                        BorderBrush="#11182B"
-                                        BorderThickness="2"
+                                <Border Classes="pinned-indicator"
                                         HorizontalAlignment="Right"
                                         VerticalAlignment="Bottom"
                                         Margin="0,0,2,2"
@@ -268,14 +232,14 @@
                                            FontWeight="Medium"
                                            TextWrapping="NoWrap"
                                            TextTrimming="CharacterEllipsis"
-                                           Foreground="#F3F6FF"/>
+                                           Foreground="{DynamicResource AppTextPrimaryBrush}"/>
                                 <!-- Preview -->
                                 <TextBlock Text="{Binding Preview}"
                                            FontSize="14"
                                            TextWrapping="NoWrap"
                                            TextTrimming="CharacterEllipsis"
                                            MaxHeight="20"
-                                           Foreground="#7E8AAC"/>
+                                           Foreground="{DynamicResource AppTextTertiaryBrush}"/>
                               </StackPanel>
 
                               <!-- Trailing Column: Time + Badge -->
@@ -286,19 +250,12 @@
                                 <!-- Time -->
                                 <TextBlock Text="{Binding UpdatedAt, StringFormat='{}{0:HH:mm}'}"
                                            FontSize="12"
-                                           Foreground="#7E8AAC"/>
+                                           Foreground="{DynamicResource AppTextTertiaryBrush}"/>
                                 <!-- Unread Badge -->
-                                <Border Width="20" Height="20"
-                                        CornerRadius="10"
-                                        Background="#8EDBFF"
-                                        HorizontalAlignment="Right"
+                                <Border Classes="unread-badge"
                                         IsVisible="{Binding HasUnread}">
                                   <TextBlock Text="{Binding UnreadCount}"
-                                             FontSize="11"
-                                             FontWeight="SemiBold"
-                                             Foreground="#08101F"
-                                             HorizontalAlignment="Center"
-                                             VerticalAlignment="Center"/>
+                                             Classes="unread-badge-text"/>
                                 </Border>
                               </StackPanel>
                             </Grid>
@@ -315,17 +272,17 @@
       </StackPanel>
     </ScrollViewer>
 
-    <!-- FAB 悬浮按钮 - Rani 风格 -->
+    <!-- FAB - MD3 Specification -->
     <Button Grid.Row="1"
             Command="{Binding NewConversationCommand}"
             Classes="fab"
             HorizontalAlignment="Right"
             VerticalAlignment="Bottom"
-            Margin="0,0,20,20"
+            Margin="0,0,16,16"
             IsVisible="{Binding !IsEmpty}">
-      <TextBlock Text="+" FontSize="28" FontWeight="Bold"
-                 Foreground="#08101F"
-                 Margin="0,-4,0,0"/>
+      <PathIcon Data="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z"
+                Width="24" Height="24"
+                Foreground="#08101F"/>
     </Button>
   </Grid>
 </UserControl>
