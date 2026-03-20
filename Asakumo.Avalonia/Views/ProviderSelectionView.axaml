@@ -33,24 +33,29 @@
         <ItemsControl ItemsSource="{Binding Providers}">
           <ItemsControl.ItemTemplate>
             <DataTemplate>
-              <Button Command="{Binding $parent[ItemsControl].((vm:ProviderSelectionViewModel)DataContext).SelectProviderCommand}"
-                      CommandParameter="{Binding}"
-                      Background="{DynamicResource AppCardBrush}"
-                      BorderThickness="2"
-                      CornerRadius="12"
-                      Padding="0"
-                      Margin="0,0,0,8"
-                      HorizontalAlignment="Stretch">
-                <Button.Styles>
-                  <Style Selector="Button">
-                    <Setter Property="BorderBrush" Value="Transparent"/>
-                  </Style>
-                  <Style Selector="Button:selected /template/ ContentPresenter#PART_ContentPresenter">
-                    <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
-                    <Setter Property="Background" Value="#0D10A37F"/>
-                  </Style>
-                </Button.Styles>
-                <Grid ColumnDefinitions="Auto, *, Auto" Height="72">
+              <Grid>
+                <!-- Selected Border Indicator -->
+                <Border Background="Transparent"
+                        BorderThickness="2"
+                        BorderBrush="{DynamicResource PrimaryBrush}"
+                        CornerRadius="12"
+                        IsVisible="{Binding IsSelected}"
+                        Margin="0,0,0,8"/>
+
+                <Button Command="{Binding $parent[ItemsControl].((vm:ProviderSelectionViewModel)DataContext).SelectProviderCommand}"
+                        CommandParameter="{Binding}"
+                        Background="{DynamicResource AppCardBrush}"
+                        BorderThickness="0"
+                        CornerRadius="12"
+                        Padding="0"
+                        Margin="2,2,2,10"
+                        HorizontalAlignment="Stretch">
+                  <Button.Styles>
+                    <Style Selector="Button:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+                      <Setter Property="Background" Value="{DynamicResource AppSurfaceBrush}"/>
+                    </Style>
+                  </Button.Styles>
+                  <Grid ColumnDefinitions="Auto, *, Auto" Height="68">
                   <!-- Icon -->
                   <Border Grid.Column="0" Width="48" Height="48" CornerRadius="24"
                           Background="{DynamicResource PrimaryBrush}" Margin="16,0,0,0">
@@ -79,13 +84,19 @@
                   </StackPanel>
 
                   <!-- Status Indicator -->
-                  <StackPanel Grid.Column="2" VerticalAlignment="Center" Margin="8,0">
+                  <StackPanel Grid.Column="2" VerticalAlignment="Center" Margin="8,0" Spacing="4">
+                    <!-- Selected Indicator -->
+                    <PathIcon Data="M9,16.17L4.83,12L3.41,13.41L9,19L21,7L19.59,5.59L9,16.17Z"
+                              Width="16" Height="16" Foreground="{DynamicResource PrimaryBrush}"
+                              IsVisible="{Binding IsSelected}"/>
+                    <!-- Configured Indicator -->
                     <PathIcon Data="M9,16.17L4.83,12L3.41,13.41L9,19L21,7L19.59,5.59L9,16.17Z"
                               Width="16" Height="16" Foreground="#10A37F"
                               IsVisible="{Binding IsConfigured}"/>
                   </StackPanel>
                 </Grid>
-              </Button>
+                </Button>
+              </Grid>
             </DataTemplate>
           </ItemsControl.ItemTemplate>
         </ItemsControl>

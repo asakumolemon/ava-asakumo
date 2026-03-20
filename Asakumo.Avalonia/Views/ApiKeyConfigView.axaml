@@ -92,17 +92,102 @@
                      Foreground="{DynamicResource PrimaryBrush}"
                      TextDecorations="Underline" FontSize="13"/>
         </Button>
+
+        <!-- Model Selection Section (shown after validation) -->
+        <StackPanel Spacing="12" IsVisible="{Binding ValidationSuccess}">
+          <Separator Margin="0,8"/>
+
+          <TextBlock Text="选择要添加的模型"
+                     FontSize="16" FontWeight="SemiBold"/>
+          <TextBlock Text="点击模型卡片进行多选："
+                     FontSize="12"
+                     Foreground="{DynamicResource AppTextSecondaryBrush}"/>
+
+          <!-- Model List -->
+          <ItemsControl ItemsSource="{Binding Models}">
+            <ItemsControl.Styles>
+              <Style Selector="Border.model-card">
+                <Setter Property="Background" Value="{DynamicResource AppCardBrush}"/>
+                <Setter Property="BorderThickness" Value="2"/>
+                <Setter Property="BorderBrush" Value="Transparent"/>
+                <Setter Property="CornerRadius" Value="12"/>
+                <Setter Property="Padding" Value="12"/>
+                <Setter Property="Margin" Value="0,0,0,8"/>
+              </Style>
+              <Style Selector="Border.model-card.selected">
+                <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
+                <Setter Property="Background" Value="#0D10A37F"/>
+              </Style>
+            </ItemsControl.Styles>
+            <ItemsControl.ItemTemplate>
+              <DataTemplate DataType="vm:ModelSelectionItem">
+                <Border Classes="model-card">
+                  <Grid ColumnDefinitions="*, Auto">
+                    <!-- Info -->
+                    <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                      <TextBlock Text="{Binding Model.Name}" FontSize="16" FontWeight="Medium"/>
+                      <TextBlock Text="{Binding Model.Description}" FontSize="12"
+                                 Foreground="{DynamicResource AppTextSecondaryBrush}"
+                                 TextWrapping="Wrap" MaxLines="2"/>
+                      <!-- Capabilities -->
+                      <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,4,0,0">
+                        <Border Background="#1A10A37F" CornerRadius="4" Padding="6,2"
+                                IsVisible="{Binding Model.SupportsVision}">
+                          <TextBlock Text="视觉" FontSize="10" Foreground="#10A37F"/>
+                        </Border>
+                        <Border Background="#1A10A37F" CornerRadius="4" Padding="6,2"
+                                IsVisible="{Binding Model.SupportsFunctionCalling}">
+                          <TextBlock Text="工具调用" FontSize="10" Foreground="#10A37F"/>
+                        </Border>
+                        <Border Background="#1A10A37F" CornerRadius="4" Padding="6,2">
+                          <TextBlock Text="{Binding Model.MaxTokens, StringFormat='{}{0:N0} tokens'}"
+                                     FontSize="10" Foreground="#10A37F"/>
+                        </Border>
+                      </StackPanel>
+                    </StackPanel>
+
+                    <!-- Add/Remove Button -->
+                    <Button Grid.Column="1" Width="36" Height="36" CornerRadius="18"
+                            Background="{DynamicResource PrimaryBrush}"
+                            Command="{Binding $parent[ItemsControl].((vm:ApiKeyConfigViewModel)DataContext).ToggleModelCommand}"
+                            CommandParameter="{Binding}"
+                            VerticalAlignment="Center"
+                            Margin="8,0,0,0">
+                      <Panel>
+                        <!-- Plus Icon (Not Selected) -->
+                        <PathIcon Data="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z"
+                                  Width="20" Height="20"
+                                  Foreground="White"
+                                  IsVisible="{Binding !IsSelected}"/>
+                        <!-- Check Icon (Selected) -->
+                        <PathIcon Data="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z"
+                                  Width="20" Height="20"
+                                  Foreground="White"
+                                  IsVisible="{Binding IsSelected}"/>
+                      </Panel>
+                    </Button>
+                  </Grid>
+                </Border>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+
+          <!-- Error/Success Messages -->
+          <TextBlock Text="{Binding ModelErrorMessage}"
+                     Foreground="#FF6B6B" FontSize="14"
+                     IsVisible="{Binding HasModelError}"/>
+        </StackPanel>
       </StackPanel>
     </ScrollViewer>
 
     <!-- Footer -->
     <Border Grid.Row="2" Padding="16" Background="{DynamicResource AppSurfaceBrush}">
-      <Button Command="{Binding ContinueCommand}"
+      <Button Command="{Binding SaveCommand}"
               Classes="primary"
               HorizontalAlignment="Stretch"
               HorizontalContentAlignment="Center"
-              IsEnabled="{Binding ValidationSuccess}">
-        <TextBlock Text="继续" FontWeight="SemiBold" FontSize="16"/>
+              IsEnabled="{Binding CanSave}">
+        <TextBlock Text="{Binding SaveButtonText}" FontWeight="SemiBold" FontSize="16"/>
       </Button>
     </Border>
   </Grid>
