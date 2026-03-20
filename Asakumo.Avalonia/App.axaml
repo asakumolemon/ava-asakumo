@@ -363,7 +363,66 @@
 
         <!-- ==================== 输入框 ==================== -->
         
-        <!-- 输入框样式 -->
+        <!-- 全局 TextBox 样式 - 覆盖 FluentTheme 默认值 -->
+        <Style Selector="TextBox">
+            <Setter Property="Background" Value="#11182B"/>
+            <Setter Property="Foreground" Value="#F3F6FF"/>
+            <Setter Property="BorderBrush" Value="#2A3654"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="Padding" Value="12,8"/>
+            <Setter Property="MinHeight" Value="40"/>
+            <Setter Property="SelectionBrush" Value="#8FA8FF"/>
+            <Setter Property="CaretBrush" Value="#8FA8FF"/>
+        </Style>
+        <Style Selector="TextBox /template/ TextBlock#PART_Watermark">
+            <Setter Property="Foreground" Value="#7E8AAC"/>
+        </Style>
+        <Style Selector="TextBox:pointerover /template/ Border#PART_BorderElement">
+            <Setter Property="Background" Value="#151D30"/>
+            <Setter Property="BorderBrush" Value="#3A4B6D"/>
+        </Style>
+        <Style Selector="TextBox:focus /template/ Border#PART_BorderElement">
+            <Setter Property="Background" Value="#11182B"/>
+            <Setter Property="BorderBrush" Value="#8EDBFF"/>
+            <Setter Property="BorderThickness" Value="2"/>
+        </Style>
+        <Style Selector="TextBox:disabled">
+            <Setter Property="Opacity" Value="0.5"/>
+        </Style>
+        
+        <!-- 全局 ComboBox 样式 -->
+        <Style Selector="ComboBox">
+            <Setter Property="Background" Value="#11182B"/>
+            <Setter Property="Foreground" Value="#F3F6FF"/>
+            <Setter Property="BorderBrush" Value="#2A3654"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="Padding" Value="12,8"/>
+            <Setter Property="MinHeight" Value="40"/>
+        </Style>
+        <Style Selector="ComboBox:pointerover /template/ Border#Background">
+            <Setter Property="Background" Value="#151D30"/>
+            <Setter Property="BorderBrush" Value="#3A4B6D"/>
+        </Style>
+        <Style Selector="ComboBox:focus /template/ Border#Background">
+            <Setter Property="Background" Value="#11182B"/>
+            <Setter Property="BorderBrush" Value="#8EDBFF"/>
+        </Style>
+        <Style Selector="ComboBoxItem">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#F3F6FF"/>
+            <Setter Property="Padding" Value="12,8"/>
+        </Style>
+        <Style Selector="ComboBoxItem:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="#1E2A4A"/>
+        </Style>
+        <Style Selector="ComboBoxItem:selected /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="#1A2B4D"/>
+            <Setter Property="Foreground" Value="#8FA8FF"/>
+        </Style>
+        
+        <!-- 聊天输入框样式 -->
         <Style Selector="TextBox.chat-input">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="BorderThickness" Value="0"/>
