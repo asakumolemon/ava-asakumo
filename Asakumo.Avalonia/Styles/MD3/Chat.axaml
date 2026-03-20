@@ -1,0 +1,375 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- ==================== MD3 Chat Top App Bar ==================== -->
+    <Style Selector="Border.chat-top-app-bar">
+        <Setter Property="Background" Value="{DynamicResource AppBackgroundBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource AppBorderBrush}" />
+        <Setter Property="BorderThickness" Value="0,0,0,1" />
+        <Setter Property="Height" Value="64" />
+        <Setter Property="Padding" Value="16,8" />
+    </Style>
+
+    <!-- ==================== MD3 Chat Model Switcher ==================== -->
+    <Style Selector="Button.model-switcher">
+        <Setter Property="Background" Value="{DynamicResource AppSurfaceBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource AppBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="20" />
+        <Setter Property="Padding" Value="16,8" />
+        <Setter Property="Height" Value="40" />
+        <Setter Property="Transitions">
+            <Transitions>
+                <BrushTransition Property="Background" Duration="0:0:0.15" />
+            </Transitions>
+        </Setter>
+    </Style>
+    <Style Selector="Button.model-switcher:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource AppCardBrush}" />
+    </Style>
+
+    <!-- Model Switcher Popup -->
+    <Style Selector="Border.model-switcher-popup">
+        <Setter Property="Background" Value="{DynamicResource AppCardBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource AppBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="16" />
+        <Setter Property="Padding" Value="8" />
+    </Style>
+
+    <!-- Model Item Button -->
+    <Style Selector="Button.model-item-button">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="12,8" />
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+        <Setter Property="HorizontalContentAlignment" Value="Left" />
+        <Setter Property="CornerRadius" Value="8" />
+        <Setter Property="Transitions">
+            <Transitions>
+                <BrushTransition Property="Background" Duration="0:0:0.15" />
+            </Transitions>
+        </Setter>
+    </Style>
+    <Style Selector="Button.model-item-button:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource AppSurfaceBrush}" />
+    </Style>
+
+    <!-- ==================== MD3 Chat Bubbles ==================== -->
+
+    <!-- User Message Bubble -->
+    <Style Selector="Border.chat-bubble-user">
+        <Setter Property="Background" Value="{DynamicResource AppUserMessageBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource AppBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="18,4,18,18" />
+        <Setter Property="Padding" Value="12,8" />
+    </Style>
+
+    <!-- AI Message Bubble -->
+    <Style Selector="Border.chat-bubble-ai">
+        <Setter Property="Background" Value="{DynamicResource AppAiMessageBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource AppBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="4,18,18,18" />
+        <Setter Property="Padding" Value="12,8" />
+    </Style>
+
+    <!-- AI Avatar -->
+    <Style Selector="Border.chat-ai-avatar">
+        <Setter Property="Background" Value="{DynamicResource PrimaryBrush}" />
+        <Setter Property="CornerRadius" Value="20" />
+        <Setter Property="Width" Value="40" />
+        <Setter Property="Height" Value="40" />
+    </Style>
+
+    <!-- ==================== MD3 Chat Input Area ==================== -->
+
+    <!-- Input Area Container -->
+    <Style Selector="Border.chat-input-area">
+        <Setter Property="Background" Value="{DynamicResource AppBackgroundBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource AppBorderBrush}" />
+        <Setter Property="BorderThickness" Value="0,1,0,0" />
+        <Setter Property="Padding" Value="16,12" />
+    </Style>
+
+    <!-- Input Container (Pill Shape) -->
+    <Style Selector="Border.chat-input-container">
+        <Setter Property="Background" Value="{DynamicResource AppSurfaceBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource AppInputBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="24" />
+        <Setter Property="Padding" Value="4" />
+    </Style>
+
+    <!-- Chat Input TextBox -->
+    <Style Selector="TextBox.chat-input">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="12,8" />
+        <Setter Property="AcceptsReturn" Value="True" />
+        <Setter Property="TextWrapping" Value="Wrap" />
+        <Setter Property="MaxHeight" Value="120" />
+        <Setter Property="Foreground" Value="{DynamicResource AppTextPrimaryBrush}" />
+        <Setter Property="CaretBrush" Value="{DynamicResource PrimaryBrush}" />
+        <Setter Property="SelectionBrush" Value="{DynamicResource PrimaryBrush}" />
+    </Style>
+
+    <!-- Send Button -->
+    <Style Selector="Button.send">
+        <Setter Property="Background" Value="{DynamicResource PrimaryBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource AppBackgroundBrush}" />
+        <Setter Property="FontWeight" Value="Medium" />
+        <Setter Property="CornerRadius" Value="20" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="Width" Value="40" />
+        <Setter Property="Height" Value="40" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Transitions">
+            <Transitions>
+                <DoubleTransition Property="ScaleTransform.ScaleX" Duration="0:0:0.15" />
+                <DoubleTransition Property="ScaleTransform.ScaleY" Duration="0:0:0.15" />
+                <BrushTransition Property="Background" Duration="0:0:0.15" />
+            </Transitions>
+        </Setter>
+        <Setter Property="RenderTransform">
+            <ScaleTransform ScaleX="1" ScaleY="1" />
+        </Setter>
+        <Setter Property="RenderTransformOrigin" Value="0.5,0.5" />
+    </Style>
+    <Style Selector="Button.send:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource PrimaryHoverBrush}" />
+    </Style>
+    <Style Selector="Button.send:pressed">
+        <Setter Property="ScaleTransform.ScaleX" Value="0.95" />
+        <Setter Property="ScaleTransform.ScaleY" Value="0.95" />
+    </Style>
+    <Style Selector="Button.send:pressed /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource BrandAccentColor}" />
+    </Style>
+
+    <!-- ==================== MD3 Chat Icon Button ==================== -->
+
+    <!-- Chat Action Icon Button (smaller than regular icon button) -->
+    <Style Selector="Button.chat-action">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="3" />
+        <Setter Property="Width" Value="22" />
+        <Setter Property="Height" Value="22" />
+        <Setter Property="CornerRadius" Value="11" />
+        <Setter Property="Transitions">
+            <Transitions>
+                <DoubleTransition Property="ScaleTransform.ScaleX" Duration="0:0:0.15" />
+                <DoubleTransition Property="ScaleTransform.ScaleY" Duration="0:0:0.15" />
+            </Transitions>
+        </Setter>
+        <Setter Property="RenderTransform">
+            <ScaleTransform ScaleX="1" ScaleY="1" />
+        </Setter>
+        <Setter Property="RenderTransformOrigin" Value="0.5,0.5" />
+    </Style>
+    <Style Selector="Button.chat-action:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource AppSurfaceBrush}" />
+    </Style>
+    <Style Selector="Button.chat-action:pressed">
+        <Setter Property="ScaleTransform.ScaleX" Value="0.9" />
+        <Setter Property="ScaleTransform.ScaleY" Value="0.9" />
+    </Style>
+
+    <!-- Regular Icon Button -->
+    <Style Selector="Button.icon">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="8" />
+        <Setter Property="Width" Value="40" />
+        <Setter Property="Height" Value="40" />
+        <Setter Property="CornerRadius" Value="20" />
+        <Setter Property="Transitions">
+            <Transitions>
+                <DoubleTransition Property="ScaleTransform.ScaleX" Duration="0:0:0.15" />
+                <DoubleTransition Property="ScaleTransform.ScaleY" Duration="0:0:0.15" />
+            </Transitions>
+        </Setter>
+        <Setter Property="RenderTransform">
+            <ScaleTransform ScaleX="1" ScaleY="1" />
+        </Setter>
+        <Setter Property="RenderTransformOrigin" Value="0.5,0.5" />
+    </Style>
+    <Style Selector="Button.icon:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource AppSurfaceBrush}" />
+    </Style>
+    <Style Selector="Button.icon:pressed">
+        <Setter Property="ScaleTransform.ScaleX" Value="0.9" />
+        <Setter Property="ScaleTransform.ScaleY" Value="0.9" />
+    </Style>
+
+    <!-- ==================== MD3 Chat Empty State ==================== -->
+
+    <!-- Empty State Illustration Container -->
+    <Style Selector="Border.chat-empty-state">
+        <Setter Property="Background" Value="{DynamicResource AppCardBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource AppBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="60" />
+        <Setter Property="Width" Value="120" />
+        <Setter Property="Height" Value="120" />
+    </Style>
+
+    <!-- Empty State Title -->
+    <Style Selector="TextBlock.chat-empty-state-title">
+        <Setter Property="FontSize" Value="18" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Foreground" Value="{DynamicResource AppTextPrimaryBrush}" />
+    </Style>
+
+    <!-- Empty State Subtitle -->
+    <Style Selector="TextBlock.chat-empty-state-subtitle">
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="Foreground" Value="{DynamicResource AppTextTertiaryBrush}" />
+    </Style>
+
+    <!-- ==================== MD3 Chat Toast ==================== -->
+
+    <Style Selector="Border.chat-toast">
+        <Setter Property="Background" Value="{DynamicResource ToastBackgroundBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource AppBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="12" />
+        <Setter Property="Padding" Value="16,12" />
+    </Style>
+
+    <!-- ==================== MD3 Chat Edit Mode ==================== -->
+
+    <!-- Edit Action Inline Button -->
+    <Style Selector="Button.edit-action-inline">
+        <Setter Property="Padding" Value="6,3" />
+        <Setter Property="CornerRadius" Value="6" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Transitions">
+            <Transitions>
+                <BrushTransition Property="Background" Duration="0:0:0.15" />
+            </Transitions>
+        </Setter>
+    </Style>
+    <Style Selector="Button.edit-action-inline.cancel">
+        <Setter Property="Foreground" Value="{DynamicResource AppTextSecondaryBrush}" />
+    </Style>
+    <Style Selector="Button.edit-action-inline.cancel:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource AppSurfaceBrush}" />
+    </Style>
+    <Style Selector="Button.edit-action-inline.save">
+        <Setter Property="Background" Value="{DynamicResource PrimaryBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource AppBackgroundBrush}" />
+    </Style>
+    <Style Selector="Button.edit-action-inline.save:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource PrimaryHoverBrush}" />
+    </Style>
+
+    <!-- Edit Message TextBox -->
+    <Style Selector="TextBox.edit-message-input">
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="BorderBrush" Value="{DynamicResource AppInputBorderBrush}" />
+        <Setter Property="SelectionBrush" Value="{DynamicResource PrimaryBrush}" />
+        <Setter Property="CaretBrush" Value="{DynamicResource PrimaryBrush}" />
+        <Setter Property="CornerRadius" Value="8" />
+        <Setter Property="Padding" Value="8,6" />
+        <Setter Property="Background" Value="{DynamicResource AppSurfaceBrush}" />
+        <Setter Property="Foreground" Value="{DynamicResource AppTextPrimaryBrush}" />
+    </Style>
+    <Style Selector="TextBox.edit-message-input:focus">
+        <Setter Property="BorderBrush" Value="{DynamicResource FrostCyanBrush}" />
+        <Setter Property="BorderThickness" Value="2" />
+    </Style>
+
+    <!-- Edit In Bubble TextBox -->
+    <Style Selector="TextBox.edit-message-input.edit-in-bubble">
+        <Setter Property="Background" Value="{DynamicResource AppSurfaceBrush}" />
+    </Style>
+
+    <!-- ==================== MD3 Chat Menu ==================== -->
+
+    <!-- Menu Item Button -->
+    <Style Selector="Button.menu-item">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Padding" Value="12,8" />
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+        <Setter Property="HorizontalContentAlignment" Value="Left" />
+        <Setter Property="CornerRadius" Value="8" />
+        <Setter Property="Transitions">
+            <Transitions>
+                <BrushTransition Property="Background" Duration="0:0:0.15" />
+            </Transitions>
+        </Setter>
+    </Style>
+    <Style Selector="Button.menu-item:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+        <Setter Property="Background" Value="{DynamicResource AppSurfaceBrush}" />
+    </Style>
+
+    <!-- ==================== MD3 Chat Animations ==================== -->
+
+    <!-- Typing Indicator Animation -->
+    <Style Selector="StackPanel.typing-indicator > Border.typing-dot:nth-child(1)">
+        <Style.Animations>
+            <Animation Duration="0:0:1.2" IterationCount="Infinite">
+                <KeyFrame Cue="0%">
+                    <Setter Property="Opacity" Value="0.3" />
+                </KeyFrame>
+                <KeyFrame Cue="25%">
+                    <Setter Property="Opacity" Value="1" />
+                </KeyFrame>
+                <KeyFrame Cue="50%">
+                    <Setter Property="Opacity" Value="0.3" />
+                </KeyFrame>
+            </Animation>
+        </Style.Animations>
+    </Style>
+    <Style Selector="StackPanel.typing-indicator > Border.typing-dot:nth-child(2)">
+        <Style.Animations>
+            <Animation Duration="0:0:1.2" IterationCount="Infinite">
+                <KeyFrame Cue="12.5%">
+                    <Setter Property="Opacity" Value="0.3" />
+                </KeyFrame>
+                <KeyFrame Cue="37.5%">
+                    <Setter Property="Opacity" Value="1" />
+                </KeyFrame>
+                <KeyFrame Cue="62.5%">
+                    <Setter Property="Opacity" Value="0.3" />
+                </KeyFrame>
+            </Animation>
+        </Style.Animations>
+    </Style>
+    <Style Selector="StackPanel.typing-indicator > Border.typing-dot:nth-child(3)">
+        <Style.Animations>
+            <Animation Duration="0:0:1.2" IterationCount="Infinite">
+                <KeyFrame Cue="25%">
+                    <Setter Property="Opacity" Value="0.3" />
+                </KeyFrame>
+                <KeyFrame Cue="50%">
+                    <Setter Property="Opacity" Value="1" />
+                </KeyFrame>
+                <KeyFrame Cue="75%">
+                    <Setter Property="Opacity" Value="0.3" />
+                </KeyFrame>
+            </Animation>
+        </Style.Animations>
+    </Style>
+
+    <!-- Streaming Cursor Animation -->
+    <Style Selector="Border.streaming-cursor">
+        <Style.Animations>
+            <Animation Duration="0:0:0.6" IterationCount="Infinite">
+                <KeyFrame Cue="0%">
+                    <Setter Property="Opacity" Value="0.3" />
+                </KeyFrame>
+                <KeyFrame Cue="50%">
+                    <Setter Property="Opacity" Value="1" />
+                </KeyFrame>
+                <KeyFrame Cue="100%">
+                    <Setter Property="Opacity" Value="0.3" />
+                </KeyFrame>
+            </Animation>
+        </Style.Animations>
+    </Style>
+
+</Styles>

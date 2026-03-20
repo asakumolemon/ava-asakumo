@@ -53,7 +53,7 @@
             <!-- 深色主题 (Rani 默认) -->
             <ResourceDictionary.ThemeDictionaries>
                 <ResourceDictionary x:Key="Light">
-                    <!-- 浅色主题保持简洁，Rani 主要用于深色 -->
+                    <!-- 浅色主题 -->
                     <SolidColorBrush x:Key="ToastBackgroundBrush" Color="#1E2A4A"/>
                     <SolidColorBrush x:Key="AppBackgroundBrush" Color="#F8FAFC"/>
                     <SolidColorBrush x:Key="AppSurfaceBrush" Color="#F1F5F9"/>
@@ -63,10 +63,24 @@
                     <SolidColorBrush x:Key="AppTextTertiaryBrush" Color="#94A3B8"/>
                     <SolidColorBrush x:Key="AppBorderBrush" Color="#E2E8F0"/>
                     <SolidColorBrush x:Key="AppDividerBrush" Color="#F1F5F9"/>
-                    <SolidColorBrush x:Key="AppUserMessageBrush" Color="#8FA8FF"/>
-                    <SolidColorBrush x:Key="AppAiMessageBrush" Color="#F1F5F9"/>
+                    <SolidColorBrush x:Key="AppUserMessageBrush" Color="#E0E7FF"/>
+                    <SolidColorBrush x:Key="AppAiMessageBrush" Color="#F8FAFC"/>
                     <SolidColorBrush x:Key="AppInputBorderBrush" Color="#C8D2EA"/>
-                    <SolidColorBrush x:Key="AppInputBorderFocusBrush" Color="#8EDBFF"/>
+                    <SolidColorBrush x:Key="AppInputBorderFocusBrush" Color="#8FA8FF"/>
+                    
+                    <!-- 状态色 - 浅色主题适配 -->
+                    <SolidColorBrush x:Key="SuccessBrush" Color="#059669"/>
+                    <SolidColorBrush x:Key="WarningBrush" Color="#D97706"/>
+                    <SolidColorBrush x:Key="ErrorBrush" Color="#DC2626"/>
+                    <SolidColorBrush x:Key="InfoBrush" Color="#0284C7"/>
+                    
+                    <!-- 品牌色 - 浅色主题适配 -->
+                    <SolidColorBrush x:Key="PrimaryBrush" Color="#6366F1"/>
+                    <SolidColorBrush x:Key="PrimaryHoverBrush" Color="#4F46E5"/>
+                    <SolidColorBrush x:Key="BrandAccentColor" Color="#4338CA"/>
+                    <SolidColorBrush x:Key="AstralVioletBrush" Color="#7C3AED"/>
+                    <SolidColorBrush x:Key="FrostCyanBrush" Color="#06B6D4"/>
+                    <SolidColorBrush x:Key="SilverMistBrush" Color="#6B7280"/>
                 </ResourceDictionary>
                 <ResourceDictionary x:Key="Dark">
                     <!-- Rani 深色主题 -->
@@ -79,10 +93,24 @@
                     <SolidColorBrush x:Key="AppTextTertiaryBrush" Color="#7E8AAC"/>
                     <SolidColorBrush x:Key="AppBorderBrush" Color="#1E2A4A"/>
                     <SolidColorBrush x:Key="AppDividerBrush" Color="#161F38"/>
-                    <SolidColorBrush x:Key="AppUserMessageBrush" Color="#8FA8FF"/>
+                    <SolidColorBrush x:Key="AppUserMessageBrush" Color="#1E2A4A"/>
                     <SolidColorBrush x:Key="AppAiMessageBrush" Color="#11182B"/>
                     <SolidColorBrush x:Key="AppInputBorderBrush" Color="#2A3654"/>
                     <SolidColorBrush x:Key="AppInputBorderFocusBrush" Color="#8EDBFF"/>
+                    
+                    <!-- 状态色 - 深色主题适配 -->
+                    <SolidColorBrush x:Key="SuccessBrush" Color="#6FD7B8"/>
+                    <SolidColorBrush x:Key="WarningBrush" Color="#E8C27A"/>
+                    <SolidColorBrush x:Key="ErrorBrush" Color="#F28AA8"/>
+                    <SolidColorBrush x:Key="InfoBrush" Color="#8EDBFF"/>
+                    
+                    <!-- 品牌色 - Rani 风格 -->
+                    <SolidColorBrush x:Key="PrimaryBrush" Color="#8FA8FF"/>
+                    <SolidColorBrush x:Key="PrimaryHoverBrush" Color="#B8C8FF"/>
+                    <SolidColorBrush x:Key="BrandAccentColor" Color="#6E84D8"/>
+                    <SolidColorBrush x:Key="AstralVioletBrush" Color="#A792E8"/>
+                    <SolidColorBrush x:Key="FrostCyanBrush" Color="#8EDBFF"/>
+                    <SolidColorBrush x:Key="SilverMistBrush" Color="#C8D2EA"/>
                 </ResourceDictionary>
             </ResourceDictionary.ThemeDictionaries>
         </ResourceDictionary>
@@ -114,13 +142,14 @@
 
         <!-- MD3 Components -->
         <StyleInclude Source="avares://Asakumo.Avalonia/Styles/MD3/ConversationList.axaml" />
+        <StyleInclude Source="avares://Asakumo.Avalonia/Styles/MD3/Chat.axaml" />
 
         <!-- ==================== 按钮系统 ==================== -->
-        
+
         <!-- 主按钮样式 - Rani 风格 -->
         <Style Selector="Button.primary">
-            <Setter Property="Background" Value="#8FA8FF"/>
-            <Setter Property="Foreground" Value="#08101F"/>
+            <Setter Property="Background" Value="{DynamicResource PrimaryBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource AppBackgroundBrush}"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="CornerRadius" Value="16"/>
             <Setter Property="Padding" Value="24,14"/>
@@ -130,6 +159,7 @@
                 <Transitions>
                     <DoubleTransition Property="ScaleTransform.ScaleX" Duration="0:0:0.22"/>
                     <DoubleTransition Property="ScaleTransform.ScaleY" Duration="0:0:0.22"/>
+                    <BrushTransition Property="Background" Duration="0:0:0.15"/>
                 </Transitions>
             </Setter>
             <Setter Property="RenderTransform">
@@ -138,30 +168,10 @@
             <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
         </Style>
         <Style Selector="Button.primary:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-            <Setter Property="Background" Value="#B8C8FF"/>
-            <Style.Animations>
-                <Animation Duration="0:0:0.22" FillMode="Forward">
-                    <KeyFrame Cue="0%">
-                        <Setter Property="Background" Value="#8FA8FF"/>
-                    </KeyFrame>
-                    <KeyFrame Cue="100%">
-                        <Setter Property="Background" Value="#B8C8FF"/>
-                    </KeyFrame>
-                </Animation>
-            </Style.Animations>
+            <Setter Property="Background" Value="{DynamicResource PrimaryHoverBrush}"/>
         </Style>
         <Style Selector="Button.primary:pressed /template/ ContentPresenter#PART_ContentPresenter">
-            <Setter Property="Background" Value="#6E84D8"/>
-            <Style.Animations>
-                <Animation Duration="0:0:0.1" FillMode="Forward">
-                    <KeyFrame Cue="0%">
-                        <Setter Property="Background" Value="#B8C8FF"/>
-                    </KeyFrame>
-                    <KeyFrame Cue="100%">
-                        <Setter Property="Background" Value="#6E84D8"/>
-                    </KeyFrame>
-                </Animation>
-            </Style.Animations>
+            <Setter Property="Background" Value="{DynamicResource BrandAccentColor}"/>
         </Style>
         <Style Selector="Button.primary:pressed">
             <Setter Property="ScaleTransform.ScaleX" Value="0.97"/>
@@ -174,12 +184,12 @@
         <!-- 次要按钮样式 -->
         <Style Selector="Button.secondary">
             <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Foreground" Value="#F3F6FF"/>
+            <Setter Property="Foreground" Value="{DynamicResource AppTextPrimaryBrush}"/>
             <Setter Property="FontWeight" Value="Medium"/>
-            <Setter Property="CornerRadius" Value="16"/>
+            <Setter Property="CornerRadius" Value="20"/>
             <Setter Property="Padding" Value="20,12"/>
             <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="BorderBrush" Value="#2A3654"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource AppBorderBrush}"/>
             <Setter Property="Transitions">
                 <Transitions>
                     <DoubleTransition Property="ScaleTransform.ScaleX" Duration="0:0:0.22"/>
@@ -192,21 +202,86 @@
             <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
         </Style>
         <Style Selector="Button.secondary:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-            <Setter Property="Background" Value="#1A2B4D"/>
-            <Setter Property="BorderBrush" Value="#3A4B6D"/>
+            <Setter Property="Background" Value="{DynamicResource AppSurfaceBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource AppBorderBrush}"/>
         </Style>
         <Style Selector="Button.secondary:pressed /template/ ContentPresenter#PART_ContentPresenter">
-            <Setter Property="Background" Value="#243656"/>
+            <Setter Property="Background" Value="{DynamicResource AppCardBrush}"/>
         </Style>
         <Style Selector="Button.secondary:pressed">
+            <Setter Property="ScaleTransform.ScaleX" Value="0.97"/>
+            <Setter Property="ScaleTransform.ScaleY" Value="0.97"/>
+        </Style>
+
+        <!-- 危险按钮样式 -->
+        <Style Selector="Button.btn-danger">
+            <Setter Property="Background" Value="{DynamicResource ErrorBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource AppBackgroundBrush}"/>
+            <Setter Property="FontWeight" Value="Medium"/>
+            <Setter Property="CornerRadius" Value="20"/>
+            <Setter Property="Padding" Value="20,12"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Transitions">
+                <Transitions>
+                    <DoubleTransition Property="ScaleTransform.ScaleX" Duration="0:0:0.22"/>
+                    <DoubleTransition Property="ScaleTransform.ScaleY" Duration="0:0:0.22"/>
+                </Transitions>
+            </Setter>
+            <Setter Property="RenderTransform">
+                <ScaleTransform ScaleX="1" ScaleY="1"/>
+            </Setter>
+            <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
+        </Style>
+        <Style Selector="Button.btn-danger:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource ErrorBrush}"/>
+            <Style.Animations>
+                <Animation Duration="0:0:0.15" FillMode="Forward">
+                    <KeyFrame Cue="0%">
+                        <Setter Property="Opacity" Value="1"/>
+                    </KeyFrame>
+                    <KeyFrame Cue="100%">
+                        <Setter Property="Opacity" Value="0.9"/>
+                    </KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+        <Style Selector="Button.btn-danger:pressed">
+            <Setter Property="ScaleTransform.ScaleX" Value="0.97"/>
+            <Setter Property="ScaleTransform.ScaleY" Value="0.97"/>
+        </Style>
+
+        <!-- 轮廓按钮样式 -->
+        <Style Selector="Button.btn-outlined">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{DynamicResource AppTextPrimaryBrush}"/>
+            <Setter Property="FontWeight" Value="Medium"/>
+            <Setter Property="CornerRadius" Value="20"/>
+            <Setter Property="Padding" Value="20,12"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource AppBorderBrush}"/>
+            <Setter Property="Transitions">
+                <Transitions>
+                    <DoubleTransition Property="ScaleTransform.ScaleX" Duration="0:0:0.22"/>
+                    <DoubleTransition Property="ScaleTransform.ScaleY" Duration="0:0:0.22"/>
+                </Transitions>
+            </Setter>
+            <Setter Property="RenderTransform">
+                <ScaleTransform ScaleX="1" ScaleY="1"/>
+            </Setter>
+            <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
+        </Style>
+        <Style Selector="Button.btn-outlined:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{DynamicResource AppSurfaceBrush}"/>
+        </Style>
+        <Style Selector="Button.btn-outlined:pressed">
             <Setter Property="ScaleTransform.ScaleX" Value="0.97"/>
             <Setter Property="ScaleTransform.ScaleY" Value="0.97"/>
         </Style>
         
         <!-- 发送按钮样式 -->
         <Style Selector="Button.send">
-            <Setter Property="Background" Value="#8FA8FF"/>
-            <Setter Property="Foreground" Value="#08101F"/>
+            <Setter Property="Background" Value="{DynamicResource PrimaryBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource AppBackgroundBrush}"/>
             <Setter Property="FontWeight" Value="Medium"/>
             <Setter Property="CornerRadius" Value="20"/>
             <Setter Property="Padding" Value="0"/>
@@ -217,6 +292,7 @@
                 <Transitions>
                     <DoubleTransition Property="ScaleTransform.ScaleX" Duration="0:0:0.22"/>
                     <DoubleTransition Property="ScaleTransform.ScaleY" Duration="0:0:0.22"/>
+                    <BrushTransition Property="Background" Duration="0:0:0.15"/>
                 </Transitions>
             </Setter>
             <Setter Property="RenderTransform">
@@ -225,10 +301,10 @@
             <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
         </Style>
         <Style Selector="Button.send:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-            <Setter Property="Background" Value="#B8C8FF"/>
+            <Setter Property="Background" Value="{DynamicResource PrimaryHoverBrush}"/>
         </Style>
         <Style Selector="Button.send:pressed /template/ ContentPresenter#PART_ContentPresenter">
-            <Setter Property="Background" Value="#6E84D8"/>
+            <Setter Property="Background" Value="{DynamicResource BrandAccentColor}"/>
         </Style>
         <Style Selector="Button.send:pressed">
             <Setter Property="ScaleTransform.ScaleX" Value="0.95"/>
@@ -237,12 +313,12 @@
         <Style Selector="Button.send:disabled">
             <Setter Property="Opacity" Value="0.5"/>
         </Style>
-        
+
         <!-- FAB 悬浮按钮样式 -->
         <Style Selector="Button.fab">
-            <Setter Property="Background" Value="#8FA8FF"/>
-            <Setter Property="Foreground" Value="#08101F"/>
-            <Setter Property="CornerRadius" Value="28"/>
+            <Setter Property="Background" Value="{DynamicResource PrimaryBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource AppBackgroundBrush}"/>
+            <Setter Property="CornerRadius" Value="16"/>
             <Setter Property="Width" Value="56"/>
             <Setter Property="Height" Value="56"/>
             <Setter Property="BorderThickness" Value="0"/>
@@ -253,6 +329,7 @@
                 <Transitions>
                     <DoubleTransition Property="ScaleTransform.ScaleX" Duration="0:0:0.22"/>
                     <DoubleTransition Property="ScaleTransform.ScaleY" Duration="0:0:0.22"/>
+                    <BrushTransition Property="Background" Duration="0:0:0.15"/>
                 </Transitions>
             </Setter>
             <Setter Property="RenderTransform">
@@ -261,14 +338,14 @@
             <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
         </Style>
         <Style Selector="Button.fab:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-            <Setter Property="Background" Value="#B8C8FF"/>
+            <Setter Property="Background" Value="{DynamicResource PrimaryHoverBrush}"/>
         </Style>
         <Style Selector="Button.fab:pointerover">
             <Setter Property="ScaleTransform.ScaleX" Value="1.05"/>
             <Setter Property="ScaleTransform.ScaleY" Value="1.05"/>
         </Style>
         <Style Selector="Button.fab:pressed /template/ ContentPresenter#PART_ContentPresenter">
-            <Setter Property="Background" Value="#6E84D8"/>
+            <Setter Property="Background" Value="{DynamicResource BrandAccentColor}"/>
         </Style>
         <Style Selector="Button.fab:pressed">
             <Setter Property="ScaleTransform.ScaleX" Value="0.95"/>
@@ -295,7 +372,7 @@
             <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
         </Style>
         <Style Selector="Button.icon:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-            <Setter Property="Background" Value="#1E2A4A"/>
+            <Setter Property="Background" Value="{DynamicResource AppSurfaceBrush}"/>
         </Style>
         <Style Selector="Button.icon:pressed">
             <Setter Property="ScaleTransform.ScaleX" Value="0.9"/>
@@ -313,6 +390,7 @@
                 <Transitions>
                     <DoubleTransition Property="ScaleTransform.ScaleX" Duration="0:0:0.22"/>
                     <DoubleTransition Property="ScaleTransform.ScaleY" Duration="0:0:0.22"/>
+                    <BrushTransition Property="Background" Duration="0:0:0.15"/>
                 </Transitions>
             </Setter>
             <Setter Property="RenderTransform">
@@ -321,7 +399,7 @@
             <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
         </Style>
         <Style Selector="Button.model-switcher-button:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-            <Setter Property="Background" Value="#1E2A4A"/>
+            <Setter Property="Background" Value="{DynamicResource AppCardBrush}"/>
         </Style>
 
         <!-- 模型项按钮样式 -->
@@ -337,25 +415,25 @@
         </Style>
 
         <!-- ==================== 卡片与容器 ==================== -->
-        
+
         <!-- 卡片样式 -->
         <Style Selector="Border.card">
             <Setter Property="Background" Value="{DynamicResource AppCardBrush}"/>
-            <Setter Property="BorderBrush" Value="#1E2A4A"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource AppBorderBrush}"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="CornerRadius" Value="20"/>
             <Setter Property="Padding" Value="16"/>
         </Style>
-        
+
         <!-- Chip 样式 -->
         <Style Selector="Border.chip">
-            <Setter Property="Background" Value="#1A2B4D"/>
+            <Setter Property="Background" Value="{DynamicResource AppSurfaceBrush}"/>
             <Setter Property="CornerRadius" Value="16"/>
             <Setter Property="Padding" Value="12,6"/>
-            <Setter Property="BorderBrush" Value="#2A3654"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource AppBorderBrush}"/>
             <Setter Property="BorderThickness" Value="1"/>
         </Style>
-        
+
         <!-- 小标签 Chip 样式 -->
         <Style Selector="Border.tag">
             <Setter Property="Background" Value="{DynamicResource AppSurfaceBrush}"/>
@@ -367,61 +445,61 @@
         
         <!-- 全局 TextBox 样式 - 覆盖 FluentTheme 默认值 -->
         <Style Selector="TextBox">
-            <Setter Property="Background" Value="#11182B"/>
-            <Setter Property="Foreground" Value="#F3F6FF"/>
-            <Setter Property="BorderBrush" Value="#2A3654"/>
+            <Setter Property="Background" Value="{DynamicResource AppCardBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource AppTextPrimaryBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource AppInputBorderBrush}"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="CornerRadius" Value="12"/>
             <Setter Property="Padding" Value="12,8"/>
             <Setter Property="MinHeight" Value="40"/>
-            <Setter Property="SelectionBrush" Value="#8FA8FF"/>
-            <Setter Property="CaretBrush" Value="#8FA8FF"/>
+            <Setter Property="SelectionBrush" Value="{DynamicResource PrimaryBrush}"/>
+            <Setter Property="CaretBrush" Value="{DynamicResource PrimaryBrush}"/>
         </Style>
         <Style Selector="TextBox /template/ TextBlock#PART_Watermark">
-            <Setter Property="Foreground" Value="#7E8AAC"/>
+            <Setter Property="Foreground" Value="{DynamicResource AppTextTertiaryBrush}"/>
         </Style>
         <Style Selector="TextBox:pointerover /template/ Border#PART_BorderElement">
-            <Setter Property="Background" Value="#151D30"/>
-            <Setter Property="BorderBrush" Value="#3A4B6D"/>
+            <Setter Property="Background" Value="{DynamicResource AppSurfaceBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource AppBorderBrush}"/>
         </Style>
         <Style Selector="TextBox:focus /template/ Border#PART_BorderElement">
-            <Setter Property="Background" Value="#11182B"/>
-            <Setter Property="BorderBrush" Value="#8EDBFF"/>
+            <Setter Property="Background" Value="{DynamicResource AppCardBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource AppInputBorderFocusBrush}"/>
             <Setter Property="BorderThickness" Value="2"/>
         </Style>
         <Style Selector="TextBox:disabled">
             <Setter Property="Opacity" Value="0.5"/>
         </Style>
-        
+
         <!-- 全局 ComboBox 样式 -->
         <Style Selector="ComboBox">
-            <Setter Property="Background" Value="#11182B"/>
-            <Setter Property="Foreground" Value="#F3F6FF"/>
-            <Setter Property="BorderBrush" Value="#2A3654"/>
+            <Setter Property="Background" Value="{DynamicResource AppCardBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource AppTextPrimaryBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource AppInputBorderBrush}"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="CornerRadius" Value="12"/>
             <Setter Property="Padding" Value="12,8"/>
             <Setter Property="MinHeight" Value="40"/>
         </Style>
         <Style Selector="ComboBox:pointerover /template/ Border#Background">
-            <Setter Property="Background" Value="#151D30"/>
-            <Setter Property="BorderBrush" Value="#3A4B6D"/>
+            <Setter Property="Background" Value="{DynamicResource AppSurfaceBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource AppBorderBrush}"/>
         </Style>
         <Style Selector="ComboBox:focus /template/ Border#Background">
-            <Setter Property="Background" Value="#11182B"/>
-            <Setter Property="BorderBrush" Value="#8EDBFF"/>
+            <Setter Property="Background" Value="{DynamicResource AppCardBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource AppInputBorderFocusBrush}"/>
         </Style>
         <Style Selector="ComboBoxItem">
             <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Foreground" Value="#F3F6FF"/>
+            <Setter Property="Foreground" Value="{DynamicResource AppTextPrimaryBrush}"/>
             <Setter Property="Padding" Value="12,8"/>
         </Style>
         <Style Selector="ComboBoxItem:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-            <Setter Property="Background" Value="#1E2A4A"/>
+            <Setter Property="Background" Value="{DynamicResource AppSurfaceBrush}"/>
         </Style>
         <Style Selector="ComboBoxItem:selected /template/ ContentPresenter#PART_ContentPresenter">
-            <Setter Property="Background" Value="#1A2B4D"/>
-            <Setter Property="Foreground" Value="#8FA8FF"/>
+            <Setter Property="Background" Value="{DynamicResource AppCardBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}"/>
         </Style>
         
         <!-- 聊天输入框样式 -->
@@ -482,7 +560,7 @@
             <Setter Property="Width" Value="8"/>
             <Setter Property="Height" Value="8"/>
             <Setter Property="CornerRadius" Value="4"/>
-            <Setter Property="Background" Value="#8FA8FF"/>
+            <Setter Property="Background" Value="{DynamicResource PrimaryBrush}"/>
         </Style>
         
         <!-- 打字动画点 - 容器内的动画 -->
@@ -551,7 +629,7 @@
         <Style Selector="Border.streaming-cursor">
             <Setter Property="Width" Value="2"/>
             <Setter Property="Height" Value="16"/>
-            <Setter Property="Background" Value="#8FA8FF"/>
+            <Setter Property="Background" Value="{DynamicResource PrimaryBrush}"/>
             <Setter Property="CornerRadius" Value="1"/>
             <Setter Property="VerticalAlignment" Value="Bottom"/>
             <Setter Property="Margin" Value="2,0,0,2"/>
@@ -615,8 +693,8 @@
         
         <!-- 设置卡片容器 -->
         <Style Selector="Border.settings-card">
-            <Setter Property="Background" Value="#11182B"/>
-            <Setter Property="BorderBrush" Value="#1E2A4A"/>
+            <Setter Property="Background" Value="{DynamicResource AppCardBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource AppBorderBrush}"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="CornerRadius" Value="20"/>
             <Setter Property="ClipToBounds" Value="True"/>
@@ -624,7 +702,7 @@
         
         <!-- Toast 提示样式 -->
         <Style Selector="Border.toast-notification">
-            <Setter Property="Background" Value="#1E2A4A"/>
+            <Setter Property="Background" Value="{DynamicResource ToastBackgroundBrush}"/>
             <Setter Property="CornerRadius" Value="12"/>
             <Setter Property="Padding" Value="16,10"/>
             <Setter Property="HorizontalAlignment" Value="Center"/>
@@ -633,24 +711,24 @@
             <Setter Property="Opacity" Value="0.95"/>
             <Setter Property="ZIndex" Value="200"/>
         </Style>
-        
+
         <!-- 分隔线 -->
         <Style Selector="Separator.settings-divider">
-            <Setter Property="Background" Value="#161F38"/>
+            <Setter Property="Background" Value="{DynamicResource AppDividerBrush}"/>
             <Setter Property="Margin" Value="16,0"/>
             <Setter Property="Height" Value="1"/>
         </Style>
-        
+
         <!-- 确认对话框遮罩 -->
         <Style Selector="Border.dialog-overlay">
             <Setter Property="Background" Value="#80000000"/>
             <Setter Property="ZIndex" Value="300"/>
         </Style>
-        
+
         <!-- 确认对话框卡片 -->
         <Style Selector="Border.dialog-card">
-            <Setter Property="Background" Value="#11182B"/>
-            <Setter Property="BorderBrush" Value="#1E2A4A"/>
+            <Setter Property="Background" Value="{DynamicResource AppCardBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource AppBorderBrush}"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="CornerRadius" Value="20"/>
             <Setter Property="Padding" Value="24"/>
