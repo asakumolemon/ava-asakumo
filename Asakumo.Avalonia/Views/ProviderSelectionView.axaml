@@ -67,16 +67,6 @@
                   <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="16,0">
                     <StackPanel Orientation="Horizontal" Spacing="8">
                       <TextBlock Text="{Binding Name}" FontSize="16" FontWeight="Medium"/>
-                      <!-- Configured Badge -->
-                      <Border Background="#1A10A37F" CornerRadius="4" Padding="6,2"
-                              IsVisible="{Binding IsConfigured}">
-                        <TextBlock Text="已配置" FontSize="10" Foreground="#10A37F"/>
-                      </Border>
-                      <!-- Active Badge -->
-                      <Border Background="#1A10A37F" CornerRadius="4" Padding="6,2"
-                              IsVisible="{Binding IsActive}">
-                        <TextBlock Text="当前" FontSize="10" Foreground="#10A37F"/>
-                      </Border>
                     </StackPanel>
                     <TextBlock Text="{Binding Description}" FontSize="12"
                                Foreground="{DynamicResource AppTextSecondaryBrush}"
@@ -89,10 +79,6 @@
                     <PathIcon Data="M9,16.17L4.83,12L3.41,13.41L9,19L21,7L19.59,5.59L9,16.17Z"
                               Width="16" Height="16" Foreground="{DynamicResource PrimaryBrush}"
                               IsVisible="{Binding IsSelected}"/>
-                    <!-- Configured Indicator -->
-                    <PathIcon Data="M9,16.17L4.83,12L3.41,13.41L9,19L21,7L19.59,5.59L9,16.17Z"
-                              Width="16" Height="16" Foreground="#10A37F"
-                              IsVisible="{Binding IsConfigured}"/>
                   </StackPanel>
                 </Grid>
                 </Button>
