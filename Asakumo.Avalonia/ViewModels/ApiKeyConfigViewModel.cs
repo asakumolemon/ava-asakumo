@@ -316,8 +316,13 @@ public partial class ApiKeyConfigViewModel : ViewModelBase, INavigationAware
 
             await _dataService.SaveProviderConfigAsync(config);
 
-            // Navigate back to settings
-            _navigationService.NavigateTo<SettingsViewModel>();
+            // Clear configuration pages from navigation stack and navigate to settings
+            // If Settings is already in stack (entered from Settings), go back to it
+            // Otherwise (entered from ChatView), go back to ChatView and navigate to Settings
+            if (!_navigationService.GoBackTo<SettingsViewModel>())
+            {
+                _navigationService.GoBackToAndNavigate<ChatViewModel, SettingsViewModel>();
+            }
         }
         catch (System.Exception ex)
         {
