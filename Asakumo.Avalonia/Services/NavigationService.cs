@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Asakumo.Avalonia.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Asakumo.Avalonia.Services;
 
@@ -13,14 +14,17 @@ public class NavigationService : INavigationService
 {
     private readonly Stack<ViewModelBase> _navigationStack = new();
     private readonly IServiceProvider _serviceProvider;
+    private readonly ILogger<NavigationService>? _logger;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="NavigationService"/> class.
     /// </summary>
     /// <param name="serviceProvider">The service provider.</param>
-    public NavigationService(IServiceProvider serviceProvider)
+    /// <param name="logger">The logger.</param>
+    public NavigationService(IServiceProvider serviceProvider, ILogger<NavigationService>? logger = null)
     {
         _serviceProvider = serviceProvider;
+        _logger = logger;
     }
 
     /// <inheritdoc/>
@@ -77,16 +81,13 @@ public class NavigationService : INavigationService
     /// <inheritdoc/>
     public bool GoBackTo<T>() where T : ViewModelBase
     {
-        // Find the target type in the stack
         var targetType = typeof(T);
         var stackArray = _navigationStack.ToArray();
 
-        // Search from bottom (oldest) to top (newest) for the target
         for (int i = stackArray.Length - 1; i >= 0; i--)
         {
             if (stackArray[i].GetType() == targetType)
             {
-                // Found target, pop pages until we reach it
                 while (_navigationStack.Count > 0 && _navigationStack.Peek().GetType() != targetType)
                 {
                     _navigationStack.Pop();
@@ -97,11 +98,13 @@ public class NavigationService : INavigationService
                     var currentView = _navigationStack.Peek();
                     NavigationChanged?.Invoke(currentView);
                     currentView.OnNavigatedTo();
+                    _logger?.LogDebug("GoBackTo<{TargetType}> succeeded, stack depth: {Count}", targetType.Name, _navigationStack.Count);
                     return true;
                 }
             }
         }
 
+        _logger?.LogWarning("GoBackTo<{TargetType}> failed: type not found in navigation stack", targetType.Name);
         return false;
     }
 
@@ -112,6 +115,10 @@ public class NavigationService : INavigationService
         {
             _navigationStack.Pop();
         }
+        else
+        {
+            _logger?.LogWarning("NavigateReplacingCurrent<{Type}> called on empty stack, behaving as NavigateTo", typeof(T).Name);
+        }
 
         var viewModel = _serviceProvider.GetService(typeof(T)) as ViewModelBase;
         if (viewModel != null)
@@ -120,6 +127,10 @@ public class NavigationService : INavigationService
             NavigationChanged?.Invoke(viewModel);
             viewModel.OnNavigatedTo();
         }
+        else
+        {
+            _logger?.LogError("NavigateReplacingCurrent<{Type}> failed: could not resolve ViewModel from DI", typeof(T).Name);
+        }
     }
 
     /// <inheritdoc/>
@@ -127,16 +138,33 @@ public class NavigationService : INavigationService
         where TTarget : ViewModelBase
         where TNavigate : ViewModelBase
     {
-        // First go back to the target page
-        GoBackTo<TTarget>();
+        bool wentBack = GoBackTo<TTarget>();
 
-        // Then navigate to the new page
+        if (!wentBack)
+        {
+            _logger?.LogWarning(
+                "GoBackToAndNavigate<{Target}, {Navigate}> failed: could not find {Target} in stack, clearing stack",
+                typeof(TTarget).Name,
+                typeof(TNavigate).Name,
+                typeof(TTarget).Name);
+
+            _navigationStack.Clear();
+        }
+
         var viewModel = _serviceProvider.GetService(typeof(TNavigate)) as ViewModelBase;
         if (viewModel != null)
         {
             _navigationStack.Push(viewModel);
             NavigationChanged?.Invoke(viewModel);
             viewModel.OnNavigatedTo();
+        }
+        else
+        {
+            _logger?.LogError(
+                "GoBackToAndNavigate<{Target}, {Navigate}> failed: could not resolve {Navigate} from DI",
+                typeof(TTarget).Name,
+                typeof(TNavigate).Name,
+                typeof(TNavigate).Name);
         }
     }
 }

@@ -319,7 +319,9 @@ public partial class ApiKeyConfigViewModel : ViewModelBase, INavigationAware
             // Clear configuration pages from navigation stack and navigate to settings
             // If Settings is already in stack (entered from Settings), go back to it
             // Otherwise (entered from ChatView), go back to ChatView and navigate to Settings
-            if (!_navigationService.GoBackTo<SettingsViewModel>())
+            bool wentBackToSettings = _navigationService.GoBackTo<SettingsViewModel>();
+
+            if (!wentBackToSettings)
             {
                 _navigationService.GoBackToAndNavigate<ChatViewModel, SettingsViewModel>();
             }
