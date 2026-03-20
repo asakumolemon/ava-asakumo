@@ -8,7 +8,7 @@
              mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="700"
              x:Class="Asakumo.Avalonia.Views.ChatView"
              x:DataType="vm:ChatViewModel"
-             Background="{DynamicResource AppBackgroundBrush}">
+             Background="#090C14">
 
   <UserControl.Resources>
     <converters:PercentageConverter x:Key="PercentageConverter"/>
@@ -21,7 +21,7 @@
   <Grid RowDefinitions="Auto, *, Auto">
 
     <!-- Header -->
-    <Border Grid.Row="0" Background="{DynamicResource AppBackgroundBrush}" Padding="12,8"
+    <Border Grid.Row="0" Background="#090C14" Padding="12,8"
             BorderBrush="#1E2A4A" BorderThickness="0,0,0,1">
       <Grid RowDefinitions="Auto, Auto" ColumnDefinitions="Auto, *, Auto">
         <!-- Row 0: Back Button, Title, More Button -->
@@ -206,7 +206,7 @@
     </Border>
 
     <!-- Chat Area -->
-    <Grid Grid.Row="1" Background="{DynamicResource AppBackgroundBrush}">
+    <Grid Grid.Row="1" Background="#090C14">
       <!-- Empty State -->
       <StackPanel IsVisible="{Binding !HasMessages}"
                   VerticalAlignment="Center"
@@ -614,7 +614,7 @@
 
     <!-- Input Area - Rani 风格 -->
     <Border Grid.Row="2"
-            Background="{DynamicResource AppBackgroundBrush}"
+            Background="#090C14"
             BorderBrush="#1E2A4A"
             BorderThickness="0,1,0,0"
             Padding="12,12">

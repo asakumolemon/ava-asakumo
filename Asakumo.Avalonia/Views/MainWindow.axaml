@@ -12,7 +12,9 @@
         MinWidth="350" MinHeight="500"
         WindowStartupLocation="CenterScreen"
         Background="#090C14"
-        TransparencyLevelHint="AcrylicBlur">
+        ExtendClientAreaToDecorationsHint="True"
+        ExtendClientAreaChromeHints="NoChrome"
+        ExtendClientAreaTitleBarHeightHint="-1">
 
         <views:MainView />
 </Window>

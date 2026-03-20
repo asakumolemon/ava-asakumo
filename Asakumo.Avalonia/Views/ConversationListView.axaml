@@ -8,12 +8,12 @@
              x:Class="Asakumo.Avalonia.Views.ConversationListView"
              x:DataType="vm:ConversationListViewModel"
              x:Name="ConversationListControl"
-             Background="{DynamicResource AppBackgroundBrush}">
+             Background="#090C14">
 
   <Grid RowDefinitions="Auto, *">
     <!-- Header - Rani 风格 -->
     <Border Grid.Row="0"
-            Background="{DynamicResource AppBackgroundBrush}"
+            Background="#090C14"
             Height="64"
             BorderBrush="#1E2A4A"
             BorderThickness="0,0,0,1">

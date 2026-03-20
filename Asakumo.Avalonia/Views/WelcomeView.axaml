@@ -5,14 +5,16 @@
              xmlns:vm="using:Asakumo.Avalonia.ViewModels"
              mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="700"
              x:Class="Asakumo.Avalonia.Views.WelcomeView"
-             x:DataType="vm:WelcomeViewModel">
+             x:DataType="vm:WelcomeViewModel"
+             Background="#090C14">
 
-  <Grid RowDefinitions="*, Auto" Background="{DynamicResource AppBackgroundBrush}">
-    <!-- Rani 雾化背景效果 -->
+  <Grid RowDefinitions="*, Auto">
+    <!-- Rani 雾化背景效果 - 使用深色作为渐变终点而非透明 -->
     <Grid.Background>
-      <RadialGradientBrush Center="20%,20%" RadiusX="50%" RadiusY="50%">
+      <RadialGradientBrush Center="20%,20%" RadiusX="55%" RadiusY="55%">
         <GradientStop Color="#1A8FA8FF" Offset="0"/>
-        <GradientStop Color="Transparent" Offset="0.7"/>
+        <GradientStop Color="#0D1220" Offset="0.6"/>
+        <GradientStop Color="#090C14" Offset="1"/>
       </RadialGradientBrush>
     </Grid.Background>
     

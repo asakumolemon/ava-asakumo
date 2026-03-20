@@ -92,6 +92,27 @@
     <Application.Styles>
         <FluentTheme />
         
+        <!-- ==================== 全局背景覆盖 ==================== -->
+        <!-- 覆盖 FluentTheme 默认背景色，强制使用 Rani 深色背景 -->
+        <Style Selector="Window">
+            <Setter Property="Background" Value="#090C14"/>
+        </Style>
+        <Style Selector="UserControl">
+            <Setter Property="Background" Value="#090C14"/>
+        </Style>
+        <Style Selector="Grid">
+            <Setter Property="Background" Value="Transparent"/>
+        </Style>
+        <Style Selector="StackPanel">
+            <Setter Property="Background" Value="Transparent"/>
+        </Style>
+        <Style Selector="Border">
+            <Setter Property="Background" Value="Transparent"/>
+        </Style>
+        <Style Selector="ScrollViewer">
+            <Setter Property="Background" Value="Transparent"/>
+        </Style>
+        
         <!-- ==================== 按钮系统 ==================== -->
         
         <!-- 主按钮样式 - Rani 风格 -->

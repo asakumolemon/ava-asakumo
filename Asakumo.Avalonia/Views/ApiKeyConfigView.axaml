@@ -7,10 +7,10 @@
              x:Class="Asakumo.Avalonia.Views.ApiKeyConfigView"
              x:DataType="vm:ApiKeyConfigViewModel">
 
-  <Grid RowDefinitions="Auto, *, Auto" Background="{DynamicResource AppBackgroundBrush}">
+  <Grid RowDefinitions="Auto, *, Auto" Background="#090C14">
     <!-- Header - Rani 风格 -->
     <Border Grid.Row="0" Padding="16,12" 
-            Background="{DynamicResource AppSurfaceBrush}"
+            Background="#0D1220"
             BorderBrush="#1E2A4A"
             BorderThickness="0,0,0,1">
       <Grid ColumnDefinitions="Auto, *, Auto">
@@ -207,7 +207,7 @@
 
     <!-- Footer - Rani 风格 -->
     <Border Grid.Row="2" Padding="16" 
-            Background="{DynamicResource AppSurfaceBrush}"
+            Background="#0D1220"
             BorderBrush="#1E2A4A"
             BorderThickness="0,1,0,0">
       <Button Command="{Binding SaveCommand}"
