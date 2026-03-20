@@ -46,9 +46,11 @@ public partial class ApiKeyConfigViewModel : ViewModelBase, INavigationAware
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(ValidateButtonText))]
+    [NotifyPropertyChangedFor(nameof(CanSave))]
     private bool _isValidating;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CanSave))]
     private bool _validationSuccess;
 
     [ObservableProperty]
