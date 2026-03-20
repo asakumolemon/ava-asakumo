@@ -11,10 +11,7 @@
         Width="450" Height="750"
         MinWidth="350" MinHeight="500"
         WindowStartupLocation="CenterScreen"
-        Background="#090C14"
-        ExtendClientAreaToDecorationsHint="True"
-        ExtendClientAreaChromeHints="NoChrome"
-        ExtendClientAreaTitleBarHeightHint="-1">
+        Background="#090C14">
 
         <views:MainView />
 </Window>
