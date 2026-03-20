@@ -8,35 +8,56 @@
              x:DataType="vm:WelcomeViewModel">
 
   <Grid RowDefinitions="*, Auto" Background="{DynamicResource AppBackgroundBrush}">
+    <!-- Rani 雾化背景效果 -->
+    <Grid.Background>
+      <RadialGradientBrush Center="20%,20%" RadiusX="50%" RadiusY="50%">
+        <GradientStop Color="#1A8FA8FF" Offset="0"/>
+        <GradientStop Color="Transparent" Offset="0.7"/>
+      </RadialGradientBrush>
+    </Grid.Background>
+    
     <!-- Main Content -->
     <StackPanel VerticalAlignment="Center" Spacing="32" Margin="40,20">
       <!-- Logo -->
       <StackPanel HorizontalAlignment="Center" Spacing="12">
-        <TextBlock Text="&#x1F319;" FontSize="64" HorizontalAlignment="Center"/>
+        <!-- 月亮图标带光晕效果 -->
+        <Border Width="100" Height="100" CornerRadius="50" 
+                HorizontalAlignment="Center"
+                Background="#0D1220"
+                BorderBrush="#3A4B6D"
+                BorderThickness="2">
+          <Border.BoxShadow>0 0 40 0 #308FA8FF</Border.BoxShadow>
+          <TextBlock Text="&#x1F319;" FontSize="48" 
+                     HorizontalAlignment="Center" 
+                     VerticalAlignment="Center"/>
+        </Border>
         <TextBlock Text="Asakumo" FontSize="32" FontWeight="Bold"
                    HorizontalAlignment="Center"
-                   Foreground="{DynamicResource PrimaryBrush}"/>
+                   Foreground="#F3F6FF"/>
         <TextBlock Text="您的 AI 聊天助手" FontSize="16"
                    HorizontalAlignment="Center"
-                   Foreground="{DynamicResource AppTextSecondaryBrush}"/>
+                   Foreground="#B8C1D9"/>
       </StackPanel>
 
-      <!-- Illustration Area -->
-      <Border Background="{DynamicResource AppSurfaceBrush}"
-              CornerRadius="16" Height="180"
-              HorizontalAlignment="Center" Width="280">
-        <!-- 品牌渐变背景 -->
+      <!-- Illustration Area - Rani 魔法渐变 -->
+      <Border CornerRadius="20" Height="180"
+              HorizontalAlignment="Center" Width="280"
+              BorderBrush="#2A3654"
+              BorderThickness="1">
+        <!-- Rani 主渐变 -->
         <Border.Background>
           <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
-            <GradientStop Color="#10A37F" Offset="0"/>
-            <GradientStop Color="#0D8A6A" Offset="1"/>
+            <GradientStop Color="#B8C8FF" Offset="0"/>
+            <GradientStop Color="#8FA8FF" Offset="0.45"/>
+            <GradientStop Color="#A792E8" Offset="1"/>
           </LinearGradientBrush>
         </Border.Background>
+        <Border.BoxShadow>0 12 36 0 #30000000</Border.BoxShadow>
         <Viewbox>
           <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
             <TextBlock Text="&#x1F916;" FontSize="48" HorizontalAlignment="Center"/>
-            <TextBlock Text="智能对话" FontSize="18" Foreground="White"
-                       HorizontalAlignment="Center" FontWeight="Medium"/>
+            <TextBlock Text="智能对话" FontSize="18" Foreground="#08101F"
+                       HorizontalAlignment="Center" FontWeight="SemiBold"/>
           </StackPanel>
         </Viewbox>
       </Border>
@@ -44,11 +65,15 @@
       <!-- Language Selector -->
       <Grid ColumnDefinitions="Auto, *" HorizontalAlignment="Center">
         <TextBlock Grid.Column="0" Text="&#x1F310; 语言: " VerticalAlignment="Center"
-                   Foreground="{DynamicResource AppTextSecondaryBrush}"/>
+                   Foreground="#B8C1D9"/>
         <ComboBox Grid.Column="1" ItemsSource="{Binding Languages}"
                   SelectedItem="{Binding SelectedLanguage}"
                   MinWidth="140"
-                  Background="{DynamicResource AppSurfaceBrush}"/>
+                  Background="#11182B"
+                  Foreground="#F3F6FF"
+                  BorderBrush="#2A3654"
+                  BorderThickness="1"
+                  CornerRadius="12"/>
       </Grid>
 
       <!-- Start Button -->
@@ -63,9 +88,10 @@
       <Button Command="{Binding SkipCommand}"
               HorizontalAlignment="Center"
               Background="Transparent"
-              BorderThickness="0">
+              BorderThickness="0"
+              Padding="16,8">
         <TextBlock Text="跳过引导" 
-                   Foreground="{DynamicResource AppTextSecondaryBrush}"
+                   Foreground="#7E8AAC"
                    TextDecorations="Underline"/>
       </Button>
     </StackPanel>
@@ -73,10 +99,14 @@
     <!-- Page Indicators -->
     <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center"
                 Spacing="10" Margin="0,0,0,32">
-      <Ellipse Width="8" Height="8" Fill="{DynamicResource PrimaryBrush}"/>
-      <Ellipse Width="8" Height="8" Fill="{DynamicResource AppTextSecondaryBrush}"/>
-      <Ellipse Width="8" Height="8" Fill="{DynamicResource AppTextSecondaryBrush}"/>
-      <Ellipse Width="8" Height="8" Fill="{DynamicResource AppTextSecondaryBrush}"/>
+      <Ellipse Width="8" Height="8">
+        <Ellipse.Fill>
+          <SolidColorBrush Color="#8FA8FF"/>
+        </Ellipse.Fill>
+      </Ellipse>
+      <Ellipse Width="8" Height="8" Fill="#3A4B6D"/>
+      <Ellipse Width="8" Height="8" Fill="#3A4B6D"/>
+      <Ellipse Width="8" Height="8" Fill="#3A4B6D"/>
     </StackPanel>
   </Grid>
 </UserControl>
