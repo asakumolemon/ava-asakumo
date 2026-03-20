@@ -58,7 +58,7 @@
     <Style Selector="TextBlock.unread-badge-text">
         <Setter Property="FontSize" Value="11" />
         <Setter Property="FontWeight" Value="SemiBold" />
-        <Setter Property="Foreground" Value="#08101F" />
+        <Setter Property="Foreground" Value="{DynamicResource AppBackgroundBrush}" />
         <Setter Property="HorizontalAlignment" Value="Center" />
         <Setter Property="VerticalAlignment" Value="Center" />
     </Style>
@@ -68,7 +68,7 @@
     <!-- Filled Button - MD3 Pill Shape -->
     <Style Selector="Button.btn-filled">
         <Setter Property="Background" Value="{DynamicResource PrimaryBrush}" />
-        <Setter Property="Foreground" Value="#08101F" />
+        <Setter Property="Foreground" Value="{DynamicResource AppBackgroundBrush}" />
         <Setter Property="CornerRadius" Value="20" />
         <Setter Property="Padding" Value="24,12" />
         <Setter Property="Height" Value="48" />
@@ -90,7 +90,7 @@
     <!-- FAB - Material Design 3 Specification -->
     <Style Selector="Button.fab">
         <Setter Property="Background" Value="{DynamicResource PrimaryBrush}" />
-        <Setter Property="Foreground" Value="#08101F" />
+        <Setter Property="Foreground" Value="{DynamicResource AppBackgroundBrush}" />
         <Setter Property="Width" Value="56" />
         <Setter Property="Height" Value="56" />
         <Setter Property="CornerRadius" Value="16" />
@@ -145,7 +145,7 @@
         <Setter Property="RenderTransformOrigin" Value="0.5,0.5" />
     </Style>
     <Style Selector="Button.icon:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-        <Setter Property="Background" Value="#1E2A4A" />
+        <Setter Property="Background" Value="{DynamicResource AppSurfaceBrush}" />
     </Style>
     <Style Selector="Button.icon:pressed">
         <Setter Property="ScaleTransform.ScaleX" Value="0.9" />

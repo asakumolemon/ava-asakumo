@@ -1,8 +1,7 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="using:Asakumo.Avalonia"
-             x:Class="Asakumo.Avalonia.App"
-             RequestedThemeVariant="Dark">
+             x:Class="Asakumo.Avalonia.App">
 
     <Application.DataTemplates>
         <local:ViewLocator/>
@@ -93,12 +92,12 @@
         <FluentTheme />
         
         <!-- ==================== 全局背景覆盖 ==================== -->
-        <!-- 覆盖 FluentTheme 默认背景色，强制使用 Rani 深色背景 -->
+        <!-- 使用 DynamicResource 支持深浅色主题切换 -->
         <Style Selector="Window">
-            <Setter Property="Background" Value="#090C14"/>
+            <Setter Property="Background" Value="{DynamicResource AppBackgroundBrush}"/>
         </Style>
         <Style Selector="UserControl">
-            <Setter Property="Background" Value="#090C14"/>
+            <Setter Property="Background" Value="{DynamicResource AppBackgroundBrush}"/>
         </Style>
         <Style Selector="Grid">
             <Setter Property="Background" Value="Transparent"/>

@@ -84,10 +84,10 @@
             <StackPanel Orientation="Horizontal" Spacing="8">
               <PathIcon Data="M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z"
                         Width="20" Height="20"
-                        Foreground="#08101F"/>
+                        Foreground="{DynamicResource AppBackgroundBrush}"/>
               <TextBlock Text="开始新对话"
                          FontWeight="SemiBold"
-                         Foreground="#08101F"
+                         Foreground="{DynamicResource AppBackgroundBrush}"
                          VerticalAlignment="Center"/>
             </StackPanel>
           </Button>
@@ -282,7 +282,7 @@
             IsVisible="{Binding !IsEmpty}">
       <PathIcon Data="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z"
                 Width="24" Height="24"
-                Foreground="#08101F"/>
+                Foreground="{DynamicResource AppBackgroundBrush}"/>
     </Button>
   </Grid>
 </UserControl>
