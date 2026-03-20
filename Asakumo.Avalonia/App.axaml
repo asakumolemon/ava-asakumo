@@ -699,6 +699,47 @@
             <Setter Property="CornerRadius" Value="20"/>
             <Setter Property="ClipToBounds" Value="True"/>
         </Style>
+
+        <!-- 状态消息样式 -->
+        <Style Selector="Border.status-message-success">
+            <Setter Property="Background" Value="{DynamicResource SuccessBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource SuccessBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="Padding" Value="12"/>
+            <Setter Property="Opacity" Value="0.15"/>
+        </Style>
+
+        <Style Selector="Border.status-message-error">
+            <Setter Property="Background" Value="{DynamicResource ErrorBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource ErrorBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="Padding" Value="12"/>
+            <Setter Property="Opacity" Value="0.15"/>
+        </Style>
+
+        <!-- Capability Tag 样式 -->
+        <Style Selector="Border.capability-tag-vision">
+            <Setter Property="Background" Value="{DynamicResource InfoBrush}"/>
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="Padding" Value="6,2"/>
+            <Setter Property="Opacity" Value="0.15"/>
+        </Style>
+
+        <Style Selector="Border.capability-tag-function">
+            <Setter Property="Background" Value="{DynamicResource AstralVioletBrush}"/>
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="Padding" Value="6,2"/>
+            <Setter Property="Opacity" Value="0.15"/>
+        </Style>
+
+        <Style Selector="Border.capability-tag-tokens">
+            <Setter Property="Background" Value="{DynamicResource PrimaryBrush}"/>
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="Padding" Value="6,2"/>
+            <Setter Property="Opacity" Value="0.15"/>
+        </Style>
         
         <!-- Toast 提示样式 -->
         <Style Selector="Border.toast-notification">
