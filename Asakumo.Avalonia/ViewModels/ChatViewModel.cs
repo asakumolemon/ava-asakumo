@@ -684,6 +684,14 @@ public partial class ChatViewModel : ViewModelBase, INavigationAware
     private async Task OpenModelSwitcherAsync()
     {
         await LoadAvailableModelsAsync();
+
+        if (AvailableModels.Count == 0)
+        {
+            ShowToastMessage("请先配置 AI 服务商");
+            _navigationService.NavigateTo<ProviderSelectionViewModel>();
+            return;
+        }
+
         IsModelSwitcherOpen = true;
     }
 
