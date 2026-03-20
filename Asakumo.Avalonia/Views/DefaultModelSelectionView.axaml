@@ -9,16 +9,21 @@
              x:DataType="vm:DefaultModelSelectionViewModel">
 
   <Grid RowDefinitions="Auto, *, Auto" Background="{DynamicResource AppBackgroundBrush}">
-    <!-- Header -->
-    <Border Grid.Row="0" Padding="16,12" Background="{DynamicResource AppSurfaceBrush}">
+    <!-- Header - Rani 风格 -->
+    <Border Grid.Row="0" Padding="16,12" 
+            Background="{DynamicResource AppSurfaceBrush}"
+            BorderBrush="#1E2A4A"
+            BorderThickness="0,0,0,1">
       <Grid ColumnDefinitions="Auto, *, Auto">
         <Button Grid.Column="0" Command="{Binding GoBackCommand}"
                 Classes="icon" ToolTip.Tip="返回">
           <PathIcon Data="M20,11H7.83L13.42,5.41L12,4L4,12L12,20L13.41,18.59L7.83,13H20V11Z"
-                    Width="20" Height="20"/>
+                    Width="20" Height="20"
+                    Foreground="#C8D2EA"/>
         </Button>
         <TextBlock Grid.Column="1" Text="选择默认模型" FontSize="18" FontWeight="SemiBold"
-                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                   HorizontalAlignment="Center" VerticalAlignment="Center"
+                   Foreground="#F3F6FF"/>
       </Grid>
     </Border>
 
@@ -27,7 +32,7 @@
       <StackPanel Spacing="16" Margin="16">
         <!-- Instructions -->
         <TextBlock Text="从以下供应商的可用模型中选择默认模型："
-                   Foreground="{DynamicResource AppTextSecondaryBrush}"
+                   Foreground="#7E8AAC"
                    TextWrapping="Wrap" Margin="0,8,0,8"/>
 
         <!-- Empty State -->
@@ -36,38 +41,40 @@
                     Spacing="16">
           <PathIcon Data="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4A8,8 0 0,1 20,12A8,8 0 0,1 12,20A8,8 0 0,1 4,12A8,8 0 0,1 12,4M12,6A6,6 0 0,0 6,12A6,6 0 0,0 12,18A6,6 0 0,0 18,12A6,6 0 0,0 12,6Z"
                     Width="64" Height="64"
-                    Foreground="{DynamicResource AppTextSecondaryBrush}"/>
+                    Foreground="#7E8AAC"/>
           <TextBlock Text="暂无可用模型"
                      FontSize="16"
-                     Foreground="{DynamicResource AppTextSecondaryBrush}"/>
+                     Foreground="#7E8AAC"/>
           <TextBlock Text="请先在供应商配置中添加模型"
                      FontSize="14"
-                     Foreground="{DynamicResource AppTextSecondaryBrush}"/>
+                     Foreground="#7E8AAC"/>
         </StackPanel>
 
         <!-- Provider Groups -->
         <ItemsControl ItemsSource="{Binding ProviderGroups}">
           <ItemsControl.Styles>
             <Style Selector="Border.provider-section">
-              <Setter Property="Background" Value="{DynamicResource AppCardBrush}"/>
-              <Setter Property="CornerRadius" Value="12"/>
+              <Setter Property="Background" Value="#11182B"/>
+              <Setter Property="BorderBrush" Value="#2A3654"/>
+              <Setter Property="BorderThickness" Value="1"/>
+              <Setter Property="CornerRadius" Value="16"/>
               <Setter Property="Padding" Value="12"/>
               <Setter Property="Margin" Value="0,0,0,12"/>
             </Style>
             <Style Selector="Border.model-item">
-              <Setter Property="Background" Value="{DynamicResource AppBackgroundBrush}"/>
+              <Setter Property="Background" Value="#0D1220"/>
               <Setter Property="BorderThickness" Value="2"/>
               <Setter Property="BorderBrush" Value="Transparent"/>
-              <Setter Property="CornerRadius" Value="8"/>
+              <Setter Property="CornerRadius" Value="12"/>
               <Setter Property="Padding" Value="12"/>
               <Setter Property="Margin" Value="0,0,0,8"/>
             </Style>
             <Style Selector="Border.model-item:pointerover">
-              <Setter Property="Background" Value="{DynamicResource AppSurfaceBrush}"/>
+              <Setter Property="Background" Value="#161F38"/>
             </Style>
             <Style Selector="Border.model-item.selected">
-              <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
-              <Setter Property="Background" Value="#0D10A37F"/>
+              <Setter Property="BorderBrush" Value="#8FA8FF"/>
+              <Setter Property="Background" Value="#1A2B4D"/>
             </Style>
           </ItemsControl.Styles>
           <ItemsControl.ItemTemplate>
@@ -78,29 +85,32 @@
                   <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,0,0,8">
                     <TextBlock Text="{Binding ProviderIcon}" FontSize="20"/>
                     <TextBlock Text="{Binding ProviderName}" FontSize="16" FontWeight="SemiBold"
-                               VerticalAlignment="Center"/>
+                               VerticalAlignment="Center"
+                               Foreground="#F3F6FF"/>
                   </StackPanel>
 
                   <!-- Models -->
                   <ItemsControl ItemsSource="{Binding Models}">
                     <ItemsControl.ItemTemplate>
                       <DataTemplate DataType="models:AIModel">
-                                              <Border Classes="model-item"
-                                                      PointerPressed="OnModelPointerPressed">                          <Grid ColumnDefinitions="*, Auto">
+                        <Border Classes="model-item"
+                                PointerPressed="OnModelPointerPressed">
+                          <Grid ColumnDefinitions="*, Auto">
                             <StackPanel Grid.Column="0">
-                              <TextBlock Text="{Binding Name}" FontSize="15" FontWeight="Medium"/>
+                              <TextBlock Text="{Binding Name}" FontSize="15" FontWeight="Medium"
+                                         Foreground="#F3F6FF"/>
                               <TextBlock Text="{Binding Description}" FontSize="12"
-                                         Foreground="{DynamicResource AppTextSecondaryBrush}"
+                                         Foreground="#7E8AAC"
                                          TextWrapping="Wrap" MaxLines="2"/>
                               <!-- Capabilities -->
                               <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,4,0,0">
-                                <Border Background="#1A10A37F" CornerRadius="4" Padding="6,2"
+                                <Border Background="#1A8EDBFF" CornerRadius="4" Padding="6,2"
                                         IsVisible="{Binding SupportsVision}">
-                                  <TextBlock Text="视觉" FontSize="10" Foreground="#10A37F"/>
+                                  <TextBlock Text="视觉" FontSize="10" Foreground="#8EDBFF"/>
                                 </Border>
-                                <Border Background="#1A10A37F" CornerRadius="4" Padding="6,2"
+                                <Border Background="#1AA792E8" CornerRadius="4" Padding="6,2"
                                         IsVisible="{Binding SupportsFunctionCalling}">
-                                  <TextBlock Text="工具调用" FontSize="10" Foreground="#10A37F"/>
+                                  <TextBlock Text="工具调用" FontSize="10" Foreground="#A792E8"/>
                                 </Border>
                               </StackPanel>
                             </StackPanel>
@@ -109,7 +119,7 @@
                             <Border Grid.Column="1" Width="24" Height="24" CornerRadius="12"
                                     VerticalAlignment="Center"
                                     IsVisible="False">
-                              <Ellipse Width="12" Height="12" Fill="{DynamicResource PrimaryBrush}"/>
+                              <Ellipse Width="12" Height="12" Fill="#8FA8FF"/>
                             </Border>
                           </Grid>
                         </Border>
@@ -124,27 +134,31 @@
 
         <!-- Error Message -->
         <TextBlock Text="{Binding ErrorMessage}"
-                   Foreground="#FF6B6B" FontSize="14"
+                   Foreground="#F28AA8" FontSize="14"
                    IsVisible="{Binding HasError}"
                    Margin="0,8"/>
 
         <!-- Success Message -->
         <TextBlock Text="{Binding SuccessMessage}"
-                   Foreground="#10A37F" FontSize="14"
+                   Foreground="#6FD7B8" FontSize="14"
                    IsVisible="{Binding HasSuccess}"
                    Margin="0,8"/>
       </StackPanel>
     </ScrollViewer>
 
-    <!-- Footer -->
-    <Border Grid.Row="2" Padding="16" Background="{DynamicResource AppSurfaceBrush}">
+    <!-- Footer - Rani 风格 -->
+    <Border Grid.Row="2" Padding="16" 
+            Background="{DynamicResource AppSurfaceBrush}"
+            BorderBrush="#1E2A4A"
+            BorderThickness="0,1,0,0">
       <Button Command="{Binding SaveCommand}"
               Classes="primary"
               HorizontalAlignment="Stretch"
               HorizontalContentAlignment="Center"
               IsEnabled="{Binding HasSelection}"
               IsVisible="{Binding ProviderGroups.Count}">
-        <TextBlock Text="设为默认模型" FontWeight="SemiBold" FontSize="16"/>
+        <TextBlock Text="设为默认模型" FontWeight="SemiBold" FontSize="16"
+                   Foreground="#08101F"/>
       </Button>
     </Border>
   </Grid>
