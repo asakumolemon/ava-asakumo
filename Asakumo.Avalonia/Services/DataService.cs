@@ -349,7 +349,7 @@ public class DataService : IDataService
     {
         await EnsureInitializedAsync();
 
-        character.MarkAsUpdated();
+        character.Touch();
         await _database!.InsertOrReplaceAsync(character);
 
         _logger.LogDebug("Saved character {Id} - {Name}", character.Id, character.Name);
