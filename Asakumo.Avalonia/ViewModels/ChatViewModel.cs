@@ -145,7 +145,7 @@ public partial class ChatViewModel : ViewModelBase, INavigationAware
 
     private void RefreshModelInfo()
     {
-        CurrentModelName = _aiService.CurrentModelName ?? _aiService.CurrentModelId ?? string.Empty;
+        CurrentModelName = _aiService.CurrentModelName ?? _aiService.CurrentModelId ?? "点击选择模型";
         CurrentProviderName = _aiService.CurrentProviderId ?? string.Empty;
     }
 
